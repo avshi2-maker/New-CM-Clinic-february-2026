@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM Clinical Assistant - Complete Edition</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- 3-PANEL LAYOUT -->
+    <div class="flex h-screen">
+        <!-- LEFT PANEL: 450 Questions (appears on LEFT side of screen) -->
+        <div class="left-panel bg-gray-50 border-r">
+            
+            <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer hover:from-blue-700 hover:to-indigo-700 transition-all sticky top-0 z-10" onclick="toggleModule1Panel()">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sm">📚 411 שאלות מוכנות</h3>
+                    <span id="module1Arrow" class="text-xl transition-transform">▼</span>
+                </div>
+                <p class="text-xs opacity-80 mt-1">לחץ להצגת/הסתרת שאלות</p>
+            </div>
+            
+            <!-- Collapsible Questions Section -->
+            <div id="module1Content" style="display: none;">
+                <!-- Category Filter -->
+                <div class="p-3">
+                    <select id="categoryFilter" onchange="filterQuestions()" class="w-full p-2 border-2 border-gray-300 rounded-lg text-right text-sm">
+        <option value="all">כל הקטגוריות (411 שאלות)</option>
+        <option value="אבחון דופק ולשון">אבחון דופק ולשון (15)</option>
+        <option value="אריכות ימים ואיכות חיים">אריכות ימים ואיכות חיים (15)</option>
+        <option value="איזון וחיזוק (מבוגרים)">איזון וחיזוק (מבוגרים) (15)</option>
+        <option value="שיקום וטיפול בכאב">שיקום וטיפול בכאב (15)</option>
+        <option value="בהירות וחוסן מנטלי">בהירות וחוסן מנטלי (15)</option>
+        <option value="בקרת אקלים פנימית">בקרת אקלים פנימית (15)</option>
+        <option value="חיוניות ואריכות ימים">חיוניות ואריכות ימים (15)</option>
+        <option value="חוסן חיסוני והתאוששות">חוסן חיסוני והתאוששות (15)</option>
+        <option value="הזנת החיים (תזונה)">הזנת החיים (תזונה) (15)</option>
+        <option value="תסמונות זאנג-פו">תסמונות זאנג-פו (15)</option>
+        <option value="נקודות דיקור">נקודות דיקור (15)</option>
+        <option value="ארבע הבדיקות">ארבע הבדיקות (15)</option>
+        <option value="בריאות האישה">בריאות האישה (15)</option>
+        <option value="רפואה סינית לילדים">רפואה סינית לילדים (15)</option>
+        <option value="רפואה סינית לקשישים">רפואה סינית לקשישים (15)</option>
+        <option value="בריאות רגשית">בריאות רגשית (15)</option>
+        <option value="הפרעות שינה">הפרעות שינה (15)</option>
+        <option value="בריאות מערכת העיכול">בריאות מערכת העיכול (15)</option>
+        <option value="בריאות מערכת הנשימה">בריאות מערכת הנשימה (15)</option>
+        <option value="מערכת השלד והשרירים">מערכת השלד והשרירים (15)</option>
+        <option value="כאבי ראש ומיגרנות">כאבי ראש ומיגרנות (15)</option>
+        <option value="מחלות עור">מחלות עור (15)</option>
+        <option value="מערכת הלב וכלי הדם">מערכת הלב וכלי הדם (15)</option>
+        <option value="נוסחאות צמחים">נוסחאות צמחים (15)</option>
+        <option value="מוקסה וכוסות רוח">מוקסה וכוסות רוח (15)</option>
+        <option value="כלי הדם המיוחדים">כלי הדם המיוחדים (15)</option>
+        <option value="דיקור אוזן">דיקור אוזן (15)</option>
+        <option value="טיפול לפי עונות">טיפול לפי עונות (15)</option>
+        <option value="חמשת היסודות">חמשת היסודות (15)</option>
+        <option value="יין ויאנג">יין ויאנג (15)</option>
+                    </select>
+                </div>
+                
+                <div id="quickQuestions" class="p-3 space-y-2">
+                    <div style="text-align:center; padding:20px; color:#6b7280; font-size:13px;">⏳ טוען שאלות...</div>
+                </div>
+                <div id="dynamicComponents" class="p-3 space-y-2"><div id="component-smart-search-module" class="component-wrapper"><!-- Separator Line -->
+<div class="border-t-4 border-gray-300 my-2"></div>
+
+<!-- Voice Search Header -->
+<div class="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+    <h3 class="font-bold text-sm text-center">🎤 חיפוש חכם</h3>
+    <p class="text-xs text-center opacity-90 mt-1">חיפוש נוסף במידת הצורך</p>
+</div>
+
+<!-- Voice + Text Search Input -->
+<div class="p-3 bg-white border-b-2 border-gray-200">
+    <div class="relative">
+        <input type="text" id="smartSearchInput" placeholder="🔍 הקלד או לחץ על המיקרופון..." class="w-full p-3 pr-12 border-2 border-purple-400 rounded-lg text-right text-sm focus:outline-none focus:border-purple-600 transition-all" dir="rtl" onkeypress="if(event.key===&#39;Enter&#39;) searchSmartInput()">
+        <!-- Voice Button -->
+        <button id="voiceSearchBtn" onclick="toggleVoiceSearch()" class="absolute left-2 top-2 w-10 h-10 bg-purple-500 hover:bg-purple-600 rounded-lg flex items-center justify-center transition-all" title="לחץ להקלטה קולית">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+            </svg>
+        </button>
+    </div>
+    <!-- Voice Status Message -->
+    <div id="voiceStatus" class="text-xs text-center mt-2 h-4 text-gray-500"></div>
+</div>
+
+<!-- Popular Keywords -->
+<div class="p-3 bg-gradient-to-br from-blue-50 to-purple-50 border-b-2 border-gray-200">
+    <div class="text-xs font-bold text-gray-600 mb-2 text-center">💡 מילות מפתח</div>
+    <div class="flex flex-wrap gap-2 justify-center">
+        <span onclick="searchKeyword(&#39;כאב&#39;)" class="px-3 py-1 bg-white border-2 border-blue-300 text-blue-700 rounded-full text-xs font-bold cursor-pointer hover:bg-blue-100 transition-all">כאב</span>
+        <span onclick="searchKeyword(&#39;חרדה&#39;)" class="px-3 py-1 bg-white border-2 border-purple-300 text-purple-700 rounded-full text-xs font-bold cursor-pointer hover:bg-purple-100 transition-all">חרדה</span>
+        <span onclick="searchKeyword(&#39;עייפות&#39;)" class="px-3 py-1 bg-white border-2 border-green-300 text-green-700 rounded-full text-xs font-bold cursor-pointer hover:bg-green-100 transition-all">עייפות</span>
+        <span onclick="searchKeyword(&#39;שינה&#39;)" class="px-3 py-1 bg-white border-2 border-indigo-300 text-indigo-700 rounded-full text-xs font-bold cursor-pointer hover:bg-indigo-100 transition-all">שינה</span>
+        <span onclick="searchKeyword(&#39;עיכול&#39;)" class="px-3 py-1 bg-white border-2 border-orange-300 text-orange-700 rounded-full text-xs font-bold cursor-pointer hover:bg-orange-100 transition-all">עיכול</span>
+        <span onclick="searchKeyword(&#39;עור&#39;)" class="px-3 py-1 bg-white border-2 border-pink-300 text-pink-700 rounded-full text-xs font-bold cursor-pointer hover:bg-pink-100 transition-all">עור</span>
+    </div>
+</div>
+
+<!-- Alphabet Navigation -->
+<div class="p-3 bg-gradient-to-br from-purple-50 to-pink-50 border-b-2 border-gray-200">
+    <div class="text-xs font-bold text-gray-600 mb-2 text-center">🔤 קפוץ לאות</div>
+    <div class="flex flex-wrap gap-1 justify-center" id="alphabetNav">
+        <!-- Hebrew alphabet buttons generated by JavaScript -->
+    <button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: א">א</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ב">ב</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ג">ג</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ד">ד</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ה">ה</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ו">ו</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ז">ז</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ח">ח</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ט">ט</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: י">י</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: כ">כ</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ל">ל</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: מ">מ</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: נ">נ</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ס">ס</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ע">ע</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: פ">פ</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: צ">צ</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ק">ק</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ר">ר</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ש">ש</button><button class="w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer" title="חיפוש: ת">ת</button></div>
+</div></div></div>
+            </div>
+            
+            <div class="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white cursor-pointer hover:from-purple-700 hover:to-pink-700 transition-all" onclick="toggleModule2Panel()">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-sm">📚 589 שאלות קליניות - 32 קטגוריות קליניות</h3>
+                    <span id="module2Arrow" class="text-xl transition-transform">▼</span>
+                </div>
+                <p class="text-xs opacity-80 mt-1"><span style="font-weight: bold;">לחץ להצגת שאלות</span></p>
+            </div>
+            
+            <!-- Collapsible Module 2 Questions Section -->
+            <div id="module2Content" style="display: none;">
+                <!-- Category Filter for Module 2 -->
+                <div class="p-3">
+                    <select id="module2CategoryFilter" onchange="filterModule2Questions()" class="w-full p-2 border-2 border-purple-300 rounded-lg text-right text-sm">
+                        <option value="all">כל הקטגוריות (589 שאלות)</option>
+                        <!-- Categories will be loaded dynamically -->
+                    </select>
+                </div>
+                
+                <!-- Module 2 Questions Display Area (scrollable for infinite scroll) -->
+                <div id="module2Questions" class="p-3 space-y-2 max-h-96 overflow-y-auto"></div>
+            </div>
+            
+        </div>
+
+        <!-- CENTER PANEL: Main Dashboard -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Metrics Bar - REDESIGNED with Search Controls & Query Timer -->
+            <div class="metrics-box flex justify-between items-center">
+                <!-- LEFT: Metrics -->
+                <div class="flex items-center space-x-reverse space-x-6">
+                    <!-- Running Cost Counter -->
+                    <div class="flex items-center bg-green-900/30 px-3 py-1 rounded-lg">
+                        <span class="ml-2 text-green-400">💰</span>
+                        <span class="cost-display font-bold" id="totalCost">$0.0000</span>
+                    </div>
+                    
+                    <!-- Query Execution Timer (NEW!) -->
+                    <div class="flex items-center bg-blue-900/30 px-3 py-1 rounded-lg">
+                        <span class="ml-2 text-blue-400">⚡</span>
+                        <span class="font-bold text-blue-300" id="queryTimer">0.00s</span>
+                    </div>
+                    
+                    <!-- Token Count -->
+                    <div class="flex items-center bg-purple-900/30 px-3 py-1 rounded-lg">
+                        <span class="ml-2 text-purple-400">🔢</span>
+                        <span class="font-bold text-purple-300" id="tokenCount">0</span>
+                        <span class="text-xs text-purple-400 mr-1">tokens</span>
+                    </div>
+                </div>
+                
+                <!-- CENTER: Golden Clock + Search Control Buttons -->
+                <div class="flex items-center gap-3">
+                    <!-- Golden Clock with Date/Time (Always Visible) -->
+                    <div class="flex items-center golden-clock">
+                        <span class="mr-2 clock-icon">🕐</span>
+                        <span id="sessionTimer" class="clock-time">12:39:28 • 05.02.2026</span>
+                    </div>
+                    
+                    <!-- Search Control Buttons (Show during search) -->
+                    <button id="pauseSearchBtn" onclick="pauseSearch()" class="search-control-btn bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
+                        🟡 השהה
+                    </button>
+                    <button id="continueSearchBtn" onclick="continueSearch()" class="search-control-btn bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
+                        🟢 המשך
+                    </button>
+                    <button id="stopSearchBtn" onclick="stopSearch()" class="search-control-btn bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
+                        🔴 עצור
+                    </button>
+                </div>
+                
+                <!-- RIGHT: Reset Button Only -->
+                <div class="flex items-center">
+                    <button onclick="resetSession()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition text-sm font-bold">
+                        🔄 התחל מחדש
+                    </button>
+                </div>
+            </div>
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6">
+                <h1 class="text-lg font-bold text-right">קליניקה למטפל בדיקור ברפואה סינית בסיוע בינה מלאכותית-ד"ר רוני ספיר מומחה לרפואה משלימה</h1>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Multi-Query System -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-sm text-gray-600">עד 3 שאלות בבת אחת</span>
+                        <label class="block text-lg font-bold">🔍 חיפוש רב-שאלות</label>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="query-box" id="queryBox1">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2 text-right">שאלה 1 (חובה)</label>
+                            <input type="text" id="searchInput1" placeholder="תסמין או מצב עיקרי..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right" dir="rtl" oninput="updateQueryBox(1)">
+                        </div>
+
+                        <div class="query-box" id="queryBox2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2 text-right">שאלה 2 (אופציונלי)</label>
+                            <input type="text" id="searchInput2" placeholder="תסמין נוסף או מצב קשור..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right" dir="rtl" oninput="updateQueryBox(2)">
+                        </div>
+
+                        <div class="query-box" id="queryBox3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2 text-right">שאלה 3 (אופציונלי)</label>
+                            <input type="text" id="searchInput3" placeholder="תסמין שלישי או נקודת דיקור..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right" dir="rtl" oninput="updateQueryBox(3)">
+                        </div>
+
+                        <div class="query-box" id="queryBox4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2 text-right">🎤 שאלה חופשית (טקסט או קול)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="searchInput4" placeholder="הקלד שאלה חופשית או לחץ על המיקרופון..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right" dir="rtl" oninput="updateQueryBox(4)">
+                                <button onclick="startVoiceInput(4)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold transition">
+                                    🎤
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="clearAllQueries()" class="px-6 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition">
+                            נקה הכל
+                        </button>
+                        <button onclick="performMultiQuery()" class="run-query-button flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black hover:from-blue-700 hover:to-indigo-700 transition text-xl shadow-lg">
+                            🔍 הרץ חיפוש
+                        </button>
+                        <button id="pauseButton" onclick="togglePause()" class="pause-button hidden px-6 py-4 rounded-xl transition">
+                            ⏸️ השהה
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Queries Display -->
+                <div id="activeQueries" class="mb-6"></div>
+
+                <!-- Report Options -->
+                <div id="reportOptions" class="mb-6 hidden">
+                    <div class="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                        <h4 class="font-bold mb-3 text-right">📊 רמת פירוט הדוח:</h4>
+                        <div class="flex gap-4 justify-end">
+                            <label class="flex items-center cursor-pointer">
+                                <span class="ml-2">📄 דוח מפורט מלא</span>
+                                <input type="radio" name="reportDetail" value="full" checked="" onchange="toggleReportDetail()" class="ml-2">
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <span class="ml-2">📝 נושאים קצרים</span>
+                                <input type="radio" name="reportDetail" value="short" onchange="toggleReportDetail()" class="ml-2">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" class="mt-6"></div>
+
+                <!-- Share Buttons -->
+                <div id="shareButtons" class="mt-6 hidden">
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="ExportModule.show({title: &#39;ייצוא דו״ח AI&#39;, subject: &#39;דו״ח אבחון TCM&#39;})" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white px-6 py-3 rounded-lg font-semibold transition">
+                            📤 ייצוא דו"ח
+                        </button>
+                        <button onclick="ExportModule.print()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                            🖨️ הדפס
+                        </button>
+                        <button onclick="ExportModule.whatsapp(&#39;דו״ח אבחון TCM&#39;)" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                            💬 וואטסאפ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fallback -->
+                <div id="fallbackBrowser" class="hidden mt-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
+                    <div class="flex items-start mb-3">
+                        <div class="text-right flex-1">
+                            <h4 class="font-bold text-orange-800">⚠️ חיפוש חיצוני ברשת</h4>
+                            <p class="text-sm text-orange-700">לא נמצאו תוצאות במאגר הידע המאומת שלך. מחפש במקורות ציבוריים...</p>
+                            <p class="text-xs text-orange-600 mt-1">
+                                <strong>אזהרה:</strong> תוצאות ממקורות אינטרנט חייבות להיבדק בקפידה על ידי המטפל. לא ממאגר הידע המאומת שלך.
+                            </p>
+                        </div>
+                    </div>
+                    <div id="fallbackResults" class="bg-white p-4 rounded-lg border border-orange-300 mt-3 text-right"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: 3 Modules ONLY (appears on RIGHT side of screen) -->
+
+        <div class="right-panel bg-gray-50 border-l">
+            <div class="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white sticky top-0 z-10">
+                <h3 class="font-bold text-sm text-right">🎯 מודולים קליניים</h3>
+            </div>
+            
+            <!-- Module 1: DR Roni Points Database (341 Points) -->
+            <div class="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>📍</span>
+                    <span>נקודות דיקור</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-3 opacity-90">341 נקודות • 14 מרידיאנים</p>
+                <button onclick="toggleDrRoniPoints()" class="block w-full bg-white text-blue-600 font-bold py-2 px-3 rounded-lg hover:bg-blue-50 transition text-center text-sm">
+                    <span id="drRoniToggle">🔽</span> פתח מאגר
+                </button>
+                <div id="drRoniDropdown" class="mt-3 space-y-1 max-h-48 overflow-y-auto hidden">
+                    <div class="text-white text-center text-xs py-3">טוען נקודות...</div>
+                </div>
+            </div>
+
+            <!-- NEW: Body Images Gallery (17 Anatomical Images) -->
+            <div class="p-4 bg-gradient-to-br from-green-500 to-teal-600 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>📷</span>
+                    <span>גלריית תמונות</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-1 opacity-90">חלקי גוף עם נקודות דיקור</p>
+                <p class="text-white text-xs text-center mb-3 opacity-90">17 תמונות אנטומיות</p>
+                <button onclick="BodyImages.show()" class="block w-full bg-white text-green-600 font-bold py-2 px-3 rounded-lg hover:bg-green-50 transition text-center text-sm">
+                    🔽 פתח גלריה
+                </button>
+            </div>
+
+            <!-- Module 2: Zang-Fu Syndromes (11 Syndromes) -->
+            <div class="p-4 bg-gradient-to-br from-purple-500 to-pink-600 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>🏥</span>
+                    <span>תסמונות זאנג-פו</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-3 opacity-90">11 תסמונות • אבחון AI</p>
+                <button onclick="toggleZangFuSyndromes()" class="block w-full bg-white text-purple-600 font-bold py-2 px-3 rounded-lg hover:bg-purple-50 transition text-center text-sm">
+                    <span id="zangfuToggle">🔽</span> פתח תסמונות
+                </button>
+                <div id="zangfuDropdown" class="mt-3 space-y-1 max-h-48 overflow-y-auto hidden">
+                    <div class="text-white text-center text-xs py-3">טוען תסמונות...</div>
+                </div>
+            </div>
+
+            <!-- COMBINED: Yin-Yang Comprehensive Module -->
+            <div class="p-4 bg-gradient-to-br from-purple-600 to-indigo-700 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>☯️</span>
+                    <span>יין-יאנג מקיף</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-3 opacity-90">אבחון • הערכה • ניתוח</p>
+                <div class="flex flex-col gap-2">
+                    <button onclick="toggleClinicalSymptoms()" class="w-full bg-white text-purple-600 font-bold py-2 rounded-lg hover:bg-purple-50 transition text-center text-sm">
+                        <span id="clinicalToggle">🔽</span> אבחון קליני (52 שאלות)
+                    </button>
+                    <div id="clinicalDropdown" class="mt-2 space-y-1 max-h-48 overflow-y-auto hidden bg-white/10 rounded-lg p-2">
+                        <div class="text-white text-center text-xs py-3">טוען שאלות...</div>
+                    </div>
+                    <button onclick="showYinYang()" class="w-full bg-white text-indigo-600 font-bold py-2 rounded-lg hover:bg-indigo-50 transition text-center text-sm">
+                        ☯️ הערכת יין-יאנג (11 שאלות)
+                    </button>
+                    <button onclick="showYinYangResults()" class="w-full bg-white text-pink-600 font-bold py-2 rounded-lg hover:bg-pink-50 transition text-center text-sm">
+                        📊 ניתוח תוצאות
+                    </button>
+                </div>
+            </div>
+
+            <!-- Module: Pulse & Tongue Gallery -->
+            <div class="p-4 bg-gradient-to-br from-red-500 to-pink-600 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>🫀</span>
+                    <span>גלריית דופק ולשון</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-3 opacity-90">דופק • לשון • תמונות גוף</p>
+                <div class="flex flex-col gap-2">
+                    <button onclick="showPulseGallery()" class="w-full bg-white text-red-600 font-bold py-2 rounded-lg hover:bg-red-50 transition text-center text-sm">
+                        💗 דפוסי דופק
+                    </button>
+                    <button onclick="showTongueGallery()" class="w-full bg-white text-pink-600 font-bold py-2 rounded-lg hover:bg-pink-50 transition text-center text-sm">
+                        👅 ממצאי לשון
+                    </button>
+                    <button onclick="BodyImages.showTongue();" class="w-full bg-white text-green-600 font-bold py-2 rounded-lg hover:bg-green-50 transition text-center text-sm">
+                        📷 תמונת לשון
+                    </button>
+                </div>
+            </div>
+
+            <!-- Module TCM: Visual Tools (Meridian, Ear, Anatomy) -->
+            <div class="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 m-3 rounded-xl shadow-lg">
+                <h4 class="text-white font-bold text-center mb-2 text-lg flex items-center justify-center gap-2">
+                    <span>🎯</span>
+                    <span>כלי הדמיה TCM</span>
+                </h4>
+                <p class="text-white text-xs text-center mb-3 opacity-90">מרידיאנים • אוזן • אנטומיה • גוף</p>
+                <div class="flex flex-col gap-2">
+                    <button onclick="TCMVisuals.showMeridian()" class="w-full bg-white text-blue-600 font-bold py-2 rounded-lg hover:bg-blue-50 transition text-center text-sm">
+                        🌊 מפת מרידיאנים
+                    </button>
+                    <button onclick="TCMVisuals.showEar()" class="w-full bg-white text-purple-600 font-bold py-2 rounded-lg hover:bg-purple-50 transition text-center text-sm">
+                        👂 מפת אוזן
+                    </button>
+                    <button onclick="TCMVisuals.showAnatomy()" class="w-full bg-white text-red-600 font-bold py-2 rounded-lg hover:bg-red-50 transition text-center text-sm">
+                        🦴 שכבות אנטומיה
+                    </button>
+                    <button onclick="BodyImages.show()" class="w-full bg-white text-green-600 font-bold py-2 rounded-lg hover:bg-green-50 transition text-center text-sm">
+                        📷 תמונות גוף
+                    </button>
+                </div>
+            </div>
+
+            <!-- Module 4: Training Syllabus -->
+            <div class="training-syllabus-box">
+                <div class="training-header">
+                    <div class="training-title" dir="rtl">
+                        <span>🎓</span>
+                        <span>סילבוס מקצועי</span>
+                    </div>
+                    <span class="training-toggle-icon" onclick="toggleTrainingSyllabus()">
+                        🔽
+                    </span>
+                </div>
+                
+                <div class="training-stats" dir="rtl">
+                    <div style="font-weight: bold;">📚 48 נושאי לימוד</div>
+                    <div style="font-size: 11px; opacity: 0.9; margin-top: 5px;">
+                        23 דופק • 20 לשון • 5 אלמנטים
+                    </div>
+                </div>
+                
+                <button class="training-button" onclick="openTrainingFullView()">
+                    פתח מדריך מלא
+                </button>
+                
+                <div class="training-content" id="trainingContent">
+                    <!-- Filters -->
+                    <div class="training-filters">
+                        <button class="training-filter-btn active" onclick="filterTraining(&#39;all&#39;)">
+                            הכל
+                        </button>
+                        <button class="training-filter-btn" onclick="filterTraining(&#39;pulse&#39;)">
+                            דופק
+                        </button>
+                        <button class="training-filter-btn" onclick="filterTraining(&#39;tongue&#39;)">
+                            לשון
+                        </button>
+                        <button class="training-filter-btn" onclick="filterTraining(&#39;elements&#39;)">
+                            אלמנטים ⭐
+                        </button>
+                    </div>
+                    
+                    <!-- Search -->
+                    <input type="text" class="training-search-box" id="trainingSearchBox" placeholder="חפש במדריך..." oninput="searchTraining()">
+                    
+                    <!-- Loading -->
+                    <div id="trainingLoading" style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 28px;">🔄</div>
+                        <div style="margin-top: 10px; font-size: 12px;">טוען...</div>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div id="trainingResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/yinyang.js"></script>
+    <script src="js/gallery.js"></script>
+
+</body>
+</html>
