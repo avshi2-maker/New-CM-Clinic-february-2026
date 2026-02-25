@@ -580,7 +580,7 @@ function openPatient(id) {
       </div>
 
       <div class="action-row">
-        <button class="pa-btn pa-session" onclick="startSession('${id}')">▶️ התחל סשן</button>
+        <button class="pa-btn pa-session" onclick="startSession('${id}')">▶️ התחל טיפול</button>
         <button class="pa-btn pa-whatsapp" onclick="window.open('https://wa.me/${p.phone.replace(/[^0-9]/,'')}?text=${waMsg}','_blank')">💬 WA</button>
         <button class="pa-btn pa-print" onclick="window.print()">🖨️</button>
         <button class="pa-btn pa-edit">✏️ ערוך</button>
@@ -597,17 +597,25 @@ async function loadSosLog(patientId) {
   var dbC = typeof db !== 'undefined' ? db : null;
   if(!dbC) return;
   try {
-    // 1. Check patients.sos_log column
-    var { data: pData } = await dbC.from('patients')
-      .select('sos_log').eq('id', patientId).single();
+    // 1. Check patients.sos_log column — may not exist, ignore 400
+    var pData = null;
+    try {
+      var { data: pd, error: pe } = await dbC.from('patients')
+        .select('sos_log').eq('id', patientId).single();
+      if (!pe) pData = pd;
+    } catch(e) { /* column missing — skip */ }
 
-    // 2. Also check appointments.sos_event for this patient
-    var { data: aptData } = await dbC.from('appointments')
-      .select('sos_event,start_datetime,therapist_name')
-      .eq('patient_id', patientId)
-      .not('sos_event', 'is', null)
-      .order('start_datetime', {ascending:false})
-      .limit(10);
+    // 2. Check appointments.sos_event — may not exist, ignore 400
+    var aptData = null;
+    try {
+      var { data: ad, error: ae } = await dbC.from('appointments')
+        .select('sos_event,start_datetime,therapist_name')
+        .eq('patient_id', patientId)
+        .not('sos_event', 'is', null)
+        .order('start_datetime', {ascending:false})
+        .limit(10);
+      if (!ae) aptData = ad;
+    } catch(e) { /* column missing — skip */ }
 
     var events = [];
     if(pData && pData.sos_log) {
@@ -671,7 +679,14 @@ function closePanel() {
 
 function startSession(id) {
   const p = allPatients.find(x => x.id === id);
-  alert(`🚀 מתחיל סשן עם ${p?.full_name}\nפיצ'ר זה יהיה זמין בבניית מודול הסשנים`);
+  if (!p) return;
+  const complaint = p.chief_complaint || p.current_symptoms || '';
+  const url = 'index.html' +
+    '?from=crm' +
+    '&patient=' + encodeURIComponent(p.full_name || 'מטופל') +
+    '&complaint=' + encodeURIComponent(complaint) +
+    '&apt=' + encodeURIComponent(id);
+  window.open(url, '_blank');
 }
 
 // ── FILTER CONTROLS ───────────────────────────────────────────
