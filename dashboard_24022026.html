@@ -27,6 +27,54 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 .hdr-right{display:flex;gap:12px;align-items:center;}
 .clock{background:rgba(0,0,0,0.25);color:#4adeac;font-family:monospace;
   font-size:16px;font-weight:900;padding:8px 16px;border-radius:10px;letter-spacing:2px;}
+
+/* ── EXTERNAL AI CHAT MENU ─────────────────────────────── */
+.ai-menu-wrap{position:relative;}
+.ai-menu-btn{
+  background:linear-gradient(135deg,#c9a84c,#e8c96e);
+  color:#1a0f00;border:none;border-radius:10px;
+  padding:8px 14px;font-family:'Heebo',sans-serif;
+  font-size:12px;font-weight:900;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 2px 10px rgba(201,168,76,0.4);
+  transition:all 0.2s;
+}
+.ai-menu-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(201,168,76,0.5);}
+.ai-dropdown{
+  position:absolute;top:calc(100% + 8px);left:0;
+  background:white;border-radius:12px;min-width:240px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.2);
+  border:1px solid #e2e8f0;
+  display:none;z-index:9999;overflow:hidden;
+  animation:dropIn 0.15s ease;
+}
+.ai-dropdown.open{display:block;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.ai-drop-title{
+  background:#f8fafc;padding:10px 16px;
+  font-size:10px;font-weight:900;color:#64748b;
+  letter-spacing:2px;border-bottom:1px solid #e2e8f0;
+  font-family:'Heebo',sans-serif;
+}
+.ai-drop-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:13px;
+  font-weight:600;color:#1a1f2e;
+  border-bottom:1px solid #f1f5f9;
+  transition:background 0.15s;text-decoration:none;
+}
+.ai-drop-item:last-child{border-bottom:none;}
+.ai-drop-item:hover{background:#f0fdf9;color:#0d5c63;}
+.ai-drop-item .ai-icon{font-size:18px;width:24px;text-align:center;}
+.ai-drop-item .ai-info{display:flex;flex-direction:column;}
+.ai-drop-item .ai-name{font-weight:900;font-size:12px;}
+.ai-drop-item .ai-desc{font-size:10px;color:#64748b;margin-top:1px;}
+.ai-drop-note{
+  padding:8px 16px;font-size:9px;color:#94a3b8;
+  font-family:'Heebo',sans-serif;background:#fafafa;
+  border-top:1px solid #f1f5f9;text-align:center;
+}
 .date-badge{background:rgba(255,255,255,0.1);color:white;padding:8px 14px;
   border-radius:10px;font-size:12px;font-weight:700;text-align:center;}
 
@@ -277,6 +325,59 @@ body{padding-bottom:52px;}
     <span class="therapist-badge therapist-name-slot" style="display:none;background:rgba(255,255,255,0.2);color:white;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;"></span>
     <div class="date-badge" id="dateDisp">—</div>
     <button class="preg-ref-btn" onclick="openPregRef()">🤰 מדריך הריון</button>
+
+    <!-- ── EXTERNAL AI CHAT MENU ─────────────────────────── -->
+    <div class="ai-menu-wrap">
+      <button class="ai-menu-btn" onclick="toggleAIMenu(event)">
+        🤖 AI חיצוני ▾
+      </button>
+      <div class="ai-dropdown" id="aiDropdown">
+        <div class="ai-drop-title">// כלי AI חיצוניים — נפתחים בלשונית חדשה</div>
+
+        <a class="ai-drop-item" href="https://claude.ai" target="_blank" rel="noopener">
+          <span class="ai-icon">🟠</span>
+          <span class="ai-info">
+            <span class="ai-name">Claude (Anthropic)</span>
+            <span class="ai-desc">ללא הרשמה במצב אורח · מקצועי וארוך טווח</span>
+          </span>
+        </a>
+
+        <a class="ai-drop-item" href="https://chat.openai.com" target="_blank" rel="noopener">
+          <span class="ai-icon">🟢</span>
+          <span class="ai-info">
+            <span class="ai-name">ChatGPT (OpenAI)</span>
+            <span class="ai-desc">GPT-4o · ללא הרשמה בגרסה החופשית</span>
+          </span>
+        </a>
+
+        <a class="ai-drop-item" href="https://gemini.google.com" target="_blank" rel="noopener">
+          <span class="ai-icon">🔵</span>
+          <span class="ai-info">
+            <span class="ai-name">Gemini (Google)</span>
+            <span class="ai-desc">ללא הרשמה · חיבור Google חופשי</span>
+          </span>
+        </a>
+
+        <a class="ai-drop-item" href="https://www.perplexity.ai" target="_blank" rel="noopener">
+          <span class="ai-icon">🔍</span>
+          <span class="ai-info">
+            <span class="ai-name">Perplexity AI</span>
+            <span class="ai-desc">חיפוש + AI · ללא הרשמה · מצוין למחקר</span>
+          </span>
+        </a>
+
+        <a class="ai-drop-item" href="https://copilot.microsoft.com" target="_blank" rel="noopener">
+          <span class="ai-icon">🪟</span>
+          <span class="ai-info">
+            <span class="ai-name">Microsoft Copilot</span>
+            <span class="ai-desc">ללא הרשמה · GPT-4 · חיפוש רשת</span>
+          </span>
+        </a>
+
+        <div class="ai-drop-note">✅ כל הכלים נפתחים בלשונית חדשה — אתה נשאר בדשבורד</div>
+      </div>
+    </div>
+
   <div class="clock" id="clock">00:00:00</div>
   </div>
 </div>
@@ -1425,6 +1526,19 @@ async function loadCurrentTherapist(){
   }catch(e){}
 }
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(loadCurrentTherapist,300);});
+
+// ── EXTERNAL AI MENU TOGGLE ──────────────────────────────────
+function toggleAIMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('aiDropdown');
+  dd.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ai-menu-wrap')) {
+    const dd = document.getElementById('aiDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
 
 </script>
 
