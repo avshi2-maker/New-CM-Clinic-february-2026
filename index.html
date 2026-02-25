@@ -166,13 +166,32 @@
                     </div>
                 </div>
                 
-                <!-- CENTER: Golden Clock + Search Control Buttons -->
+                <!-- CENTER: Golden Clock + SOS + Search Control Buttons -->
                 <div class="flex items-center gap-3">
                     <!-- Golden Clock with Date/Time (Always Visible) -->
                     <div class="flex items-center golden-clock">
                         <span class="mr-2 clock-icon">🕐</span>
                         <span id="sessionTimer" class="clock-time">12:39:28 • 05.02.2026</span>
                     </div>
+
+                    <!-- SOS BUTTON — only visible when launched from CRM -->
+                    <button id="headerSosBtn"
+                        onclick="triggerHeaderSOS()"
+                        style="display:none;
+                               background:linear-gradient(135deg,#7f1d1d,#dc2626);
+                               color:#fca5a5;
+                               border:2px solid #ef4444;
+                               border-radius:8px;
+                               padding:5px 14px;
+                               font-family:'Heebo',sans-serif;
+                               font-size:12px;
+                               font-weight:900;
+                               cursor:pointer;
+                               letter-spacing:1px;
+                               animation:sosPulse 1.5s infinite;
+                               box-shadow:0 0 12px rgba(239,68,68,0.5);">
+                        ⚕️ SOS חירום
+                    </button>
                     
                     <!-- Search Control Buttons (Show during search) -->
                     <button id="pauseSearchBtn" onclick="pauseSearch()" class="search-control-btn bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
@@ -2256,8 +2275,22 @@ function toggleClinicalSymptoms() {
         const body = document.createElement('div');
         body.id = 'bridgeBody';
 
+        // Close (X) button for the whole floating panel
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ סגור';
+        closeBtn.style.cssText = [
+          'float:left;background:none;border:none;cursor:pointer;',
+          'font-size:10px;color:#64748b;font-family:Heebo,sans-serif;',
+          'padding:0;margin-bottom:6px;'
+        ].join('');
+        closeBtn.onclick = function() {
+          const f = document.getElementById('bridgeFloat');
+          if (f) f.remove();
+        };
+        body.appendChild(closeBtn);
+
         const hint = document.createElement('div');
-        hint.style.cssText = 'font-size:9px;color:#64748b;margin-bottom:8px;letter-spacing:0.5px;';
+        hint.style.cssText = 'font-size:9px;color:#64748b;margin-bottom:8px;letter-spacing:0.5px;clear:both;';
         hint.textContent = 'לחץ על בעיה → תועבר לתיבת חיפוש';
         body.appendChild(hint);
 
@@ -2334,7 +2367,146 @@ function toggleClinicalSymptoms() {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes sosPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(239,68,68,0.5); transform: scale(1); }
+  50%     { box-shadow: 0 0 20px rgba(239,68,68,0.9); transform: scale(1.04); }
+}
+
+/* ── SOS OVERLAY ──────────────────────────────────────── */
+#bridgeSosOverlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(60,0,0,0.92);
+  backdrop-filter: blur(4px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Heebo', sans-serif;
+  direction: rtl;
+  animation: toastIn 0.2s ease;
+}
+#bridgeSosOverlay.show { display: flex; }
+.sos-overlay-box {
+  background: linear-gradient(135deg, #1a0000, #3d0000);
+  border: 3px solid #ef4444;
+  border-radius: 20px;
+  padding: 36px 48px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(239,68,68,0.6);
+}
+.sos-overlay-title {
+  font-size: 32px; font-weight: 900;
+  color: #fca5a5; margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.sos-overlay-patient {
+  font-size: 22px; font-weight: 700;
+  color: white; margin-bottom: 24px;
+}
+.sos-overlay-step {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  color: #fecaca;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+.sos-btn-row { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
+.sos-confirm-btn {
+  background: #dc2626; color: white;
+  border: none; border-radius: 10px;
+  padding: 12px 28px; font-size: 15px; font-weight: 900;
+  cursor: pointer; font-family: 'Heebo', sans-serif;
+}
+.sos-close-btn {
+  background: rgba(255,255,255,0.1); color: #fca5a5;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 12px 28px; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Heebo', sans-serif;
+}
 </style>
+
+
+<!-- ── SOS EMERGENCY OVERLAY ──────────────────────────────── -->
+<div id="bridgeSosOverlay">
+  <div class="sos-overlay-box">
+    <div class="sos-overlay-title">🚨 חירום רפואי 🚨</div>
+    <div class="sos-overlay-patient" id="sosOverlayPatient">מטופל</div>
+    <div class="sos-overlay-step">1. הישאר רגוע — אל תזוז מהמטופל</div>
+    <div class="sos-overlay-step">2. התקשר לחירום: <strong style="color:white;font-size:18px;">101</strong></div>
+    <div class="sos-overlay-step">3. שמור על קשר עין עם המטופל</div>
+    <div class="sos-overlay-step">4. אל תסיר מחטים לפני הגעת הצוות</div>
+    <div class="sos-btn-row">
+      <button class="sos-confirm-btn" onclick="saveBridgeSOS()">💾 שמור אירוע + סגור</button>
+      <button class="sos-close-btn" onclick="closeBridgeSOS()">✅ הכל בסדר — סגור</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SOS HEADER BUTTON LOGIC ────────────────────────────────
+function triggerHeaderSOS() {
+  const overlay = document.getElementById('bridgeSosOverlay');
+  overlay.classList.add('show');
+}
+
+function closeBridgeSOS() {
+  document.getElementById('bridgeSosOverlay').classList.remove('show');
+}
+
+async function saveBridgeSOS() {
+  const params = new URLSearchParams(window.location.search);
+  const patient = decodeURIComponent(params.get('patient') || 'מטופל');
+  const aptId   = params.get('apt') || null;
+
+  // Save to Supabase if apt ID available
+  if (aptId && window.supabase) {
+    try {
+      const sb = window.supabase.createClient(
+        'https://iqfglrwjemogoycbzltt.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
+      );
+      await sb.from('appointments').update({
+        sos_event: {
+          triggered_at: new Date().toISOString(),
+          patient_name: patient,
+          source: 'ai_session'
+        }
+      }).eq('id', aptId);
+    } catch(e) { console.warn('SOS save error:', e.message); }
+  }
+
+  closeBridgeSOS();
+
+  // Show confirmation toast
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;' +
+    'background:#7f1d1d;color:#fca5a5;padding:10px 24px;border-radius:10px;' +
+    'font-family:Heebo,sans-serif;font-size:13px;font-weight:700;direction:rtl;' +
+    'border:1px solid #ef4444;';
+  toast.textContent = '🚨 אירוע SOS נשמר עבור ' + patient;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+// ── Show SOS button only when launched from CRM ────────────
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('from') === 'crm' || params.get('patient')) {
+    const btn = document.getElementById('headerSosBtn');
+    if (btn) btn.style.display = 'inline-block';
+    const patient = decodeURIComponent(params.get('patient') || 'מטופל');
+    const el = document.getElementById('sosOverlayPatient');
+    if (el) el.textContent = '👤 ' + patient;
+  }
+})();
+</script>
 
 </body>
 </html>
