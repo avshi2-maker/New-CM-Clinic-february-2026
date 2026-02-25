@@ -103,7 +103,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
 /* ── DETAIL POPUP ── */
 .popup{position:fixed;background:white;border-radius:14px;padding:18px;
   box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:1000;width:270px;display:none;
-  border:1px solid var(--border);animation:popIn 0.15s ease;}
+  border:1px solid var(--border);animation:popIn 0.15s ease;
+  max-height:85vh;overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;}
 @keyframes popIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
 .popup.show{display:block;}
 .pop-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
@@ -614,12 +616,15 @@ function openPopup(apt,e){
   document.getElementById('statusSel').value='';
   const popup=document.getElementById('popup');
   popup.classList.add('show');
-  const margin=10, pw=270, ph=360;
-  let top=Math.min(e.clientY,window.innerHeight-ph-margin);
-  let right=Math.max(margin, window.innerWidth-e.clientX-pw/2);
-  if(right+pw>window.innerWidth-margin) right=margin;
-  popup.style.top=Math.max(margin,top)+'px';
-  popup.style.right=right+'px';
+  const margin=10, pw=270;
+  // Dynamic height based on viewport — popup scrolls internally
+  const maxH = Math.min(window.innerHeight * 0.85, window.innerHeight - margin * 2);
+  popup.style.maxHeight = maxH + 'px';
+  let top = Math.min(e.clientY, window.innerHeight - maxH - margin);
+  let right = Math.max(margin, window.innerWidth - e.clientX - pw / 2);
+  if (right + pw > window.innerWidth - margin) right = margin;
+  popup.style.top  = Math.max(margin, top) + 'px';
+  popup.style.right = right + 'px';
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.popup')&&!e.target.closest('.apt-block'))closePopup();});
 function closePopup(){document.getElementById('popup').classList.remove('show');}
