@@ -2115,22 +2115,20 @@ function toggleClinicalSymptoms() {
 </div>
 
 <script>
-// ── SUPABASE SINGLETON — reuse app.js client, never create new ──
-window._meridianSB = null;
+// ── SUPABASE SINGLETON — lazy, only created when SOS is triggered ──
 function getMeridianSB() {
-  if (window._meridianSB) return window._meridianSB;
-  // Try to reuse existing client exposed by app.js
-  if (window._supabaseClient) { window._meridianSB = window._supabaseClient; return window._meridianSB; }
-  if (window.dbClient)        { window._meridianSB = window.dbClient;        return window._meridianSB; }
-  // Last resort: create once and cache
-  const lib = window.supabase || window.Supabase;
-  if (lib) {
-    window._meridianSB = lib.createClient(
+  // First try to reuse the client app.js already created
+  if (window._supabaseClient) return window._supabaseClient;
+  if (window.dbClient)        return window.dbClient;
+  // Only create new if none exists — cache it
+  if (!window._meridianSB) {
+    const lib = window.supabase || window.Supabase;
+    if (lib) window._meridianSB = lib.createClient(
       'https://iqfglrwjemogoycbzltt.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
     );
   }
-  return window._meridianSB;
+  return window._meridianSB || null;
 }
 
 // ── READ URL PARAMS & ACTIVATE BRIDGE ────────────────────────
