@@ -2115,6 +2115,24 @@ function toggleClinicalSymptoms() {
 </div>
 
 <script>
+// ── SUPABASE SINGLETON — reuse app.js client, never create new ──
+window._meridianSB = null;
+function getMeridianSB() {
+  if (window._meridianSB) return window._meridianSB;
+  // Try to reuse existing client exposed by app.js
+  if (window._supabaseClient) { window._meridianSB = window._supabaseClient; return window._meridianSB; }
+  if (window.dbClient)        { window._meridianSB = window.dbClient;        return window._meridianSB; }
+  // Last resort: create once and cache
+  const lib = window.supabase || window.Supabase;
+  if (lib) {
+    window._meridianSB = lib.createClient(
+      'https://iqfglrwjemogoycbzltt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
+    );
+  }
+  return window._meridianSB;
+}
+
 // ── READ URL PARAMS & ACTIVATE BRIDGE ────────────────────────
 (function() {
   const params = new URLSearchParams(window.location.search);
@@ -2445,13 +2463,7 @@ async function triggerHeaderSOS() {
   if (!container) return;
 
   try {
-    const sb = (window.supabase || window.Supabase)
-      ? (window.supabase || window.Supabase).createClient(
-          'https://iqfglrwjemogoycbzltt.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
-        )
-      : null;
-
+    const sb = getMeridianSB();
     if (!sb) throw new Error('no supabase');
 
     const { data, error } = await sb
@@ -2490,12 +2502,9 @@ async function saveBridgeSOS() {
   const aptId   = params.get('apt') || null;
 
   // Save to Supabase if apt ID available
-  if (aptId && window.supabase) {
+  if (aptId) {
     try {
-      const sb = window.supabase.createClient(
-        'https://iqfglrwjemogoycbzltt.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
-      );
+      const sb = getMeridianSB();
       await sb.from('appointments').update({
         sos_event: {
           triggered_at: new Date().toISOString(),
