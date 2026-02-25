@@ -2152,37 +2152,113 @@ function toggleClinicalSymptoms() {
       const ss = document.getElementById('smartSearchInput');
       if (ss) { ss.value = c; }
 
-      // Add patient name context to searchInput2 if available
-      if (patient) {
-        const s2 = document.getElementById('searchInput2');
-        if (s2 && !s2.value) {
-          s2.value = 'מטופל: ' + decodeURIComponent(patient);
-          s2.dispatchEvent(new Event('input'));
-        }
-      }
+      // ── Build extra issues panel from URL params ─────────────
+      // Pass extra issues as: &issues=symptom1|symptom2|symptom3
+      const issuesParam = params.get('issues');
+      const extraIssues = issuesParam 
+        ? decodeURIComponent(issuesParam).split('|').filter(Boolean)
+        : [];
 
-      // Highlight the run button to draw attention
+      // Highlight the run button
       const runBtn = document.querySelector('.run-query-button');
       if (runBtn) {
         runBtn.style.animation = 'bridgePulse 1.5s 3';
         runBtn.style.boxShadow = '0 0 20px rgba(13,92,99,0.8)';
-        setTimeout(() => {
-          runBtn.style.animation = '';
-          runBtn.style.boxShadow = '';
-        }, 5000);
+        setTimeout(() => { runBtn.style.animation=''; runBtn.style.boxShadow=''; }, 5000);
+      }
+
+      // ── Inject "remaining issues" chip panel ──────────────
+      // Shows ALL intake issues as clickable chips
+      // Therapist clicks any chip → fills next empty query box
+      const allIssues = [c, ...extraIssues].filter(Boolean);
+
+      if (allIssues.length > 1) {
+        const panel = document.createElement('div');
+        panel.id = 'bridgeIssuesPanel';
+        panel.style.cssText = [
+          'direction:rtl;font-family:Heebo,sans-serif;',
+          'background:linear-gradient(135deg,#f0fdf9,#ecfdf5);',
+          'border:2px solid #0d5c63;border-radius:12px;',
+          'padding:12px 16px;margin-bottom:16px;'
+        ].join('');
+
+        const title = document.createElement('div');
+        title.style.cssText = 'font-size:11px;font-weight:900;color:#0d5c63;letter-spacing:2px;margin-bottom:10px;';
+        title.textContent = '📋 בעיות מהאינטייק — לחץ להוסיף לחיפוש';
+        panel.appendChild(title);
+
+        const chips = document.createElement('div');
+        chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
+
+        allIssues.forEach(function(issue, idx) {
+          const chip = document.createElement('span');
+          chip.style.cssText = [
+            'padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;',
+            'cursor:pointer;transition:all 0.2s;user-select:none;',
+            idx === 0
+              ? 'background:#0d5c63;color:white;border:2px solid #0d5c63;' // first = already in box1
+              : 'background:white;color:#0d5c63;border:2px solid #0d5c63;'
+          ].join('');
+          chip.textContent = idx === 0 ? '✅ ' + issue : '➕ ' + issue;
+          chip.title = idx === 0 ? 'כבר בשאלה 1' : 'לחץ להוסיף לתיבת חיפוש';
+
+          if (idx === 0) {
+            chip.style.cursor = 'default';
+            chip.style.opacity = '0.7';
+          } else {
+            chip.onclick = function() {
+              // Find next empty box (1-4)
+              for (let n = 1; n <= 4; n++) {
+                const box = document.getElementById('searchInput' + n);
+                if (box && !box.value.trim()) {
+                  box.value = issue;
+                  box.dispatchEvent(new Event('input'));
+                  box.scrollIntoView({ behavior:'smooth', block:'center' });
+                  box.style.borderColor = '#0d5c63';
+                  setTimeout(() => box.style.borderColor = '', 1500);
+                  chip.style.background = '#0d5c63';
+                  chip.style.color = 'white';
+                  chip.textContent = '✅ ' + issue;
+                  chip.style.cursor = 'default';
+                  chip.onclick = null;
+                  return;
+                }
+              }
+              // All boxes full — flash warning
+              chip.style.background = '#fef3c7';
+              chip.style.borderColor = '#d97706';
+              chip.style.color = '#92400e';
+              chip.textContent = '⚠️ כל התיבות מלאות — נקה תיבה ונסה שוב';
+              setTimeout(() => {
+                chip.style.background = 'white';
+                chip.style.borderColor = '#0d5c63';
+                chip.style.color = '#0d5c63';
+                chip.textContent = '➕ ' + issue;
+              }, 2500);
+            };
+          }
+          chips.appendChild(chip);
+        });
+
+        panel.appendChild(chips);
+
+        // Inject panel above the query boxes
+        const queryArea = document.querySelector('.space-y-3');
+        if (queryArea) queryArea.parentNode.insertBefore(panel, queryArea);
       }
     }
 
     // Show success toast
+    const issueCount = (params.get('issues')||'').split('|').filter(Boolean).length + 1;
     const toast = document.createElement('div');
     toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;' +
       'background:#0d5c63;color:white;padding:12px 20px;border-radius:12px;' +
       'font-family:Heebo,sans-serif;font-size:13px;font-weight:700;direction:rtl;' +
       'border:1px solid #c9a84c;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
       'animation:toastIn 0.4s ease;';
-    toast.textContent = '✅ מטופל טעון — לחץ 🔍 הרץ חיפוש להתחלה';
+    toast.textContent = '✅ ' + decodeURIComponent(patient||'מטופל') + ' — ' + issueCount + ' בעיות טעונות';
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    setTimeout(() => toast.remove(), 5000);
 
   }, 800); // Wait for page modules to load
 

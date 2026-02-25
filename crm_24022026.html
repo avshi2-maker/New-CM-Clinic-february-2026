@@ -680,12 +680,28 @@ function closePanel() {
 function startSession(id) {
   const p = allPatients.find(x => x.id === id);
   if (!p) return;
+
+  // Primary complaint → box 1
   const complaint = p.chief_complaint || p.current_symptoms || '';
+
+  // Extra issues from intake → chips panel
+  const extras = [
+    p.current_symptoms !== complaint ? p.current_symptoms : null,
+    p.previous_conditions || null,
+    p.medications        || null,
+    p.allergies          || null,
+    p.sleep              ? 'שינה: ' + p.sleep : null,
+    p.stress             ? 'לחץ: ' + p.stress + '/10' : null,
+    p.diet               || null,
+  ].filter(Boolean);
+
   const url = 'index.html' +
     '?from=crm' +
-    '&patient=' + encodeURIComponent(p.full_name || 'מטופל') +
+    '&patient='   + encodeURIComponent(p.full_name || 'מטופל') +
     '&complaint=' + encodeURIComponent(complaint) +
-    '&apt=' + encodeURIComponent(id);
+    '&apt='       + encodeURIComponent(id) +
+    (extras.length ? '&issues=' + encodeURIComponent(extras.join('|')) : '');
+
   window.open(url, '_blank');
 }
 
