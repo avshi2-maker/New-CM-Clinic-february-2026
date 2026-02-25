@@ -175,23 +175,7 @@
                     </div>
 
                     <!-- SOS BUTTON — only visible when launched from CRM -->
-                    <button id="headerSosBtn"
-                        onclick="triggerHeaderSOS()"
-                        style="display:none;
-                               background:linear-gradient(135deg,#7f1d1d,#dc2626);
-                               color:#fca5a5;
-                               border:2px solid #ef4444;
-                               border-radius:8px;
-                               padding:5px 14px;
-                               font-family:'Heebo',sans-serif;
-                               font-size:12px;
-                               font-weight:900;
-                               cursor:pointer;
-                               letter-spacing:1px;
-                               animation:sosPulse 1.5s infinite;
-                               box-shadow:0 0 12px rgba(239,68,68,0.5);">
-                        ⚕️ SOS חירום
-                    </button>
+                    <button id="headerSosBtn" onclick="triggerHeaderSOS()" style="display:none;background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fca5a5;border:2px solid #ef4444;border-radius:8px;padding:6px 16px;font-family:Heebo,sans-serif;font-size:12px;font-weight:900;cursor:pointer;letter-spacing:1px;box-shadow:0 0 12px rgba(239,68,68,0.5);">⚕️ SOS חירום</button>
                     
                     <!-- Search Control Buttons (Show during search) -->
                     <button id="pauseSearchBtn" onclick="pauseSearch()" class="search-control-btn bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
@@ -2434,14 +2418,14 @@ function toggleClinicalSymptoms() {
 
 
 <!-- ── SOS EMERGENCY OVERLAY ──────────────────────────────── -->
-<div id="bridgeSosOverlay">
+<div id="bridgeSosOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(60,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;font-family:Heebo,sans-serif;direction:rtl;">
   <div class="sos-overlay-box">
     <div class="sos-overlay-title">🚨 חירום רפואי 🚨</div>
     <div class="sos-overlay-patient" id="sosOverlayPatient">מטופל</div>
-    <div class="sos-overlay-step">1. הישאר רגוע — אל תזוז מהמטופל</div>
-    <div class="sos-overlay-step">2. התקשר לחירום: <strong style="color:white;font-size:18px;">101</strong></div>
-    <div class="sos-overlay-step">3. שמור על קשר עין עם המטופל</div>
-    <div class="sos-overlay-step">4. אל תסיר מחטים לפני הגעת הצוות</div>
+    <!-- Steps loaded dynamically from Supabase sos_protocol table -->
+    <div id="sosStepsContainer">
+      <div class="sos-overlay-step">⏳ טוען פרוטוקול...</div>
+    </div>
     <div class="sos-btn-row">
       <button class="sos-confirm-btn" onclick="saveBridgeSOS()">💾 שמור אירוע + סגור</button>
       <button class="sos-close-btn" onclick="closeBridgeSOS()">✅ הכל בסדר — סגור</button>
@@ -2451,13 +2435,53 @@ function toggleClinicalSymptoms() {
 
 <script>
 // ── SOS HEADER BUTTON LOGIC ────────────────────────────────
-function triggerHeaderSOS() {
+async function triggerHeaderSOS() {
   const overlay = document.getElementById('bridgeSosOverlay');
+  if (!overlay) { alert('⚕️ SOS חירום\nהתקשר לחירום: 101'); return; }
   overlay.classList.add('show');
+
+  // Load protocol steps from Supabase sos_protocol table
+  const container = document.getElementById('sosStepsContainer');
+  if (!container) return;
+
+  try {
+    const sb = (window.supabase || window.Supabase)
+      ? (window.supabase || window.Supabase).createClient(
+          'https://iqfglrwjemogoycbzltt.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
+        )
+      : null;
+
+    if (!sb) throw new Error('no supabase');
+
+    const { data, error } = await sb
+      .from('sos_protocol')
+      .select('step_number, step_text')
+      .eq('is_active', true)
+      .order('step_number');
+
+    if (error || !data || !data.length) throw new Error('empty');
+
+    container.innerHTML = data.map(row =>
+      `<div class="sos-overlay-step">${row.step_number}. ${row.step_text}</div>`
+    ).join('');
+
+  } catch(e) {
+    // ⚠️ CRITICAL FALLBACK — always show steps even if DB fails
+    console.warn('[SOS] Using fallback protocol:', e.message);
+    container.innerHTML = [
+      '1. הישאר רגוע — אל תזוז מהמטופל',
+      '2. התקשר לחירום: 101',
+      '3. שמור על קשר עין עם המטופל',
+      '4. אל תסיר מחטים לפני הגעת הצוות',
+      '5. פתח דלת לכניסת צוות חירום'
+    ].map(t => `<div class="sos-overlay-step">${t}</div>`).join('');
+  }
 }
 
 function closeBridgeSOS() {
-  document.getElementById('bridgeSosOverlay').classList.remove('show');
+  const overlay = document.getElementById('bridgeSosOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 async function saveBridgeSOS() {
