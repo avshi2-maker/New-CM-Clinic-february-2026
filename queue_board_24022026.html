@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח תורים — TCM Clinic</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2">
+// ── VIDEO SESSION LAUNCHER ────────────────────────────────────
+function openVideoSession(aptId, patientName, patientPhone, isFirst) {
+  const today = new Date().toLocaleDateString('he-IL').replace(/\//g,'-');
+  const url = 'video_session_25022026.html' +
+    '?patient=' + encodeURIComponent(patientName || 'מטופל') +
+    '&apt='     + encodeURIComponent(aptId || '') +
+    '&date='    + today +
+    '&phone='   + encodeURIComponent(patientPhone || '') +
+    '&first='   + (isFirst ? 'true' : 'false');
+  window.open(url, '_blank', 'width=1400,height=800');
+}
+
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap');
+:root{
+  --bg:#fdf6e3;--card:#fff;--teal:#0d5c63;--teal-l:#117a84;
+  --gold:#c9933a;--ink:#1a1f2e;--muted:#6b7280;--border:#e2e8f0;
+  --success:#059669;--error:#dc2626;--warn:#d97706;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:16px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.hdr-left h1{font-size:22px;font-weight:900;color:white;}
+.hdr-left p{font-size:12px;color:var(--muted);margin-top:2px;}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.clock-big{font-family:monospace;font-size:26px;font-weight:900;color:#4adeac;letter-spacing:2px;}
+.date-big{font-size:13px;color:var(--muted);text-align:center;margin-top:2px;}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#4adeac;
+  animation:blink 1.5s ease-in-out infinite;display:inline-block;margin-left:6px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr);}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;text-align:center;}
+.stat-n{font-size:30px;font-weight:900;margin-bottom:2px;}
+.stat-l{font-size:11px;color:var(--muted);}
+
+/* THREE PANELS */
+.panels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:1100px){.panels{grid-template-columns:1fr 1fr;}}
+@media(max-width:700px){.panels{grid-template-columns:1fr;}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;}
+.panel-head h2{font-size:14px;font-weight:800;color:var(--teal);}
+.panel-head .count{background:#e8f4f5;border-radius:10px;
+  padding:2px 10px;font-size:11px;font-weight:700;color:var(--teal);}
+.panel-body{padding:12px;}
+
+/* ROOM CARD */
+.room-card{border:1px solid var(--border);border-radius:10px;padding:14px;
+  margin-bottom:10px;position:relative;overflow:hidden;transition:all 0.3s;}
+.room-card::before{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;}
+.room-card.free::before{background:#238636;}
+.room-card.occupied::before{background:var(--gold);}
+.room-card.treatment::before{background:#d29922;}
+.room-card.cleaning::before{background:#8b949e;}
+.rc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rc-num{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:900;color:white;flex-shrink:0;}
+.rc-name{font-size:14px;font-weight:800;color:#1a1f2e;}
+.rc-status{font-size:11px;color:var(--muted);margin-top:1px;}
+.rc-info{font-size:12px;color:#4b5563;line-height:1.7;}
+.rc-timer{font-family:monospace;font-size:13px;font-weight:700;color:var(--teal);}
+.status-chip{display:inline-block;padding:3px 9px;border-radius:6px;
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;}
+.sc-free{background:#d1fae5;color:#065f46;}
+.sc-intake{background:#ede9fe;color:#5b21b6;}
+.sc-treat{background:#fef3c7;color:#92400e;}
+.sc-clean{background:#f3f4f6;color:#374151;}
+.sc-next{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;
+  border-top:1px solid var(--border);}
+
+/* QUEUE ROW */
+.q-row{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border);}
+.q-row:last-child{border-bottom:none;}
+.q-num{width:26px;height:26px;border-radius:50%;background:var(--teal);
+  color:white;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;flex-shrink:0;}
+.q-num.urgent{background:var(--error);}
+.q-info{flex:1;}
+.q-name{font-size:13px;font-weight:800;color:#1a1f2e;}
+.q-sub{font-size:11px;color:#4b5563;}
+.q-wait{font-family:monospace;font-size:12px;color:var(--teal);font-weight:700;}
+.q-actions{display:flex;gap:6px;}
+.qa-btn{padding:5px 10px;border:none;border-radius:6px;font-family:'Heebo',sans-serif;
+  font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.qa-call{background:#d1fae5;color:#065f46;}
+.qa-call:hover{background:#059669;color:white;}
+
+/* THERAPIST ROW */
+.t-row{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border);}
+.t-row:last-child{border-bottom:none;}
+.t-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:900;color:white;flex-shrink:0;}
+.t-name{font-size:13px;font-weight:800;color:#1a1f2e;}
+.t-status{font-size:11px;margin-top:2px;}
+.t-next{font-size:10px;color:var(--muted);margin-top:2px;}
+.t-chip{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;}
+.tc-available{background:#d1fae5;color:#065f46;}
+.tc-intake{background:#ede9fe;color:#5b21b6;}
+.tc-treat{background:#fef3c7;color:#92400e;}
+.tc-break{background:#f3f4f6;color:#6b7280;}
+.tc-away{background:#fee2e2;color:#dc2626;}
+
+/* EMPTY */
+.empty-panel{text-align:center;padding:32px 16px;color:var(--muted);}
+.empty-panel .ico{font-size:36px;margin-bottom:8px;}
+
+/* ACTION BTNS */
+.action-strip{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.as-btn{padding:9px 18px;border:2px solid var(--border);border-radius:8px;
+  background:var(--card);color:var(--ink);font-family:'Heebo',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;
+  text-decoration:none;display:inline-flex;align-items:center;}
+.as-btn:hover{border-color:var(--teal);color:var(--teal);background:#e8f4f5;}
+.as-btn.primary{background:var(--teal);color:white;border-color:var(--teal);}
+
+/* DASHBOARD BACK BUTTON */
+.dash-back{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--gold,#c9933a),#e8a84c);
+  color:white!important;text-decoration:none!important;padding:8px 16px;border-radius:10px;
+  font-family:'Heebo',sans-serif;font-size:12px;font-weight:800;border:none;cursor:pointer;
+  box-shadow:0 3px 12px rgba(201,147,58,0.4);
+  animation:dashPulse 2.5s ease-in-out infinite;}
+.dash-back:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,147,58,0.6);animation:none;}
+@keyframes dashPulse{0%,100%{box-shadow:0 3px 12px rgba(201,147,58,0.4);}50%{box-shadow:0 3px 20px rgba(201,147,58,0.8);}}
+/* THERAPIST NAME BADGE */
+.therapist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);
+  color:white;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;}
+/* FOOTER BACK BAR */
+.footer-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:rgba(10,61,68,0.95);backdrop-filter:blur(8px);
+  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-top:2px solid rgba(201,147,58,0.5);}
+.footer-bar .footer-module{font-size:11px;color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;}
+.footer-bar .footer-user{font-size:11px;color:#4adeac;font-family:'Heebo',sans-serif;font-weight:700;}
+body{padding-bottom:52px;}
+
+/* ════════════════════════════════════════════════════════════
+   SOS SAFETY CHECK — CRITICAL OVERLAY
+   ════════════════════════════════════════════════════════════ */
+#sosOverlay{
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,0.92);
+  align-items:center;justify-content:center;
+  flex-direction:column;
+}
+#sosOverlay.show{display:flex;}
+
+/* ── STEP 1: Safety check ── */
+#sosStep1{
+  background:linear-gradient(160deg,#1a0000,#3d0000);
+  border:3px solid #dc2626;border-radius:24px;
+  padding:40px 44px;max-width:480px;width:90%;
+  text-align:center;
+  animation:sosPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes sosPop{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
+
+.sos-pulse-ring{
+  width:80px;height:80px;border-radius:50%;
+  background:#dc2626;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin:0 auto 20px;
+  box-shadow:0 0 0 0 rgba(220,38,38,0.7);
+  animation:sosPulse 1.4s infinite;
+}
+@keyframes sosPulse{
+  0%{box-shadow:0 0 0 0 rgba(220,38,38,0.7);}
+  70%{box-shadow:0 0 0 24px rgba(220,38,38,0);}
+  100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}
+}
+.sos-title{font-size:22px;font-weight:900;color:#ff4444;
+  font-family:'Heebo',sans-serif;margin-bottom:8px;letter-spacing:0.03em;}
+.sos-sub{font-size:13px;color:#fca5a5;line-height:1.8;
+  margin-bottom:28px;font-family:'Heebo',sans-serif;}
+.sos-patient-name{
+  background:rgba(220,38,38,0.2);border:1px solid #dc2626;
+  border-radius:10px;padding:10px 18px;margin-bottom:28px;
+  font-size:16px;font-weight:900;color:#fca5a5;font-family:'Heebo',sans-serif;
+}
+.sos-btn-safe{
+  width:100%;padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#064e3b,#059669);
+  color:white;font-size:16px;font-weight:900;cursor:pointer;
+  font-family:'Heebo',sans-serif;margin-bottom:12px;
+  transition:all 0.15s;letter-spacing:0.02em;
+}
+.sos-btn-safe:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(5,150,105,0.5);}
+.sos-btn-danger{
+  width:100%;padding:16px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#7f1d1d,#dc2626);
+  color:white;font-size:16px;font-weight:900;cursor:pointer;
+  font-family:'Heebo',sans-serif;
+  animation:dangerPulse 2s infinite;letter-spacing:0.02em;
+}
+@keyframes dangerPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.6);}
+  50%{box-shadow:0 0 0 12px rgba(220,38,38,0);}
+}
+.sos-btn-danger:hover{transform:translateY(-2px);}
+
+/* ── STEP 2: Emergency response ── */
+#sosStep2{
+  background:linear-gradient(160deg,#1a0000,#450a0a);
+  border:3px solid #ff2222;border-radius:24px;
+  padding:36px 40px;max-width:520px;width:92%;
+  text-align:right;direction:rtl;
+  animation:sosPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.sos-emergency-header{
+  display:flex;align-items:center;gap:14px;margin-bottom:20px;
+}
+.sos-siren{font-size:42px;animation:sirenBlink 0.6s infinite alternate;}
+@keyframes sirenBlink{from{opacity:1;transform:scale(1);}to{opacity:0.4;transform:scale(1.15);}}
+.sos-em-title{font-size:20px;font-weight:900;color:#ff4444;font-family:'Heebo',sans-serif;}
+.sos-em-sub{font-size:12px;color:#fca5a5;font-family:'Heebo',sans-serif;margin-top:3px;}
+
+.sos-call-101{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  width:100%;padding:18px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#dc2626,#991b1b);
+  color:white;font-size:20px;font-weight:900;cursor:pointer;
+  font-family:'Heebo',sans-serif;margin-bottom:20px;
+  text-decoration:none;
+  animation:call101Pulse 1s infinite;
+}
+@keyframes call101Pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.8);}
+  50%{box-shadow:0 0 0 16px rgba(220,38,38,0);}
+}
+
+.sos-doc-label{
+  font-size:12px;font-weight:900;color:#fca5a5;
+  font-family:'Heebo',sans-serif;margin-bottom:8px;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+.sos-notes-area{
+  width:100%;padding:14px;border:2px solid #dc2626;
+  border-radius:10px;background:rgba(0,0,0,0.4);
+  color:white;font-family:'Heebo',sans-serif;font-size:13px;
+  line-height:1.6;resize:vertical;min-height:110px;
+  margin-bottom:16px;outline:none;
+}
+.sos-notes-area::placeholder{color:rgba(252,165,165,0.5);}
+.sos-notes-area:focus{border-color:#ff4444;box-shadow:0 0 0 3px rgba(220,38,38,0.25);}
+.sos-meta-row{
+  display:flex;gap:8px;margin-bottom:16px;align-items:center;
+  flex-wrap:wrap;
+}
+.sos-meta-label{font-size:11px;color:#fca5a5;font-family:'Heebo',sans-serif;
+  font-weight:700;white-space:nowrap;}
+.sos-meta-val{font-size:12px;color:white;font-family:'Heebo',sans-serif;
+  background:rgba(220,38,38,0.2);padding:3px 10px;border-radius:6px;}
+.sos-save-btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#1e3a5f,#1d4ed8);
+  color:white;font-size:14px;font-weight:900;cursor:pointer;
+  font-family:'Heebo',sans-serif;margin-bottom:10px;
+  transition:all 0.15s;
+}
+.sos-save-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(29,78,216,0.4);}
+.sos-cancel-btn{
+  width:100%;padding:11px;border:2px solid rgba(255,255,255,0.2);
+  border-radius:12px;background:transparent;
+  color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;
+  font-family:'Heebo',sans-serif;
+}
+.sos-cancel-btn:hover{border-color:rgba(255,255,255,0.4);color:white;}
+.sos-saved-confirm{
+  text-align:center;padding:14px;background:rgba(5,150,105,0.2);
+  border:1px solid #059669;border-radius:10px;
+  color:#4adeac;font-family:'Heebo',sans-serif;font-size:13px;
+  font-weight:700;display:none;margin-bottom:12px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="hdr" style="background:linear-gradient(135deg,#0a3d44,var(--teal));border-radius:16px;padding:18px 24px;margin-bottom:20px;">
+  <div class="hdr-left">
+    <h1>🏥 לוח תורים <span class="live-dot"></span></h1>
+    <p>Queue & Room Board — Real-Time Status</p>
+  </div>
+  <div class="hdr-right">
+    <span class="therapist-badge therapist-name-slot" style="display:none;"></span>
+    <a href="dashboard_24022026.html" class="dash-back">🏠 דשבורד</a>
+    <div>
+      <div class="clock-big" id="clock">00:00:00</div>
+      <div class="date-big" id="dateDisplay">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="action-strip">
+  <a class="as-btn primary" href="appointments_24022026.html">➕ תור חדש</a>
+  <a class="as-btn" href="calendar_24022026.html">📅 לוח שנה</a>
+  <a class="as-btn" href="crm_24022026.html">👥 מטופלים</a>
+  <button class="as-btn" onclick="refreshAll()">🔄 רענן</button>
+  <a class="as-btn" href="dashboard_24022026.html">🏠 ראשי</a>
+  <span style="margin-right:auto;font-size:12px;color:var(--muted);">מתעדכן אוטומטית כל 30 שניות</span>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="stTotal" style="color:#4adeac;">0</div><div class="stat-l">תורים היום</div></div>
+  <div class="stat"><div class="stat-n" id="stWaiting" style="color:#fbbf24;">0</div><div class="stat-l">ממתינים</div></div>
+  <div class="stat"><div class="stat-n" id="stInTreat" style="color:#c084fc;">0</div><div class="stat-l">בטיפול</div></div>
+  <div class="stat"><div class="stat-n" id="stCompleted" style="color:#6b7280;">0</div><div class="stat-l">הושלמו</div></div>
+  <div class="stat"><div class="stat-n" id="stFreeRooms" style="color:#34d399;">0</div><div class="stat-l">חדרים פנויים</div></div>
+</div>
+
+<!-- THREE PANELS -->
+<div class="panels">
+
+  <!-- ROOMS PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>🚪 סטטוס חדרים</h2>
+      <span class="count" id="roomCount">—</span>
+    </div>
+    <div class="panel-body" id="roomsPanel">
+      <div class="empty-panel"><div class="ico">🔄</div>טוען...</div>
+    </div>
+  </div>
+
+  <!-- QUEUE PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>⏳ תור ממתין</h2>
+      <span class="count" id="queueCount">—</span>
+    </div>
+    <div class="panel-body" id="queuePanel">
+      <div class="empty-panel"><div class="ico">🔄</div>טוען...</div>
+    </div>
+  </div>
+
+  <!-- THERAPISTS PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>🧑‍⚕️ סטטוס מטפלים</h2>
+      <span class="count" id="therapistCount">—</span>
+    </div>
+    <div class="panel-body" id="therapistsPanel">
+      <div class="empty-panel"><div class="ico">🔄</div>טוען...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+let db = null;
+function getDB(){if(!db){const s=window.supabase||window.Supabase;if(s)db=s.createClient(SUPABASE_URL,SUPABASE_KEY);}return db;}
+
+let rooms=[], therapists=[], todayApts=[];
+
+// ── CLOCK ─────────────────────────────────────────────────────
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+  document.getElementById('dateDisplay').textContent=
+    n.toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+setInterval(updateClock,1000); updateClock();
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async()=>{
+  await refreshAll();
+  // auto-refresh every 30s
+  setInterval(refreshAll, 30000);
+  // Supabase realtime
+  const _rtdb=getDB(); if(!_rtdb) return; _rtdb.channel('appointments-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'appointments'},()=>refreshAll())
+    .subscribe();
+});
+
+async function refreshAll(){
+  await Promise.all([loadRooms(), loadTherapists(), loadTodayApts()]);
+  renderAll();
+}
+
+async function loadRooms(){
+  try{const{data}=await getDB().from('rooms').select('*').order('room_number'); rooms=data||[];}
+  catch(e){rooms=[];}
+}
+async function loadTherapists(){
+  try{const{data}=await getDB().from('therapists').select('*').order('full_name'); therapists=data||[];}
+  catch(e){therapists=[];}
+}
+async function loadTodayApts(){
+  const today=new Date().toISOString().split('T')[0];
+  try{
+    const{data}=await getDB().from('appointments').select('*')
+      .gte('start_datetime',today+'T00:00:00')
+      .lte('start_datetime',today+'T23:59:59')
+      .not('status','in','("cancelled")')
+      .order('start_datetime');
+    todayApts=data||[];
+  }catch(e){todayApts=[];}
+}
+
+function renderAll(){
+  renderStats();
+  renderRooms();
+  renderQueue();
+  renderTherapists();
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function renderStats(){
+  document.getElementById('stTotal').textContent=todayApts.length;
+  document.getElementById('stWaiting').textContent=
+    todayApts.filter(a=>a.status==='checkedIn').length;
+  document.getElementById('stInTreat').textContent=
+    todayApts.filter(a=>a.status==='inTreatment'||a.status==='inIntake').length;
+  document.getElementById('stCompleted').textContent=
+    todayApts.filter(a=>a.status==='completed').length;
+  // rooms free = rooms not in active appointment
+  const busyRooms=new Set(todayApts
+    .filter(a=>['inTreatment','inIntake','checkedIn'].includes(a.status))
+    .map(a=>a.room_id).filter(Boolean));
+  document.getElementById('stFreeRooms').textContent=
+    rooms.filter(r=>!busyRooms.has(r.id)).length;
+}
+
+// ── ROOMS ─────────────────────────────────────────────────────
+function renderRooms(){
+  const el=document.getElementById('roomsPanel');
+  document.getElementById('roomCount').textContent=rooms.length+' חדרים';
+  if(rooms.length===0){
+    el.innerHTML=`<div class="empty-panel"><div class="ico">🚪</div>אין חדרים רשומים<br><a href="rooms_manager_24022026.html" style="color:#4adeac;">הוסף חדרים</a></div>`;
+    return;
+  }
+  const now=new Date();
+  el.innerHTML=rooms.map(r=>{
+    const activeApt=todayApts.find(a=>a.room_id===r.id &&
+      ['inTreatment','inIntake','checkedIn'].includes(a.status));
+    const nextApt=todayApts.find(a=>a.room_id===r.id &&
+      a.status==='booked' && new Date(a.start_datetime)>now);
+
+    let statusClass='free', chipHtml=`<span class="status-chip sc-free">✅ פנוי</span>`;
+    let infoHtml='';
+
+    if(activeApt){
+      statusClass=activeApt.status==='inTreatment'?'treatment':'occupied';
+      const stateLabel={checkedIn:'הגיע — ממתין',inIntake:'בקבלה',inTreatment:'בטיפול'}[activeApt.status]||activeApt.status;
+      chipHtml=`<span class="status-chip ${activeApt.status==='inTreatment'?'sc-treat':'sc-intake'}">${stateLabel}</span>`;
+      const elapsed=Math.floor((now-new Date(activeApt.check_in_time||activeApt.start_datetime))/60000);
+      const endTime=new Date(activeApt.end_datetime);
+      infoHtml=`
+        <div class="rc-info">
+          <div>👤 ${activeApt.patient_name||'—'}</div>
+          <div>🧑‍⚕️ ${activeApt.therapist_name||'—'}</div>
+          <div>💆 ${activeApt.service_name||'—'}</div>
+        </div>
+        <div class="rc-timer">⏱ ${elapsed} דק׳ | סיום: ${String(endTime.getHours()).padStart(2,'0')}:${String(endTime.getMinutes()).padStart(2,'0')}</div>
+        <div class="rc-info" style="margin-top:8px;display:flex;gap:8px;">
+          <button data-apt-id="${activeApt.id}" onclick="sosCheckFromBtn(this)"
+            style="background:linear-gradient(135deg,#3d0000,#7f1d1d);color:#fca5a5;border:2px solid #dc2626;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;animation:dangerPulse 2s infinite;">⚕️ SOS</button>
+          <button onclick="openVideoSession('${activeApt.id}','${activeApt.patient_name||''}','${activeApt.patient_phone||''}',${activeApt.is_first_visit||false})"
+            style="background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;">🎥 וידאו</button>
+          <button onclick="updateStatus('${activeApt.id}','completed')"
+            style="background:#0d2818;color:#4adeac;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;">✅ סיים</button>
+        </div>`;
+    }
+
+    const nextHtml=nextApt?`<div class="sc-next">הבא: ${nextApt.patient_name} — ${new Date(nextApt.start_datetime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</div>`:'';
+
+    return `<div class="room-card ${statusClass}">
+      <div class="rc-top">
+        <div class="rc-num" style="background:${r.calendar_color||'#0d5c63'}">${r.room_number||'?'}</div>
+        <div>
+          <div class="rc-name">${r.name}</div>
+          <div class="rc-status">${chipHtml}</div>
+        </div>
+      </div>
+      ${infoHtml}
+      ${nextHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── QUEUE ─────────────────────────────────────────────────────
+function renderQueue(){
+  const el=document.getElementById('queuePanel');
+  const waiting=todayApts
+    .filter(a=>a.status==='checkedIn')
+    .sort((a,b)=>new Date(a.check_in_time||a.start_datetime)-new Date(b.check_in_time||b.start_datetime));
+  const upcoming=todayApts
+    .filter(a=>a.status==='booked'&&new Date(a.start_datetime)>new Date())
+    .sort((a,b)=>new Date(a.start_datetime)-new Date(b.start_datetime))
+    .slice(0,5);
+
+  document.getElementById('queueCount').textContent=(waiting.length+upcoming.length)+' תורים';
+
+  if(waiting.length===0&&upcoming.length===0){
+    el.innerHTML=`<div class="empty-panel"><div class="ico">☕</div>אין ממתינים כרגע</div>`;
+    return;
+  }
+
+  let html='';
+  if(waiting.length>0){
+    html+=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.05em;">🟡 ממתינים לחדר</div>`;
+    html+=waiting.map((a,i)=>{
+      const waited=Math.floor((new Date()-new Date(a.check_in_time||a.start_datetime))/60000);
+      return `<div class="q-row">
+        <div class="q-num ${waited>30?'urgent':''}">${i+1}</div>
+        <div class="q-info">
+          <div class="q-name">${a.patient_name||'—'}</div>
+          <div class="q-sub">🧑‍⚕️ ${a.therapist_name||'—'} | 💆 ${a.service_name||'—'}</div>
+        </div>
+        <div>
+          <div class="q-wait">${waited} דק׳</div>
+          <div class="q-actions" style="margin-top:4px;">
+            <button class="qa-btn qa-call" onclick="callPatient('${a.id}','${a.patient_name}')">📢 קרא</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if(upcoming.length>0){
+    html+=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:12px 0 8px;letter-spacing:0.05em;">📅 עומדים להגיע</div>`;
+    html+=upcoming.map(a=>`
+      <div class="q-row">
+        <div class="q-num" style="background:#30363d;color:var(--muted);">
+          ${new Date(a.start_datetime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="q-info">
+          <div class="q-name">${a.patient_name||'—'}</div>
+          <div class="q-sub">🧑‍⚕️ ${a.therapist_name||'—'} | 🚪 ${a.room_name||'—'}</div>
+        </div>
+        <div>
+          <button class="qa-btn qa-call" style="background:#1c1a2e;color:#a78bfa;"
+            onclick="updateStatus('${a.id}','checkedIn')">✅ הגיע</button>
+        </div>
+      </div>`).join('');
+  }
+
+  el.innerHTML=html;
+}
+
+// ── THERAPISTS ────────────────────────────────────────────────
+function renderTherapists(){
+  const el=document.getElementById('therapistsPanel');
+  document.getElementById('therapistCount').textContent=therapists.length+' מטפלים';
+  if(therapists.length===0){
+    el.innerHTML=`<div class="empty-panel"><div class="ico">🧑‍⚕️</div>אין מטפלים רשומים<br><a href="therapist_intake_24022026.html" style="color:#4adeac;">הוסף מטפל</a></div>`;
+    return;
+  }
+  const colors=['#0d5c63','#7c3aed','#c9933a','#dc2626','#059669'];
+  el.innerHTML=therapists.map((t,i)=>{
+    const activeApt=todayApts.find(a=>a.therapist_id===t.id&&['inTreatment','inIntake','checkedIn'].includes(a.status));
+    const nextApt=todayApts.find(a=>a.therapist_id===t.id&&a.status==='booked'&&new Date(a.start_datetime)>new Date());
+    const initials=(t.full_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color=t.calendar_color||colors[i%colors.length];
+    let chipCls='tc-available', chipTxt='זמין';
+    if(activeApt){
+      chipCls=activeApt.status==='inTreatment'?'tc-treat':'tc-intake';
+      chipTxt=activeApt.status==='inTreatment'?'בטיפול':'בקבלה';
+    }
+    return `<div class="t-row">
+      <div class="t-avatar" style="background:${color}">${initials}</div>
+      <div style="flex:1;">
+        <div class="t-name">${t.full_name}</div>
+        <div class="t-status"><span class="t-chip ${chipCls}">${chipTxt}</span></div>
+        ${activeApt?`<div class="t-next">👤 ${activeApt.patient_name} | 🚪 ${activeApt.room_name||'—'}</div>`:''}
+        ${nextApt&&!activeApt?`<div class="t-next">הבא: ${nextApt.patient_name} — ${new Date(nextApt.start_datetime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</div>`:''}
+      </div>
+      <div style="font-size:12px;color:var(--muted);">
+        ${todayApts.filter(a=>a.therapist_id===t.id).length} תורים
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────
+async function updateStatus(aptId, newStatus){
+  const update={status:newStatus};
+  if(newStatus==='checkedIn') update.check_in_time=new Date().toISOString();
+  if(newStatus==='inTreatment') update.treatment_end_time=null;
+  if(newStatus==='completed') update.treatment_end_time=new Date().toISOString();
+  await getDB().from('appointments').update(update).eq('id',aptId);
+  await refreshAll();
+}
+
+function callPatient(aptId, name){
+  alert(`📢 קורא ל: ${name}\nאנא בוא/י לחדר הקבלה`);
+  // In production: send WhatsApp/SMS
+}
+
+// ── THERAPIST NAME LOADER ────────────────────────────────────────
+async function loadCurrentTherapist(){
+  try{
+    // 1. Check sessionStorage first
+    const saved=sessionStorage.getItem('tcm_current_therapist');
+    let name='';
+    const db=typeof getDB==='function'?getDB():null;
+    if(db){
+      if(saved){
+        const{data}=await getDB().from('therapists').select('full_name').eq('id',saved).single();
+        if(data)name=data.full_name;
+      }
+      if(!name){
+        const{data}=await getDB().from('therapists').select('full_name,id').order('full_name').limit(1);
+        if(data&&data.length){name=data[0].full_name;sessionStorage.setItem('tcm_current_therapist',data[0].id);}
+      }
+    }
+    if(name){
+      document.querySelectorAll('.therapist-name-slot').forEach(el=>{el.textContent='👤 '+name;el.style.display='inline-flex';});
+      document.querySelectorAll('.footer-user').forEach(el=>el.textContent='👤 מחובר: '+name);
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(loadCurrentTherapist,300);});
+
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SOS SAFETY CHECK OVERLAY — TWO STEPS
+     ═══════════════════════════════════════════════════════════ -->
+<div id="sosOverlay">
+
+  <!-- STEP 1: Physical Check -->
+  <div id="sosStep1">
+    <div class="sos-pulse-ring">⚕️</div>
+    <div class="sos-title">⛔ עצור — בדיקה פיזית חובה</div>
+    <div class="sos-sub">
+      לפני כל טיפול, המטפל חייב לבצע בדיקה פיזית קצרה.<br>
+      <strong>האם המטופל נראה בסדר לחלוטין?</strong>
+    </div>
+    <div class="sos-patient-name" id="sosPatientName">שם מטופל</div>
+    <button class="sos-btn-safe" onclick="safetyConfirmed()">
+      ✅ בדקתי — המטופל בסדר, המשך לטיפול
+    </button>
+    <button class="sos-btn-danger" onclick="showSosStep2()">
+      🚨 זיהיתי חשש / סכנה — אל תטפל!
+    </button>
+  </div>
+
+  <!-- STEP 2: Emergency Response -->
+  <div id="sosStep2" style="display:none;">
+    <div class="sos-emergency-header">
+      <div class="sos-siren">🚨</div>
+      <div>
+        <div class="sos-em-title">מצב חירום — פעל עכשיו!</div>
+        <div class="sos-em-sub">אל תטפל — תעד — הזמן עזרה אם נחוץ</div>
+      </div>
+    </div>
+
+    <a href="tel:101" class="sos-call-101" id="sos101Btn">
+      📞 <span>חייג 101 — מגן דוד אדום</span>
+    </a>
+
+    <div class="sos-meta-row">
+      <span class="sos-meta-label">מטופל:</span>
+      <span class="sos-meta-val" id="sosMeta1">—</span>
+      <span class="sos-meta-label">שעה:</span>
+      <span class="sos-meta-val" id="sosMeta2">—</span>
+    </div>
+
+    <div class="sos-doc-label">📝 תיעוד — תאר מה קורה עכשיו</div>
+    <textarea class="sos-notes-area" id="sosNotesArea"
+      placeholder="תאר/י בפירוט: מה ראית / שמעת / הרגשת שהעלה חשש...
+דוגמה: המטופל נראה חיוור, מתלונן על כאבים בחזה, נשימה קשה...
+כל פרט חשוב — תיעוד זה יישמר בתיק המטופל."></textarea>
+
+    <div class="sos-saved-confirm" id="sosSavedConfirm">
+      ✅ התיעוד נשמר בתיק המטופל ובלוג הקליניקה
+    </div>
+
+    <button class="sos-save-btn" id="sosSaveBtn" onclick="saveSosEvent()">
+      💾 שמור תיעוד בתיק המטופל
+    </button>
+    <button class="sos-cancel-btn" onclick="closeSosOverlay()">
+      ← חזור (המטופל בסדר — בדיקה חוזרת)
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>

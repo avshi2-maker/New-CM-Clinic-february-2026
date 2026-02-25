@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>וידאו סשן — MERIDIAN TCM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#0d5c63; --primary-light:#e8f5f2; --ink:#1e293b;
+  --border:#e2e8f0; --bg:#f8fafc; --success:#059669; --warn:#f59e0b;
+  --danger:#dc2626; --muted:#64748b; --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;direction:rtl;}
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+#topBar{
+  background:linear-gradient(135deg,#0a3d42,#0d5c63);
+  padding:10px 20px; display:flex; align-items:center; gap:16px;
+  border-bottom:2px solid #0a3d42; z-index:100; position:relative;
+  flex-shrink:0;
+}
+#topBar .logo{color:#4fd1c7;font-size:18px;font-weight:900;letter-spacing:1px;}
+#patientChip{
+  background:rgba(255,255,255,0.12); color:white;
+  padding:4px 14px; border-radius:20px; font-size:13px; font-weight:700;
+}
+#sessionTimer{
+  color:#4fd1c7; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums;
+  background:rgba(0,0,0,0.2); padding:4px 12px; border-radius:8px;
+}
+.top-btn{
+  background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2);
+  padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:'Heebo',sans-serif; transition:all 0.2s;
+}
+.top-btn:hover{background:rgba(255,255,255,0.2);}
+.top-btn.danger{background:rgba(220,38,38,0.3); border-color:#dc2626;}
+.top-btn.success{background:rgba(5,150,105,0.3); border-color:#059669;}
+#topBar .spacer{flex:1;}
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────── */
+#mainLayout{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  height:calc(100vh - 56px);
+}
+
+/* ── JITSI PANEL ─────────────────────────────────────────── */
+#jitsiPanel{position:relative; background:#0a0a0a;}
+#jitsiFrame{width:100%;height:100%;border:none;}
+#jitsiPlaceholder{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:100%; color:white; gap:20px;
+}
+#jitsiPlaceholder .big-icon{font-size:72px;}
+#jitsiPlaceholder h2{font-size:22px; font-weight:900; color:#4fd1c7;}
+#jitsiPlaceholder p{color:#94a3b8; font-size:14px; text-align:center; max-width:300px; line-height:1.6;}
+#startVideoBtn{
+  background:linear-gradient(135deg,#0d5c63,#059669);
+  color:white; border:none; padding:14px 32px; border-radius:12px;
+  font-size:16px; font-weight:900; cursor:pointer; font-family:'Heebo',sans-serif;
+}
+
+/* ── SIDE PANEL ──────────────────────────────────────────── */
+#sidePanel{
+  background:white; border-right:2px solid var(--border);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+
+/* Side tabs */
+#sideTabs{
+  display:flex; border-bottom:2px solid var(--border); flex-shrink:0;
+}
+.s-tab{
+  flex:1; padding:10px 4px; text-align:center; font-size:11px; font-weight:700;
+  color:var(--muted); cursor:pointer; border-bottom:3px solid transparent;
+  transition:all 0.2s; font-family:'Heebo',sans-serif;
+}
+.s-tab.active{color:var(--primary); border-bottom-color:var(--primary); background:var(--primary-light);}
+
+/* Tab content */
+.tab-content{display:none; flex:1; overflow-y:auto; padding:16px;}
+.tab-content.active{display:flex; flex-direction:column; gap:12px;}
+
+/* ── WIZARD ──────────────────────────────────────────────── */
+#wizardProgress{
+  background:var(--primary-light); border-radius:8px; padding:8px 14px;
+  font-size:11px; font-weight:700; color:var(--primary); display:flex;
+  align-items:center; gap:10px;
+}
+#wizardProgressBar{
+  flex:1; height:6px; background:#c7e8e4; border-radius:3px; overflow:hidden;
+}
+#wizardProgressFill{height:100%; background:var(--primary); border-radius:3px; transition:width 0.4s;}
+
+.wiz-question{
+  background:linear-gradient(135deg,#f0fdf9,#e8f5f2);
+  border:2px solid var(--primary); border-radius:12px; padding:16px;
+}
+.wiz-q-num{font-size:10px; font-weight:900; color:var(--primary); margin-bottom:6px; text-transform:uppercase;}
+.wiz-q-text{font-size:15px; font-weight:900; color:var(--ink); margin-bottom:4px; line-height:1.4;}
+.wiz-q-tcm{font-size:10px; color:var(--muted); margin-bottom:12px;}
+.wiz-q-tcm span{background:#e8f5f2; border-radius:4px; padding:2px 6px; font-weight:700;}
+
+/* Answer types */
+.wiz-textarea{
+  width:100%; min-height:70px; padding:10px; border:2px solid var(--border);
+  border-radius:8px; font-family:'Heebo',sans-serif; font-size:13px;
+  resize:vertical; outline:none; transition:border 0.2s;
+}
+.wiz-textarea:focus{border-color:var(--primary);}
+.wiz-options{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+.wiz-opt{
+  background:white; border:2px solid var(--border); border-radius:8px;
+  padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer;
+  font-family:'Heebo',sans-serif; transition:all 0.2s;
+}
+.wiz-opt.selected{background:var(--primary); color:white; border-color:var(--primary);}
+.wiz-slider-row{display:flex; align-items:center; gap:10px;}
+.wiz-slider{flex:1; accent-color:var(--primary);}
+.wiz-slider-val{
+  background:var(--primary); color:white; width:32px; height:32px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:14px; flex-shrink:0;
+}
+.wiz-voice-btn{
+  background:var(--primary-light); border:2px solid var(--primary);
+  color:var(--primary); padding:6px 10px; border-radius:8px;
+  font-size:12px; cursor:pointer; font-family:'Heebo',sans-serif;
+  font-weight:700; margin-top:8px; width:100%;
+}
+.wiz-voice-btn.recording{background:#fee2e2; border-color:var(--danger); color:var(--danger); animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+.wiz-nav{display:flex; gap:8px; margin-top:4px;}
+.wiz-btn{
+  flex:1; padding:10px; border:none; border-radius:10px;
+  font-family:'Heebo',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; transition:all 0.2s;
+}
+.wiz-btn.primary{background:var(--primary); color:white;}
+.wiz-btn.primary:hover{background:#0a4a50;}
+.wiz-btn.secondary{background:var(--bg); color:var(--muted); border:2px solid var(--border);}
+
+/* High stress alert */
+.anxiety-alert{
+  background:linear-gradient(135deg,#fef3c7,#fffbeb);
+  border:2px solid var(--warn); border-radius:10px; padding:12px 14px;
+  font-size:12px; color:#92400e; font-weight:700;
+}
+
+/* TCM summary */
+.tcm-summary{
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border:2px solid #16a34a; border-radius:12px; padding:14px;
+}
+.tcm-summary h3{color:#14532d; font-size:14px; font-weight:900; margin-bottom:10px;}
+.tcm-tag{
+  display:inline-block; background:#16a34a; color:white;
+  padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700;
+  margin:2px;
+}
+.tcm-tag.pattern{background:#0d5c63;}
+.tcm-tag.point{background:#7c3aed;}
+.tcm-tag.flag{background:#dc2626;}
+
+/* ── TRANSCRIPT ──────────────────────────────────────────── */
+#transcriptBox{
+  flex:1; background:var(--bg); border:2px solid var(--border);
+  border-radius:10px; padding:12px; overflow-y:auto;
+  font-size:13px; line-height:1.7; min-height:200px; max-height:300px;
+  color:var(--ink);
+}
+#transcriptBox .t-therapist{color:var(--primary); font-weight:700;}
+#transcriptBox .t-live{color:var(--muted); font-style:italic;}
+#transcriptBox .t-stamp{font-size:10px; color:var(--muted);}
+.rec-controls{display:flex; gap:8px; flex-shrink:0;}
+.rec-btn{
+  flex:1; padding:10px; border:none; border-radius:10px;
+  font-family:'Heebo',sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer;
+}
+.rec-btn.start{background:#059669; color:white;}
+.rec-btn.stop{background:#dc2626; color:white;}
+.rec-btn.copy{background:var(--bg); border:2px solid var(--border); color:var(--ink);}
+#recStatus{
+  text-align:center; font-size:11px; font-weight:700; padding:6px;
+  border-radius:8px; display:none;
+}
+#recStatus.active{display:block; background:#fee2e2; color:#7f1d1d; animation:pulse 2s infinite;}
+
+/* ── NOTES ───────────────────────────────────────────────── */
+#clinicNotes{
+  flex:1; width:100%; border:2px solid var(--border); border-radius:10px;
+  padding:12px; font-family:'Heebo',sans-serif; font-size:13px;
+  line-height:1.7; resize:none; outline:none; min-height:200px;
+}
+#clinicNotes:focus{border-color:var(--primary);}
+.save-note-btn{
+  background:var(--primary); color:white; border:none; padding:10px;
+  border-radius:10px; font-family:'Heebo',sans-serif; font-size:13px;
+  font-weight:700; cursor:pointer; width:100%;
+}
+
+/* ── SHARE PANEL ─────────────────────────────────────────── */
+.share-box{
+  background:var(--primary-light); border:2px solid var(--primary);
+  border-radius:12px; padding:14px;
+}
+.share-box h4{font-size:13px; font-weight:900; color:var(--primary); margin-bottom:10px;}
+.link-row{
+  display:flex; gap:6px; align-items:center;
+  background:white; border:1px solid var(--border); border-radius:8px;
+  padding:8px 12px; font-size:11px; word-break:break-all; color:var(--muted);
+}
+.copy-btn{
+  background:var(--primary); color:white; border:none; padding:6px 12px;
+  border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;
+  flex-shrink:0; font-family:'Heebo',sans-serif;
+}
+.wa-btn{
+  width:100%; background:linear-gradient(135deg,#16a34a,#15803d);
+  color:white; border:none; padding:12px; border-radius:10px;
+  font-family:'Heebo',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; margin-top:8px; display:flex; align-items:center;
+  justify-content:center; gap:8px;
+}
+
+/* ── WIZARD COMPLETE SCREEN ──────────────────────────────── */
+#wizComplete{display:none;}
+#wizComplete.show{display:block;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ─────────────────────────────────────────────── -->
+<div id="topBar">
+  <div class="logo">⚕️ MERIDIAN</div>
+  <div id="patientChip">👤 טוען...</div>
+  <div id="sessionTimer">00:00:00</div>
+  <div class="spacer"></div>
+  <button class="top-btn" onclick="switchTab('wizard')">🧭 אנמנזה</button>
+  <button class="top-btn" onclick="switchTab('transcript')">🎙️ תמלול</button>
+  <button class="top-btn" onclick="switchTab('notes')">📝 הערות</button>
+  <button class="top-btn" onclick="switchTab('share')">📱 שתף</button>
+  <button class="top-btn danger" onclick="endSession()">❌ סיום סשן</button>
+</div>
+
+<!-- ── MAIN LAYOUT ─────────────────────────────────────────── -->
+<div id="mainLayout">
+
+  <!-- Jitsi video -->
+  <div id="jitsiPanel">
+    <div id="jitsiPlaceholder">
+      <div class="big-icon">🎥</div>
+      <h2>סשן וידאו MERIDIAN</h2>
+      <p id="waitingPatientName">לחץ להתחלת הסשן עם המטופל</p>
+      <button id="startVideoBtn" onclick="startVideo()">🚀 התחל שיחת וידאו</button>
+      <p style="color:#64748b;font-size:11px;margin-top:8px;">Powered by Jitsi Meet — ללא הורדה, ללא חשבון</p>
+    </div>
+    <iframe id="jitsiFrame" style="display:none;" allow="camera; microphone; fullscreen; display-capture"></iframe>
+  </div>
+
+  <!-- Side panel -->
+  <div id="sidePanel">
+    <div id="sideTabs">
+      <div class="s-tab active" onclick="switchTab('wizard')" id="tab-wizard">🧭 אנמנזה</div>
+      <div class="s-tab" onclick="switchTab('transcript')" id="tab-transcript">🎙️ תמלול</div>
+      <div class="s-tab" onclick="switchTab('notes')" id="tab-notes">📝 הערות</div>
+      <div class="s-tab" onclick="switchTab('share')" id="tab-share">📱 שתף</div>
+    </div>
+
+    <!-- ══ WIZARD TAB ══════════════════════════════════════════ -->
+    <div class="tab-content active" id="tab-content-wizard">
+
+      <!-- Progress -->
+      <div id="wizardProgress">
+        <span>שאלה <span id="wizStep">1</span> / 10</span>
+        <div id="wizardProgressBar"><div id="wizardProgressFill" style="width:10%"></div></div>
+        <span id="wizPct">10%</span>
+      </div>
+
+      <!-- Question card -->
+      <div class="wiz-question" id="wizCard">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- Nav buttons -->
+      <div class="wiz-nav">
+        <button class="wiz-btn secondary" onclick="wizPrev()" id="wizPrevBtn" style="display:none;">→ הקודם</button>
+        <button class="wiz-btn primary" onclick="wizNext()" id="wizNextBtn">הבא ←</button>
+      </div>
+
+      <!-- Anxiety alert (shown when score > 6) -->
+      <div class="anxiety-alert" id="anxietyAlert" style="display:none;">
+        ⚠️ <strong>ציון חרדה גבוה זוהה</strong><br>
+        שקול: HT7, PC6, Yintang, GV20<br>
+        שאלות נוספות ממשיכות אוטומטית...
+      </div>
+
+      <!-- Complete summary -->
+      <div id="wizComplete">
+        <div class="tcm-summary">
+          <h3>✅ פרופיל TCM ראשוני</h3>
+          <div id="tcmPatterns"></div>
+          <div id="tcmPoints" style="margin-top:8px;"></div>
+          <div id="tcmFlags" style="margin-top:8px;"></div>
+        </div>
+        <button class="wiz-btn primary" style="margin-top:8px;" onclick="saveWizardToSupabase()">
+          💾 שמור אנמנזה ב-Supabase
+        </button>
+        <div id="wizSaveStatus" style="font-size:12px;text-align:center;margin-top:6px;color:var(--muted);"></div>
+      </div>
+
+    </div>
+
+    <!-- ══ TRANSCRIPT TAB ══════════════════════════════════════ -->
+    <div class="tab-content" id="tab-content-transcript">
+      <div class="rec-controls">
+        <button class="rec-btn start" onclick="startTranscript()">🔴 התחל הקלטה</button>
+        <button class="rec-btn stop" onclick="stopTranscript()">⏹️ עצור</button>
+        <button class="rec-btn copy" onclick="copyTranscript()">📋 העתק</button>
+      </div>
+      <div id="storageStatus" style="font-size:10px;color:var(--muted);text-align:center;cursor:pointer;" onclick="checkStorageUsage()">
+        📊 בדוק שימוש אחסון
+      </div>
+      <div id="recStatus">🔴 מקליט... (Chrome בלבד)</div>
+      <div id="transcriptBox">
+        <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">
+          לחץ "התחל הקלטה" לתמלול קולי בזמן אמת.<br>
+          עובד בעברית ב-Chrome בלבד.
+        </div>
+      </div>
+      <button class="save-note-btn" style="background:#7c3aed;" onclick="saveTranscriptToNotes()">
+        📋 שלח תמלול להערות
+      </button>
+    </div>
+
+    <!-- ══ NOTES TAB ══════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-content-notes">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);">הערות קליניות — נשמרות ל-Supabase</div>
+      <textarea id="clinicNotes" placeholder="רשום הערות קליניות, תצפיות, תוכנית טיפול..."></textarea>
+      <button class="save-note-btn" onclick="saveNotes()">💾 שמור הערות</button>
+      <div id="notesSaveStatus" style="font-size:11px;text-align:center;color:var(--muted);"></div>
+    </div>
+
+    <!-- ══ SHARE TAB ══════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-content-share">
+      <div class="share-box">
+        <h4>🔗 קישור לוידאו למטופל</h4>
+        <div class="link-row">
+          <span id="patientLinkText" style="flex:1;word-break:break-all;">טוען...</span>
+          <button class="copy-btn" onclick="copyLink()">העתק</button>
+        </div>
+        <button class="wa-btn" onclick="sendWhatsApp()">
+          <span style="font-size:18px;">📱</span> שלח ב-WhatsApp למטופל
+        </button>
+      </div>
+
+      <div class="share-box" style="background:#fefce8;border-color:var(--warn);">
+        <h4 style="color:#92400e;">📋 הוראות למטופל</h4>
+        <p style="font-size:11px;color:#92400e;line-height:1.7;">
+          1. לחץ על הקישור שקיבלת<br>
+          2. אפשר גישה למצלמה ומיקרופון<br>
+          3. המתן שהמטפל יצטרף<br>
+          ✅ לא נדרש הורדה או חשבון
+        </p>
+      </div>
+
+      <div class="share-box" style="background:#f0f0ff;border-color:#7c3aed;">
+        <h4 style="color:#4c1d95;">📊 סיכום סשן</h4>
+        <div id="sessionSummary" style="font-size:12px;color:#4c1d95;line-height:1.7;">
+          הסשן טרם הסתיים...
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end sidePanel -->
+</div><!-- end mainLayout -->
+
+<script>
+const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+let _db = null;
+function getDB() {
+  if (!_db) { const s = window.supabase || window.Supabase; if (s) _db = s.createClient(SUPABASE_URL, SUPABASE_KEY); }
+  return _db;
+}
+
+// ── URL PARAMS ───────────────────────────────────────────────
+const params   = new URLSearchParams(window.location.search);
+const PATIENT  = params.get('patient') || 'מטופל';
+const APT_ID   = params.get('apt')     || '';
+const DATE_STR = params.get('date')    || new Date().toLocaleDateString('he-IL');
+const IS_FIRST = params.get('first')   === 'true';
+const PATIENT_PHONE = params.get('phone') || '';
+
+// Room name: stable per patient+date
+const ROOM_NAME = 'MERIDIAN-' + PATIENT.replace(/\s+/g,'-') + '-' + (DATE_STR||'').replace(/\//g,'') + (APT_ID ? '-' + APT_ID.substring(0,6) : '');
+const PATIENT_LINK = 'https://meet.ffmuc.net/' + ROOM_NAME;
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('patientChip').textContent = '👤 ' + PATIENT;
+  document.getElementById('waitingPatientName').textContent = 'מטופל: ' + PATIENT;
+  document.getElementById('patientLinkText').textContent = PATIENT_LINK;
+  startTimer();
+  // Load wizard questions from Supabase
+  setTimeout(async function() {
+    const visitType = IS_FIRST ? 'first' : 'followup';
+    await loadWizardQuestions(visitType);
+  }, 600);
+  if (!IS_FIRST) {
+    // Returning patient — switch to 5-question follow-up wizard
+    QUESTIONS.length = 0; // will be filled by loadWizardQuestions('followup')
+    // Update progress bar for returning patient style — keep same element IDs
+    const _wp2 = document.getElementById('wizardProgress');
+    if (_wp2) {
+      _wp2.style.background = '#fffbeb';
+      _wp2.style.borderColor = '#f59e0b';
+      _wp2.querySelector('span') && (_wp2.querySelector('span').textContent = 'שאלה 1 / 5');
+    }
+    const _ws2 = document.getElementById('wizStep'); if(_ws2) _ws2.textContent = '1';
+    const _wf2 = document.getElementById('wizardProgressFill');
+    if(_wf2) { _wf2.style.background = '#d97706'; _wf2.style.width = '20%'; }
+    const _wbar = document.getElementById('wizardProgressBar');
+    if(_wbar) _wbar.style.background = '#fde68a';
+  }
+});
+
+// ── SESSION TIMER ────────────────────────────────────────────
+let _timerStart = Date.now();
+let _timerInterval = null;
+function startTimer() {
+  _timerInterval = setInterval(function() {
+    const sec = Math.floor((Date.now() - _timerStart) / 1000);
+    const h = String(Math.floor(sec/3600)).padStart(2,'0');
+    const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    document.getElementById('sessionTimer').textContent = h+':'+m+':'+s;
+  }, 1000);
+}
+
+// ── VIDEO ─────────────────────────────────────────────────────
+function startVideo() {
+  document.getElementById('jitsiPlaceholder').style.display = 'none';
+  const frame = document.getElementById('jitsiFrame');
+  frame.style.display = 'block';
+  frame.src = 'https://meet.ffmuc.net/' + ROOM_NAME + '#config.startWithVideoMuted=false&config.startWithAudioMuted=false&config.prejoinPageEnabled=false&config.disableDeepLinking=true';
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.s-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-content-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// WIZARD — 10-QUESTION FIRST SESSION SCRIPT
+// ══════════════════════════════════════════════════════════════
+const QUESTIONS = []; // loaded from Supabase
+
+let wizAnswers = {};
+let wizCurrentStep = 1;
+let wizVoiceRec = null;
+
+
+// ── WIZARD LOADER FROM SUPABASE ──────────────────────────────
+async function loadWizardQuestions(visitType) {
+  const db2 = getDB();
+  if (!db2) { console.warn('[WIZARD] Supabase not ready'); return; }
+  try {
+    const { data, error } = await db2
+      .from('session_wizard_questions')
+      .select('*')
+      .eq('visit_type', visitType)
+      .order('step');
+    if (error || !data || !data.length) {
+      console.warn('[WIZARD] No questions loaded:', error?.message);
+      return;
+    }
+    QUESTIONS.length = 0;
+    data.forEach(row => {
+      const q = {
+        id:   row.question_id,
+        num:  String(row.step).padStart(2,'0'),
+        step: row.step,
+        q:    row.question_he,
+        tcm:  row.tcm_label || '',
+        type: row.answer_type,
+      };
+      if (row.options && row.options.length) q.opts = row.options;
+      if (row.config) Object.assign(q, row.config);
+      QUESTIONS.push(q);
+    });
+    console.log('[WIZARD] ✅ Loaded', QUESTIONS.length, 'questions for', visitType);
+    wizCurrentStep = 1;
+    renderWizQuestion();
+  } catch(e) { console.warn('[WIZARD] Error:', e.message); }
+}
+
+function renderWizQuestion() {
+  const q = QUESTIONS[wizCurrentStep - 1];
+  if (!q) return;
+
+  // Progress
+  const pct = Math.round((wizCurrentStep / QUESTIONS.length) * 100);
+  const _ws = document.getElementById('wizStep'); if(_ws) _ws.textContent = wizCurrentStep;
+  const _wp = document.getElementById('wizPct');  if(_wp) _wp.textContent = pct + '%';
+  const _wf = document.getElementById('wizardProgressFill'); if(_wf) _wf.style.width = pct + '%';
+
+  // Prev button
+  document.getElementById('wizPrevBtn').style.display = wizCurrentStep > 1 ? 'block' : 'none';
+  document.getElementById('wizNextBtn').textContent = wizCurrentStep === QUESTIONS.length ? '✅ סיום ←' : 'הבא ←';
+
+  let answerHtml = '';
+  const saved = wizAnswers[q.id];
+
+  if (q.type === 'textarea') {
+    answerHtml = `<textarea class="wiz-textarea" id="wiz_ans_${q.id}"
+      placeholder="${q.placeholder||''}">${saved||''}</textarea>`;
+    if (q.voice) answerHtml += `<button class="wiz-voice-btn" onclick="wizVoice('${q.id}')" id="voiceBtn_${q.id}">🎙️ הקלטה קולית</button>`;
+  }
+  else if (q.type === 'options' || q.type === 'options_multi') {
+    const multi = q.type === 'options_multi';
+    const savedArr = Array.isArray(saved) ? saved : (saved ? [saved] : []);
+    answerHtml = `<div class="wiz-options">` +
+      q.opts.map(o => `<button class="wiz-opt ${savedArr.includes(o)?'selected':''}"
+        onclick="wizToggleOpt(this,'${q.id}',${multi},'${o.replace(/'/g,"\\'")}')">
+        ${o}</button>`).join('') + `</div>`;
+    if (multi) answerHtml += `<div style="font-size:10px;color:var(--muted);margin-top:6px;">ניתן לבחור מספר אפשרויות</div>`;
+  }
+  else if (q.type === 'slider') {
+    const v = saved !== undefined ? saved : q.val;
+    answerHtml = `
+      <div class="wiz-slider-row">
+        <span style="font-size:10px;color:var(--muted);width:80px;">${q.labels[0]}</span>
+        <input type="range" class="wiz-slider" id="wiz_ans_${q.id}"
+          min="${q.min}" max="${q.max}" value="${v}"
+          oninput="document.getElementById('sliderVal_${q.id}').textContent=this.value;wizAnswers['${q.id}']=parseInt(this.value);checkAnxiety()">
+        <span style="font-size:10px;color:var(--muted);width:80px;text-align:left;">${q.labels[1]}</span>
+        <div class="wiz-slider-val" id="sliderVal_${q.id}">${v}</div>
+      </div>`;
+  }
+
+  document.getElementById('wizCard').innerHTML = `
+    <div class="wiz-q-num">שאלה ${q.num} / 10</div>
+    <div class="wiz-q-text">${q.q}</div>
+    <div class="wiz-q-tcm">🏮 TCM: <span>${q.tcm}</span></div>
+    ${answerHtml}
+  `;
+}
+
+function wizToggleOpt(btn, qid, multi, val) {
+  if (!multi) {
+    btn.closest('.wiz-options').querySelectorAll('.wiz-opt').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    wizAnswers[qid] = val;
+  } else {
+    btn.classList.toggle('selected');
+    const sel = Array.from(btn.closest('.wiz-options').querySelectorAll('.wiz-opt.selected')).map(b => b.textContent.trim());
+    wizAnswers[qid] = sel;
+  }
+  checkAnxiety();
+}
+
+function wizSaveCurrentAnswer() {
+  const q = QUESTIONS[wizCurrentStep - 1];
+  if (!q) return;
+  if (q.type === 'textarea') {
+    const el = document.getElementById('wiz_ans_' + q.id);
+    if (el) wizAnswers[q.id] = el.value.trim();
+  }
+  // slider and options are saved inline via oninput/onclick
+}
+
+function wizNext() {
+  wizSaveCurrentAnswer();
+  if (wizCurrentStep >= QUESTIONS.length) {
+    showWizComplete();
+    return;
+  }
+  wizCurrentStep++;
+  renderWizQuestion();
+  checkAnxiety();
+}
+
+function wizPrev() {
+  wizSaveCurrentAnswer();
+  if (wizCurrentStep > 1) { wizCurrentStep--; renderWizQuestion(); }
+}
+
+function checkAnxiety() {
+  const stress = wizAnswers['stress'];
+  const alert  = document.getElementById('anxietyAlert');
+  if (stress && parseInt(stress) > 6) alert.style.display = 'block';
+  else alert.style.display = 'none';
+}
+
+// ── VOICE INPUT ───────────────────────────────────────────────
+function wizVoice(qid) {
+  const btn = document.getElementById('voiceBtn_' + qid);
+  const ta  = document.getElementById('wiz_ans_' + qid);
+  if (!btn || !ta) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('דפדפן זה לא תומך בקלט קולי. השתמש ב-Chrome.'); return; }
+  if (wizVoiceRec) { wizVoiceRec.stop(); return; }
+  wizVoiceRec = new SR();
+  wizVoiceRec.lang = 'he-IL';
+  wizVoiceRec.continuous = true;
+  wizVoiceRec.interimResults = true;
+  wizVoiceRec.onstart = () => { btn.classList.add('recording'); btn.textContent = '⏹️ עצור הקלטה'; };
+  wizVoiceRec.onresult = (e) => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    ta.value = (ta.value + final).trim();
+    if (interim) ta.placeholder = interim;
+  };
+  wizVoiceRec.onend = () => {
+    btn.classList.remove('recording'); btn.textContent = '🎙️ הקלטה קולית';
+    ta.placeholder = ''; wizVoiceRec = null;
+  };
+  wizVoiceRec.start();
+}
+
+// ── WIZARD COMPLETE ───────────────────────────────────────────
+function showWizComplete() {
+  document.getElementById('wizCard').style.display = 'none';
+  document.querySelector('.wiz-nav').style.display = 'none';
+  document.getElementById('wizardProgress').innerHTML = '<span style="color:#059669;font-weight:900;">✅ אנמנזה הושלמה!</span>';
+
+  // Build TCM profile from answers
+  const patterns  = [];
+  const points    = [];
+  const flags     = [];
+
+  // Energy
+  const energy = parseInt(wizAnswers['energy']);
+  if (energy <= 3) { patterns.push('Qi Xu / Yang Xu'); points.push('ST36','CV6','BL23'); }
+
+  // Stress
+  const stress = parseInt(wizAnswers['stress']);
+  if (stress > 6) {
+    patterns.push('Liver Qi Stagnation');
+    points.push('LV3','LI4','PC6','HT7','Yintang');
+    flags.push('⚠️ חרדה גבוהה — שקול פרוטוקול הרגעה');
+  }
+
+  // Sleep
+  const sleep = wizAnswers['sleep'];
+  if (sleep && (sleep.includes('קשה להירדם') || sleep.includes('נדודי שינה'))) {
+    patterns.push('Heart Blood Xu / Shen Disturbance');
+    points.push('HT7','SP6','BL15');
+  }
+
+  // Pain quality
+  const qual = wizAnswers['quality'];
+  if (qual) {
+    if (qual.includes('שורף')) { patterns.push('Excess Heat / Yin Xu'); flags.push('🔥 חום — בדוק נקודות מפזרות חום'); }
+    if (qual.includes('כהה') || qual.includes('נודד')) { patterns.push('Qi & Blood Stagnation'); points.push('LI4','SP10'); }
+    if (qual.includes('קר')) { patterns.push('Cold Bi Syndrome'); flags.push('❄️ קור — מוקסה מומלץ'); }
+  }
+
+  // Digestion
+  const dig = wizAnswers['digestion'];
+  if (dig && (dig.includes('נפיחות') || dig.includes('תיאבון נמוך'))) {
+    patterns.push('Spleen Qi Xu'); points.push('SP3','SP6','ST36');
+  }
+
+  // Safety check
+  const safety = wizAnswers['safety'];
+  if (safety && safety.trim()) flags.push('💊 ' + safety.substring(0, 60));
+
+  // Render
+  const pHtml   = [...new Set(patterns)].map(p => `<span class="tcm-tag pattern">${p}</span>`).join('');
+  const ptHtml  = [...new Set(points)].map(p => `<span class="tcm-tag point">${p}</span>`).join('');
+  const flHtml  = flags.map(f => `<span class="tcm-tag flag">${f}</span>`).join('');
+
+  document.getElementById('tcmPatterns').innerHTML = '<strong style="font-size:11px;color:var(--muted);">דפוסים TCM:</strong><br>' + (pHtml || '<em style="color:var(--muted);font-size:11px;">לא זוהו דפוסים ברורים</em>');
+  document.getElementById('tcmPoints').innerHTML   = '<strong style="font-size:11px;color:var(--muted);">נקודות מומלצות:</strong><br>' + (ptHtml || '');
+  document.getElementById('tcmFlags').innerHTML    = flHtml ? '<strong style="font-size:11px;color:var(--muted);">דגלים:</strong><br>' + flHtml : '';
+
+  document.getElementById('wizComplete').classList.add('show');
+
+  // Auto-populate notes
+  const notesText = buildNotesFromWizard();
+  document.getElementById('clinicNotes').value = notesText;
+}
+
+function buildNotesFromWizard() {
+  const lines = [];
+  lines.push('═══ אנמנזה ראשונה — ' + new Date().toLocaleDateString('he-IL') + ' ═══');
+  QUESTIONS.forEach(q => {
+    const a = wizAnswers[q.id];
+    if (!a || (Array.isArray(a) && !a.length)) return;
+    const val = Array.isArray(a) ? a.join(', ') : String(a);
+    lines.push(q.q + ': ' + val);
+  });
+  return lines.join('\n');
+}
+
+async function saveWizardToSupabase() {
+  const db2 = getDB();
+  if (!db2) { document.getElementById('wizSaveStatus').textContent = '❌ לא מחובר ל-Supabase'; return; }
+  document.getElementById('wizSaveStatus').textContent = '⏳ שומר...';
+  try {
+    await db2.from('patient_assessments').insert({
+      form_data: {
+        wizard_answers: wizAnswers,
+        session_type: 'first_visit_video',
+        date: new Date().toISOString(),
+        patient_name: PATIENT
+      },
+      submitted_by: PATIENT
+    });
+    if (APT_ID) {
+      await db2.from('appointments').update({
+        notes: buildNotesFromWizard().substring(0, 500),
+        status: 'inTreatment'
+      }).eq('id', APT_ID);
+    }
+    document.getElementById('wizSaveStatus').textContent = '✅ נשמר בהצלחה!';
+  } catch(e) {
+    document.getElementById('wizSaveStatus').textContent = '❌ ' + e.message;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// TRANSCRIPTION — Web Speech API
+// ══════════════════════════════════════════════════════════════
+let _recog = null;
+let _transcriptLines = [];
+
+function startTranscript() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('תמלול קולי תומך ב-Chrome בלבד.'); return; }
+  if (_recog) { _recog.stop(); return; }
+  _recog = new SR();
+  _recog.lang = 'he-IL';
+  _recog.continuous = true;
+  _recog.interimResults = true;
+  _recog.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        const stamp = new Date().toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'});
+        _transcriptLines.push(`<span class="t-stamp">[${stamp}]</span> <span class="t-therapist">${t}</span>`);
+      } else interim = t;
+    }
+    renderTranscript(interim);
+  };
+  _recog.onerror  = (e) => { console.warn('Speech error', e.error); };
+  _recog.onend    = () => { stopTranscript(); };
+  _recog.start();
+  document.getElementById('recStatus').classList.add('active');
+}
+
+function stopTranscript() {
+  if (_recog) { try { _recog.stop(); } catch(e) {} _recog = null; }
+  document.getElementById('recStatus').classList.remove('active');
+  renderTranscript('');
+}
+
+function renderTranscript(interim) {
+  const box = document.getElementById('transcriptBox');
+  box.innerHTML = _transcriptLines.join('<br>') +
+    (interim ? `<br><span class="t-live">...${interim}</span>` : '');
+  box.scrollTop = box.scrollHeight;
+}
+
+function copyTranscript() {
+  const text = _transcriptLines.map(l => l.replace(/<[^>]+>/g,'')).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('✅ תמלול הועתק!'));
+}
+
+function saveTranscriptToNotes() {
+  const text = _transcriptLines.map(l => l.replace(/<[^>]+>/g,'')).join('\n');
+  const notes = document.getElementById('clinicNotes');
+  notes.value += (notes.value ? '\n\n' : '') + '═══ תמלול ═══\n' + text;
+  switchTab('notes');
+}
+
+async function saveTranscriptToSupabase() {
+  const db2 = getDB();
+  if (!db2) return;
+  const text = _transcriptLines.map(l => l.replace(/<[^>]+>/g,'')).join('\n');
+  const notes = document.getElementById('clinicNotes').value.trim();
+  const elapsed = Math.floor((Date.now() - _timerStart) / 1000);
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (!text && !notes) return;
+  try {
+    const row = {
+      patient_name:   PATIENT,
+      appointment_id: APT_ID || null,
+      visit_type:     IS_FIRST ? 'first' : 'followup',
+      transcript_text: text || null,
+      clinical_notes:  notes || null,
+      wizard_answers:  wizAnswers || {},
+      duration_sec:    elapsed,
+      word_count:      wordCount,
+      session_date:    new Date().toISOString().split('T')[0]
+    };
+    const { error } = await db2.from('session_transcripts').insert(row);
+    if (error) throw error;
+    console.log('[TRANSCRIPT] ✅ Saved to Supabase');
+    return true;
+  } catch(e) {
+    console.warn('[TRANSCRIPT] Save failed:', e.message);
+    return false;
+  }
+}
+
+// ── NOTES SAVE ────────────────────────────────────────────────
+async function saveNotes() {
+  const notes = document.getElementById('clinicNotes').value.trim();
+  if (!notes) return;
+  const db2 = getDB();
+  if (!db2) { document.getElementById('notesSaveStatus').textContent = '❌ לא מחובר'; return; }
+  document.getElementById('notesSaveStatus').textContent = '⏳ שומר...';
+  try {
+    // 1. Update appointment notes (short summary)
+    if (APT_ID) {
+      await db2.from('appointments')
+        .update({ notes: notes.substring(0,1000) })
+        .eq('id', APT_ID);
+    }
+    // 2. Save full transcript + notes to session_transcripts
+    await saveTranscriptToSupabase();
+    document.getElementById('notesSaveStatus').textContent = '✅ נשמר ב-Supabase!';
+    setTimeout(() => { document.getElementById('notesSaveStatus').textContent = ''; }, 3000);
+  } catch(e) {
+    document.getElementById('notesSaveStatus').textContent = '❌ ' + e.message;
+  }
+}
+
+
+// ── STORAGE USAGE CHECK ───────────────────────────────────────
+async function checkStorageUsage() {
+  const db2 = getDB();
+  if (!db2) return;
+  const el = document.getElementById('storageStatus');
+  el.textContent = '⏳ בודק...';
+  try {
+    const { data, error } = await db2
+      .from('v_transcript_storage')
+      .select('*')
+      .single();
+    if (error || !data) { el.textContent = '❌ שגיאה'; return; }
+    el.innerHTML = `📊 ${data.total_sessions} סשנים | ${data.total_kb}KB | מ-${data.oldest_session || '—'}`;
+    // Warn if over 800KB
+    if (parseFloat(data.total_kb) > 800) {
+      el.style.color = '#dc2626';
+      el.innerHTML += ' ⚠️ קרוב למגבלה — שקול מחיקת ישנים';
+    }
+  } catch(e) { el.textContent = '📊 בדוק שימוש אחסון'; }
+}
+
+// ── SHARE ─────────────────────────────────────────────────────
+function copyLink() {
+  navigator.clipboard.writeText(PATIENT_LINK).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅';
+    setTimeout(() => { btn.textContent = 'העתק'; }, 2000);
+  });
+}
+
+function sendWhatsApp() {
+  const phone = PATIENT_PHONE ? PATIENT_PHONE.replace(/[^0-9]/g,'') : '';
+  const msg = `שלום ${PATIENT}, הקישור לפגישת הוידאו שלנו:\n${PATIENT_LINK}\n\nלא נדרשת הורדה — פשוט לחץ על הקישור ואפשר גישה למצלמה. 🙏`;
+  const url = phone
+    ? `https://wa.me/972${phone.replace(/^0/,'')}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ── END SESSION ───────────────────────────────────────────────
+async function endSession() {
+  if (!confirm(`לסיים את הסשן עם ${PATIENT}?`)) return;
+  clearInterval(_timerInterval);
+  stopTranscript();
+  await saveTranscriptToSupabase(); // auto-save on session end
+  // Mark appointment completed
+  const db2 = getDB();
+  if (db2 && APT_ID) {
+    try {
+      await db2.from('appointments').update({
+        status: 'completed',
+        treatment_end_time: new Date().toISOString()
+      }).eq('id', APT_ID);
+    } catch(e) { console.warn('Could not update appointment:', e.message); }
+  }
+  // Update summary
+  const elapsed = document.getElementById('sessionTimer').textContent;
+  document.getElementById('sessionSummary').innerHTML =
+    `⏱ משך: ${elapsed}<br>📋 שאלות שנענו: ${Object.keys(wizAnswers).length}/10<br>✅ סשן הסתיים`;
+  switchTab('share');
+  alert('✅ הסשן הסתיים. ניתן לסגור את הדף.');
+}
+</script>
+</body>
+</html>
