@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>לוח תורים — TCM Clinic</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2">
+// ── CLINICAL AI SESSION LAUNCHER ─────────────────────────────
+function openClinicalSession(aptId, patientName, complaint) {
+  // Fetch patient's chief complaint from Supabase if not passed
+  const url = 'index.html' +
+    '?from=crm' +
+    '&patient=' + encodeURIComponent(patientName || 'מטופל') +
+    '&complaint=' + encodeURIComponent(complaint || '') +
+    '&apt=' + encodeURIComponent(aptId || '');
+  window.open(url, '_blank');
+}
+
 // ── VIDEO SESSION LAUNCHER ────────────────────────────────────
 function openVideoSession(aptId, patientName, patientPhone, isFirst) {
   const today = new Date().toLocaleDateString('he-IL').replace(/\//g,'-');
@@ -476,6 +487,8 @@ function renderRooms(){
         <div class="rc-info" style="margin-top:8px;display:flex;gap:8px;">
           <button data-apt-id="${activeApt.id}" onclick="sosCheckFromBtn(this)"
             style="background:linear-gradient(135deg,#3d0000,#7f1d1d);color:#fca5a5;border:2px solid #dc2626;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;animation:dangerPulse 2s infinite;">⚕️ SOS</button>
+          <button onclick="openClinicalSession('${activeApt.id}','${activeApt.patient_name||''}','${activeApt.chief_complaint||activeApt.service_name||''}')"
+            style="background:linear-gradient(135deg,#0d5c63,#0a4a50);color:#4fd1c7;border:1px solid #4fd1c7;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;">🧠 AI סשן</button>
           <button onclick="openVideoSession('${activeApt.id}','${activeApt.patient_name||''}','${activeApt.patient_phone||''}',${activeApt.is_first_visit||false})"
             style="background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;">🎥 וידאו</button>
           <button onclick="updateStatus('${activeApt.id}','completed')"
