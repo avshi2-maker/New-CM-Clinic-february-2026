@@ -2061,16 +2061,17 @@ function toggleClinicalSymptoms() {
 #meridianPatientBar {
   display: none;
   position: fixed;
-  top: 0; left: 0; right: 0;
+  bottom: 0; left: 0; right: 0;
   z-index: 9999;
-  background: linear-gradient(135deg, #0a3d42, #0d5c63);
-  border-bottom: 2px solid #c9a84c;
-  padding: 8px 20px;
+  background: rgba(10,61,66,0.92);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #c9a84c;
+  padding: 5px 16px;
   font-family: 'Heebo', sans-serif;
   direction: rtl;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.3);
 }
-#meridianPatientBar.show { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+#meridianPatientBar.show { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .mpb-chip {
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(201,168,76,0.4);
@@ -2097,7 +2098,7 @@ function toggleClinicalSymptoms() {
 }
 .mpb-back:hover { background: rgba(255,255,255,0.2); }
 #meridianPatientBar.show ~ * { padding-top: 44px; }
-.bridge-loaded body { padding-top: 44px; }
+/* bridge bar is fixed — no padding */
 </style>
 
 <!-- Patient context bar (hidden until CRM launch detected) -->
@@ -2124,7 +2125,7 @@ function toggleClinicalSymptoms() {
   // ── Show patient bar ──────────────────────────────────────
   const bar = document.getElementById('meridianPatientBar');
   bar.classList.add('show');
-  document.body.style.paddingTop = '44px';
+  // bar is position:fixed — no body padding needed
 
   if (patient) {
     document.getElementById('mpbPatient').textContent = '👤 ' + decodeURIComponent(patient);
