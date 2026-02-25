@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — כניסה למערכת</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #f5f0e8;
+  --gold:  #c9a84c;
+  --gold2: #e8c96e;
+  --teal:  #0d5c63;
+  --teal2: #1a8a94;
+  --paper: #2a1f0e;
+  --muted: rgba(42,31,14,0.5);
+  --bord:  rgba(160,120,48,0.3);
+  --card:  rgba(255,255,255,0.55);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Heebo',sans-serif;background:var(--ink);color:var(--paper);min-height:100vh;overflow-x:hidden;direction:rtl;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 55% at 15% 15%,rgba(201,168,76,0.18) 0%,transparent 55%),radial-gradient(ellipse 50% 70% at 88% 85%,rgba(13,92,99,0.08) 0%,transparent 50%);pointer-events:none;}
+.page{position:relative;z-index:1;display:none;}
+.page.active{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px 16px 24px;}
+/* LOGO */
+.logo{text-align:center;margin-bottom:18px;animation:fadeD .7s ease both;}
+.logo-icon{font-size:36px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 24px rgba(201,168,76,0.5));}
+.logo-name{font-family:'Cinzel',serif;font-size:26px;font-weight:700;letter-spacing:10px;background:linear-gradient(135deg,#7a5520 0%,#c9a84c 40%,#8b6914 70%,#7a5520 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:4px;margin-top:6px;font-weight:300;}
+.logo-tag{font-size:12px;color:rgba(42,31,14,0.55);margin-top:6px;font-weight:300;}
+.gold-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 16px;}
+/* PRICING HEAD */
+.phead{text-align:center;margin-bottom:18px;animation:fadeD .7s .15s ease both;}
+.phead h2{font-size:17px;font-weight:700;margin-bottom:4px;}
+.phead p{font-size:13px;color:var(--muted);font-weight:300;}
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:960px;width:100%;animation:fadeU .7s .25s ease both;}
+@media(max-width:750px){.cards{grid-template-columns:1fr;max-width:420px;}}
+.card{position:relative;background:var(--card);border:1px solid var(--bord);border-radius:16px;padding:20px 18px 22px;cursor:pointer;transition:transform .3s,box-shadow .3s,border-color .3s;overflow:hidden;text-align:center;backdrop-filter:blur(10px);}
+.card::after{content:'';position:absolute;inset:0;border-radius:24px;background:linear-gradient(160deg,rgba(255,255,255,0.04) 0%,transparent 60%);pointer-events:none;}
+.card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.45),0 0 40px rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.5);}
+.card.hot{border-color:rgba(201,168,76,0.45);background:rgba(201,168,76,0.06);box-shadow:0 8px 40px rgba(201,168,76,0.12);}
+.card.hot:hover{box-shadow:0 24px 70px rgba(0,0,0,0.5),0 0 50px rgba(201,168,76,0.18);}
+.ribbon{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--teal),var(--teal2));color:white;font-size:10px;font-weight:900;padding:4px 16px;border-radius:20px;letter-spacing:1.5px;white-space:nowrap;}
+.cicon{font-size:28px;display:block;margin-bottom:8px;margin-top:4px;}
+.cname{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#8b6914;letter-spacing:2px;margin-bottom:4px;}
+.cheb{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.cprice{margin:8px 0 10px;display:flex;align-items:flex-start;justify-content:center;gap:4px;}
+.pc{font-size:15px;color:#8b6914;font-weight:700;margin-top:4px;}
+.pa{font-size:36px;font-weight:900;color:#2a1f0e;line-height:1;}
+.pp{font-size:11px;color:var(--muted);align-self:flex-end;padding-bottom:4px;}
+.pfree{font-size:28px;font-weight:900;color:var(--teal);}
+.feats{list-style:none;text-align:right;margin-bottom:14px;}
+.feats li{font-size:11px;color:rgba(42,31,14,0.7);padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.feats li:last-child{border-bottom:none;}
+.fi{font-size:12px;flex-shrink:0;}
+.cbtn{width:100%;padding:10px 16px;border:none;border-radius:10px;font-family:'Heebo',sans-serif;font-size:13px;font-weight:900;cursor:pointer;transition:all .25s;letter-spacing:.5px;}
+.b1{background:rgba(255,255,255,0.08);color:var(--paper);border:1px solid rgba(255,255,255,0.15);}
+.b1:hover{background:rgba(255,255,255,0.14);}
+.b2{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);color:white;}
+.b2:hover{box-shadow:0 8px 24px rgba(13,92,99,0.5);transform:scale(1.02);}
+.b3{background:linear-gradient(135deg,#8b6914 0%,var(--gold) 50%,#8b6914 100%);color:var(--ink);font-weight:900;}
+.b3:hover{box-shadow:0 8px 24px rgba(201,168,76,0.4);transform:scale(1.02);}
+.demo-cred{
+  margin-top:8px;font-size:11px;color:#7a5520;
+  background:rgba(201,168,76,0.15);border:1px dashed rgba(201,168,76,0.4);
+  border-radius:8px;padding:5px 10px;letter-spacing:0.5px;font-weight:600;
+  cursor:pointer;transition:background 0.2s;
+}
+.demo-cred:hover{background:rgba(201,168,76,0.3);}
+.note{margin-top:16px;font-size:12px;color:var(--muted);text-align:center;animation:fadeU .7s .4s ease both;line-height:1.8;}
+/* LOGIN PAGE */
+.lwrap{width:100%;max-width:440px;animation:fadeU .6s ease both;}
+.lbox{background:rgba(255,255,255,0.65);border:1px solid var(--bord);border-radius:24px;padding:44px 40px 48px;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+@media(max-width:480px){.lbox{padding:32px 24px 36px;}}
+.tbadge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:28px;letter-spacing:1px;}
+.ltitle{font-size:22px;font-weight:700;margin-bottom:4px;text-align:center;}
+.lsub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:32px;}
+.fg{margin-bottom:20px;}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:8px;}
+.fi2{width:100%;padding:14px 16px;background:rgba(255,255,255,0.7);border:1px solid rgba(160,120,48,0.25);border-radius:12px;color:var(--paper);font-family:'Heebo',sans-serif;font-size:15px;transition:border-color .2s,box-shadow .2s;outline:none;direction:ltr;text-align:left;}
+.fi2:focus{border-color:rgba(160,120,48,0.6);box-shadow:0 0 0 3px rgba(201,168,76,0.12);}
+.fi2::placeholder{color:rgba(42,31,14,0.3);}
+.lbtn{width:100%;padding:16px;background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);color:white;border:none;border-radius:12px;font-family:'Heebo',sans-serif;font-size:16px;font-weight:900;cursor:pointer;margin-top:8px;transition:all .25s;letter-spacing:.5px;}
+.lbtn:hover{box-shadow:0 8px 28px rgba(13,92,99,0.55);transform:translateY(-1px);}
+.lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.lerr{margin-top:16px;padding:12px 16px;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.35);border-radius:10px;font-size:13px;color:#e07060;text-align:center;display:none;}
+.lerr.show{display:block;}
+.lsuccess{margin-top:16px;padding:12px 16px;background:rgba(13,92,99,0.2);border:1px solid rgba(13,92,99,0.4);border-radius:10px;font-size:13px;color:var(--teal2);text-align:center;display:none;}
+.lsuccess.show{display:block;}
+.blink{display:block;text-align:center;margin-top:22px;font-size:13px;color:var(--muted);cursor:pointer;transition:color .2s;}
+.blink:hover{color:var(--gold);}
+/* ANIMS */
+@keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:8px;}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1: GATE -->
+<div class="page active" id="pg1">
+  <div class="logo">
+    <span class="logo-icon">☯️</span>
+    <div class="logo-name">MERIDIAN</div>
+    <div class="logo-sub">CM CLINICAL INTELLIGENCE</div>
+    <div class="logo-tag">מערכת ניהול קליניקה לרפואה משלימה</div>
+  </div>
+  <div class="gold-line"></div>
+  <div class="phead">
+    <h2>בחר את תוכנית העבודה שלך</h2>
+    <p>ללא התחייבות • ביטול בכל עת • תמיכה מלאה בעברית</p>
+  </div>
+
+  <div class="cards">
+
+    <!-- FREE -->
+    <div class="card" onclick="pick('free')">
+      <span class="cicon">🌱</span>
+      <div class="cname">TRIAL</div>
+      <div class="cheb">ניסיון חינם</div>
+      <div class="cprice"><span class="pfree">חינם</span></div>
+      <ul class="feats">
+        <li><span class="fi">📅</span>14 ימי ניסיון מלא</li>
+        <li><span class="fi">🤖</span>גישה מלאה ל-AI</li>
+        <li><span class="fi">👥</span>עד 10 מטופלים</li>
+        <li><span class="fi">📋</span>כל המודולים הקליניים</li>
+        <li><span class="fi">💳</span>ללא כרטיס אשראי</li>
+      </ul>
+      <button class="cbtn b1">התחל ניסיון ←</button>
+      <div class="demo-cred">demo@abc &nbsp;|&nbsp; demo1234</div>
+    </div>
+
+    <!-- REGULAR (featured) -->
+    <div class="card hot" onclick="pick('regular')">
+      <div class="ribbon">⭐ הנפוץ ביותר</div>
+      <span class="cicon" style="margin-top:20px">⚕️</span>
+      <div class="cname">CLINIC</div>
+      <div class="cheb">קליניקה רגילה</div>
+      <div class="cprice">
+        <span class="pc">$</span><span class="pa">20</span><span class="pp">/ חודש</span>
+      </div>
+      <ul class="feats">
+        <li><span class="fi">♾️</span>מטופלים ללא הגבלה</li>
+        <li><span class="fi">🧠</span>AI קליני מלא</li>
+        <li><span class="fi">📊</span>דוחות ובלינג</li>
+        <li><span class="fi">📅</span>יומן ותורים</li>
+        <li><span class="fi">🔒</span>גיבוי ענן מאובטח</li>
+      </ul>
+      <button class="cbtn b2">הרשמה ←</button>
+      <div class="demo-cred">demo@abc &nbsp;|&nbsp; demo1234</div>
+    </div>
+
+    <!-- HEAVY -->
+    <div class="card" onclick="pick('heavy')">
+      <span class="cicon">🔥</span>
+      <div class="cname">POWER</div>
+      <div class="cheb">עומס גבוה — 30+ טיפולים ביום</div>
+      <div class="cprice">
+        <span class="pc">$</span><span class="pa">30</span><span class="pp">/ חודש</span>
+      </div>
+      <ul class="feats">
+        <li><span class="fi">⚡</span>טוקנים ללא הגבלה</li>
+        <li><span class="fi">🏥</span>30+ טיפולים ביום</li>
+        <li><span class="fi">🤖</span>עדיפות עיבוד AI</li>
+        <li><span class="fi">📞</span>תמיכה אישית VIP</li>
+        <li><span class="fi">🔑</span>API גישה ישירה</li>
+      </ul>
+      <button class="cbtn b3">הרשמה POWER ←</button>
+      <div class="demo-cred">demo@abc &nbsp;|&nbsp; demo1234</div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    🔒 אבטחה מלאה — מידע רפואי נשמר אצלך בלבד<br>
+    גרסת דמו — ללא חיוב בפועל
+  </div>
+</div>
+
+<!-- PAGE 2: LOGIN -->
+<div class="page" id="pg2">
+  <div class="logo">
+    <span class="logo-icon">☯️</span>
+    <div class="logo-name">MERIDIAN</div>
+    <div class="logo-sub">CM CLINICAL INTELLIGENCE</div>
+  </div>
+  <div class="gold-line"></div>
+
+  <div class="lwrap">
+    <div class="lbox">
+      <div class="tbadge" id="tbadge">🌱 ניסיון חינם — 14 יום</div>
+      <div class="ltitle">כניסה למערכת</div>
+      <div class="lsub">הזן את פרטי המשתמש שלך להמשך</div>
+
+      <div class="fg">
+        <label class="fl">📧 אימייל</label>
+        <input type="email" id="em" class="fi2" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label class="fl">🔑 סיסמה</label>
+        <input type="password" id="pw" class="fi2" placeholder="לפחות 6 תווים" autocomplete="current-password">
+      </div>
+
+      <button class="lbtn" id="lbtn" onclick="doLogin()">כניסה למערכת ←</button>
+      <div class="lerr" id="lerr"></div>
+      <div class="lsuccess" id="lsuc"></div>
+      <a class="blink" onclick="goBack()">← חזור לבחירת תוכנית</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB = supabase.createClient(
+  'https://iqfglrwjemogoycbzltt.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
+);
+
+const TIERS = {
+  free:    {badge:'🌱 ניסיון חינם — 14 יום',    key:'free_trial'},
+  regular: {badge:'⚕️ Clinic — $20 לחודש',       key:'clinic'},
+  heavy:   {badge:'🔥 Power — $30 לחודש',         key:'power'}
+};
+let tier = 'free';
+
+function pick(t) {
+  tier = t;
+  document.getElementById('tbadge').textContent = TIERS[t].badge;
+  document.getElementById('pg1').classList.remove('active');
+  document.getElementById('pg2').classList.add('active');
+  // Auto-fill demo credentials
+  document.getElementById('em').value = 'demo@abc';
+  document.getElementById('pw').value = 'demo1234';
+  setTimeout(() => document.getElementById('lbtn').focus(), 150);
+}
+
+function goBack() {
+  document.getElementById('pg2').classList.remove('active');
+  document.getElementById('pg1').classList.add('active');
+  document.getElementById('lerr').classList.remove('show');
+  document.getElementById('lsuc').classList.remove('show');
+  document.getElementById('em').value = '';
+  document.getElementById('pw').value = '';
+}
+
+async function doLogin() {
+  const email = document.getElementById('em').value.trim();
+  const pass  = document.getElementById('pw').value;
+  const btn   = document.getElementById('lbtn');
+  const err   = document.getElementById('lerr');
+  const suc   = document.getElementById('lsuc');
+
+  err.classList.remove('show');
+  suc.classList.remove('show');
+
+  if (!email || !pass) { showErr('יש למלא אימייל וסיסמה'); return; }
+
+  // ── DEMO SHORTCUT ─────────────────────────────────────────
+  if (email.toLowerCase() === 'demo@abc' && pass === 'demo1234') {
+    suc.textContent = '✅ Demo Mode — ברוך הבא! מעביר לקליניקה...';
+    suc.classList.add('show');
+    btn.disabled = true;
+    btn.innerHTML = 'מחובר...<span class="spin"></span>';
+    sessionStorage.setItem('meridian_tier', TIERS[tier].key);
+    sessionStorage.setItem('meridian_tier_badge', TIERS[tier].badge);
+    sessionStorage.setItem('meridian_demo', 'true');
+    setTimeout(() => { window.location.href = 'crm.html'; }, 1000);
+    return;
+  }
+
+  if (pass.length < 6) { showErr('הסיסמה חייבת להכיל לפחות 6 תווים'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = 'מתחבר...<span class="spin"></span>';
+
+  try {
+    // Try login first
+    const { data, error } = await SB.auth.signInWithPassword({ email, password: pass });
+
+    if (error) {
+      // If user doesn't exist → auto-register in demo mode
+      if (error.message.toLowerCase().includes('invalid')) {
+        const { error: err2 } = await SB.auth.signUp({
+          email, password: pass,
+          options: { data: { tier: TIERS[tier].key, demo: true } }
+        });
+        if (err2 && !err2.message.includes('already registered')) throw err2;
+        if (err2?.message.includes('already registered')) throw new Error('User already registered');
+      } else {
+        throw error;
+      }
+    }
+
+    // Success
+    suc.textContent = '✅ מחובר! מעביר לקליניקה...';
+    suc.classList.add('show');
+    sessionStorage.setItem('meridian_tier', TIERS[tier].key);
+    sessionStorage.setItem('meridian_tier_badge', TIERS[tier].badge);
+    setTimeout(() => { window.location.href = 'crm.html'; }, 1200);
+
+  } catch(e) {
+    const map = {
+      'Invalid login credentials': 'אימייל או סיסמה שגויים',
+      'Email not confirmed':        'יש לאשר את האימייל תחילה — בדוק את תיבת הדואר',
+      'already registered':         'משתמש קיים — הסיסמה שהזנת שגויה. נסה שוב.'
+    };
+    const found = Object.entries(map).find(([k]) => e.message?.includes(k));
+    showErr(found ? found[1] : 'שגיאה: ' + (e.message || 'נסה שוב'));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'כניסה למערכת ←';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('lerr');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('show');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('pg2').classList.contains('active')) doLogin();
+});
+
+// Already logged in? Skip gate
+(async () => {
+  const { data } = await SB.auth.getSession();
+  if (data?.session) {
+    window.location.href = 'crm.html';
+  }
+})();
+</script>
+</body>
+</html>
