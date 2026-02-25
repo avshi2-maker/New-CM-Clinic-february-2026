@@ -175,7 +175,7 @@
                     </div>
 
                     <!-- SOS BUTTON — only visible when launched from CRM -->
-                    <button id="headerSosBtn" onclick="triggerHeaderSOS()" style="display:none;background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fca5a5;border:2px solid #ef4444;border-radius:8px;padding:6px 16px;font-family:Heebo,sans-serif;font-size:12px;font-weight:900;cursor:pointer;letter-spacing:1px;box-shadow:0 0 12px rgba(239,68,68,0.5);">⚕️ SOS חירום</button>
+                    <button id="headerSosBtn" onclick="triggerHeaderSOS()" style="display:none;background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fca5a5;border:2px solid #ef4444;border-radius:8px;padding:6px 16px;font-family:Heebo,sans-serif;font-size:12px;font-weight:900;cursor:pointer;letter-spacing:1px;animation:sosPulse 1.5s infinite;box-shadow:0 0 12px rgba(239,68,68,0.5);">⚕️ SOS חירום</button>
                     
                     <!-- Search Control Buttons (Show during search) -->
                     <button id="pauseSearchBtn" onclick="pauseSearch()" class="search-control-btn bg-orange-600 hover:bg-orange-700 px-3 py-1.5 rounded-lg font-bold text-white text-sm transition hidden">
@@ -2526,16 +2526,16 @@ async function saveBridgeSOS() {
   setTimeout(() => toast.remove(), 5000);
 }
 
-// ── Show SOS button only when launched from CRM ────────────
+// ── SOS button — always visible, patient name from URL if available ──
 (function() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('from') === 'crm' || params.get('patient')) {
-    const btn = document.getElementById('headerSosBtn');
-    if (btn) btn.style.display = 'inline-block';
-    const patient = decodeURIComponent(params.get('patient') || 'מטופל');
-    const el = document.getElementById('sosOverlayPatient');
-    if (el) el.textContent = '👤 ' + patient;
-  }
+  const btn = document.getElementById('headerSosBtn');
+  if (btn) btn.style.display = 'inline-block'; // always show
+  const patient = params.get('patient')
+    ? decodeURIComponent(params.get('patient'))
+    : 'מטופל';
+  const el = document.getElementById('sosOverlayPatient');
+  if (el) el.textContent = '👤 ' + patient;
 })();
 </script>
 
