@@ -597,6 +597,20 @@ function openPopup(apt,e){
   };
   document.getElementById('popBody').appendChild(vBtn);
 
+  // ── AI Clinical Session button ────────────────────────────
+  const aiBtn = document.createElement('button');
+  aiBtn.textContent = '🧠 AI סשן קליני';
+  aiBtn.style.cssText = 'width:100%;margin-top:6px;padding:8px;background:linear-gradient(135deg,#0d5c63,#0a4a50);color:#4fd1c7;border:1px solid #4fd1c7;border-radius:8px;font-family:Heebo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;';
+  aiBtn.onclick = function() {
+    const url = 'index.html' +
+      '?from=crm' +
+      '&patient=' + encodeURIComponent(apt.patient_name || 'מטופל') +
+      '&complaint=' + encodeURIComponent(apt.service_name || '') +
+      '&apt=' + encodeURIComponent(apt.id || '');
+    window.open(url, '_blank');
+  };
+  document.getElementById('popBody').appendChild(aiBtn);
+
   document.getElementById('statusSel').value='';
   const popup=document.getElementById('popup');
   popup.classList.add('show');
