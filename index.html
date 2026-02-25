@@ -2434,7 +2434,7 @@ function getMeridianSB() {
 
 
 <!-- ── SOS EMERGENCY OVERLAY ──────────────────────────────── -->
-<div id="bridgeSosOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(60,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;font-family:Heebo,sans-serif;direction:rtl;">
+<div id="bridgeSosOverlay" style="position:fixed;inset:0;z-index:99999;background:rgba(60,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;font-family:Heebo,sans-serif;direction:rtl;">
   <div class="sos-overlay-box">
     <div class="sos-overlay-title">🚨 חירום רפואי 🚨</div>
     <div class="sos-overlay-patient" id="sosOverlayPatient">מטופל</div>
@@ -2491,7 +2491,7 @@ async function triggerHeaderSOS() {
 
 function closeBridgeSOS() {
   const overlay = document.getElementById('bridgeSosOverlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) overlay.classList.remove('show');
 }
 
 async function saveBridgeSOS() {
