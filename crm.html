@@ -9,12 +9,12 @@
 :root {
   --teal:    #0d5c63;
   --teal2:   #0a4a50;
-  --gold:    #c9a84c;
-  --gold2:   #e8c96e;
-  --ink:     #0d1117;
-  --paper:   #f5f2eb;
-  --muted:   #6b7280;
-  --border:  rgba(201,168,76,0.25);
+  --gold:    #b8860b;
+  --gold2:   #c9a84c;
+  --ink:     #1a1200;
+  --paper:   #1a1200;
+  --muted:   #6b5a1e;
+  --border:  rgba(184,134,11,0.3);
   --radius:  14px;
 }
 
@@ -22,8 +22,8 @@
 
 body {
   font-family: 'Heebo', sans-serif;
-  background: var(--ink);
-  color: var(--paper);
+  background: linear-gradient(160deg, #fdf6e3 0%, #faedc4 40%, #f5dfa0 100%);
+  color: #2c1e00;
   min-height: 100vh;
   overflow-x: hidden;
   direction: rtl;
@@ -34,9 +34,9 @@ body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(13,92,99,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 85% 80%, rgba(201,168,76,0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 60% at 60% 30%, rgba(13,92,99,0.15) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(13,92,99,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 80%, rgba(184,134,11,0.15) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 60% at 60% 30%, rgba(245,223,160,0.3) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -45,8 +45,8 @@ body::after {
   content: '';
   position: fixed; inset: 0; z-index: 0;
   background-image:
-    linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(184,134,11,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.08) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
 }
@@ -86,7 +86,7 @@ header {
   font-size: 36px;
   font-weight: 700;
   letter-spacing: 6px;
-  background: linear-gradient(135deg, #e8f5f2 30%, var(--gold2));
+  background: linear-gradient(135deg, #0d5c63 30%, #b8860b);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,7 +96,7 @@ header {
   font-size: 13px;
   font-weight: 300;
   letter-spacing: 4px;
-  color: var(--gold);
+  color: #8b6400;
   text-transform: uppercase;
   opacity: 0.8;
 }
@@ -109,7 +109,7 @@ header {
 
 .subtitle {
   font-size: 14px;
-  color: rgba(245,242,235,0.5);
+  color: rgba(60,40,0,0.5);
   letter-spacing: 1px;
 }
 
@@ -118,7 +118,7 @@ header {
   font-family: 'Space Mono', monospace;
   font-size: 10px;
   letter-spacing: 4px;
-  color: var(--gold);
+  color: #8b6400;
   text-transform: uppercase;
   margin-bottom: 20px;
   padding-right: 4px;
@@ -149,7 +149,7 @@ header {
 
 /* ── MODULE CARD ────────────────────────────────────────────── */
 .card {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.65);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px 20px 20px;
@@ -172,20 +172,20 @@ header {
 
 .card:hover {
   transform: translateY(-4px);
-  border-color: var(--gold);
-  background: rgba(255,255,255,0.07);
+  border-color: #8b6400;
+  background: rgba(255,255,255,0.85);
   box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,168,76,0.3);
 }
 
 .card:hover::before { opacity: 1; }
 
 .card.featured {
-  background: linear-gradient(135deg, rgba(13,92,99,0.3), rgba(13,74,80,0.2));
-  border-color: rgba(13,92,99,0.6);
+  background: linear-gradient(135deg, rgba(13,92,99,0.12), rgba(13,74,80,0.08));
+  border-color: rgba(13,92,99,0.4);
 }
 
 .card.featured:hover {
-  border-color: var(--gold);
+  border-color: #8b6400;
   box-shadow: 0 20px 60px rgba(13,92,99,0.4), 0 0 0 1px rgba(201,168,76,0.4);
 }
 
@@ -199,14 +199,14 @@ header {
 .card-title {
   font-size: 15px;
   font-weight: 900;
-  color: var(--paper);
+  color: #2c1e00;
   margin-bottom: 4px;
   letter-spacing: 0.5px;
 }
 
 .card-sub {
   font-size: 11px;
-  color: rgba(245,242,235,0.45);
+  color: rgba(60,40,0,0.55);
   line-height: 1.5;
   font-weight: 400;
 }
@@ -235,7 +235,7 @@ header {
 
 /* ── STATUS BAR ─────────────────────────────────────────────── */
 .status-bar {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.5);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 24px;
@@ -252,7 +252,7 @@ header {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: rgba(245,242,235,0.5);
+  color: rgba(60,40,0,0.5);
 }
 
 .status-dot {
@@ -267,7 +267,7 @@ header {
 .status-dot.warn { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
 
 .status-val {
-  color: var(--paper);
+  color: #2c1e00;
   font-weight: 700;
 }
 
@@ -277,9 +277,9 @@ footer {
   font-family: 'Space Mono', monospace;
   font-size: 10px;
   letter-spacing: 3px;
-  color: rgba(245,242,235,0.2);
+  color: rgba(60,40,0,0.3);
   padding-top: 32px;
-  border-top: 1px solid rgba(201,168,76,0.1);
+  border-top: 1px solid rgba(184,134,11,0.2);
 }
 
 /* ── ANIMATIONS ─────────────────────────────────────────────── */
@@ -321,7 +321,7 @@ footer {
       <div class="logo-text">MERIDIAN</div>
     </div>
     <div class="tagline">מערכת ניהול קליניקה לרפואה סינית</div>
-    <a href="index.html" style="display:inline-block;margin-top:12px;font-size:11px;letter-spacing:2px;color:rgba(201,168,76,0.7);text-decoration:none;border:1px solid rgba(201,168,76,0.25);padding:4px 14px;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.8)';this.style.color='#e8c96e'" onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='rgba(201,168,76,0.7)'">← מודול סשן קליני</a>
+    <a href="index.html" style="display:inline-block;margin-top:12px;font-size:11px;letter-spacing:2px;color:rgba(139,100,0,0.8);text-decoration:none;border:1px solid rgba(139,100,0,0.3);padding:4px 14px;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.8)';this.style.color='#e8c96e'" onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='rgba(201,168,76,0.7)'">← מודול סשן קליני</a>
     <div class="divider"></div>
     <div class="subtitle">TCM Clinical Management System · Powered by Supabase + Claude AI</div>
   </header>
@@ -380,8 +380,8 @@ footer {
     <a class="card" href="patient_intake_v3_23022026.html">
       <div class="card-badge new">NEW</div>
       <span class="card-icon">📝</span>
-      <div class="card-title">טופס קבלה</div>
-      <div class="card-sub">V3 · עברית + English · חתימה דיגיטלית</div>
+      <div class="card-title">קבלת מטופל חדש</div>
+      <div class="card-sub">טופס אינטייק V3 · עברית + English · חתימה דיגיטלית</div>
     </a>
 
     <a class="card" href="crm_24022026.html">
