@@ -1056,6 +1056,10 @@ input[type="date"]{position:relative;}
       <button type="submit" class="submit-btn" id="submitBtn">
         ✅ שלח ושמור — Submit & Save
       </button>
+      <button type="button" onclick="testDBConnection()"
+        style="margin-top:8px;width:100%;padding:10px;background:#f1f5f9;border:2px solid #cbd5e1;border-radius:10px;font-family:Heebo,sans-serif;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;">
+        🔌 בדוק חיבור Supabase
+      </button>
       <div class="err-msg" id="errMsg"></div>
     </div>
   </form>
@@ -1909,6 +1913,67 @@ function whatsappForm() {
 }
 
 // ── SUBMIT ──────────────────────────────────────────────────
+
+// ── DB CONNECTION TEST ────────────────────────────────────────
+async function testDBConnection() {
+  const errEl = document.getElementById('errMsg');
+  errEl.style.cssText = 'display:block;padding:14px 18px;border-radius:10px;font-size:12px;font-weight:700;margin:12px 0;font-family:Heebo,sans-serif;background:#f0f9ff;border:2px solid #0891b2;color:#0c4a6e;';
+  errEl.textContent = '⏳ בודק חיבור...';
+  errEl.scrollIntoView({behavior:'smooth',block:'center'});
+
+  // Step 1: Supabase CDN loaded?
+  if (!window.supabase && !window.Supabase) {
+    errEl.style.background='#fee2e2'; errEl.style.borderColor='#dc2626'; errEl.style.color='#7f1d1d';
+    errEl.textContent = '❌ שלב 1 נכשל: Supabase CDN לא נטען';
+    return;
+  }
+  errEl.textContent = '✅ שלב 1: Supabase CDN נטען';
+
+  // Step 2: Client created?
+  const db2 = getDB();
+  if (!db2) {
+    errEl.textContent += ' | ❌ שלב 2: createClient נכשל';
+    return;
+  }
+  errEl.textContent += ' | ✅ שלב 2: Client נוצר';
+
+  // Step 3: Can we read from patients?
+  try {
+    const { data, error } = await db2.from('patients').select('id').limit(1);
+    if (error) {
+      errEl.style.background='#fee2e2'; errEl.style.borderColor='#dc2626'; errEl.style.color='#7f1d1d';
+      errEl.textContent += ' | ❌ שלב 3 שגיאת קריאה: ' + (error.message||JSON.stringify(error));
+      return;
+    }
+    errEl.textContent += ' | ✅ שלב 3: קריאה מ-patients עבדה (' + (data?.length||0) + ' רשומות)';
+  } catch(e) {
+    errEl.style.background='#fee2e2'; errEl.style.borderColor='#dc2626'; errEl.style.color='#7f1d1d';
+    errEl.textContent += ' | ❌ שלב 3 exception: ' + e.message;
+    return;
+  }
+
+  // Step 4: Can we write to patients?
+  try {
+    const testRow = {
+      full_name: '__TEST_DELETE_ME__',
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await db2.from('patients').insert(testRow).select('id').single();
+    if (error) {
+      errEl.style.background='#fee2e2'; errEl.style.borderColor='#dc2626'; errEl.style.color='#7f1d1d';
+      errEl.textContent += ' | ❌ שלב 4 שגיאת כתיבה: ' + (error.message||error.details||error.hint||JSON.stringify(error));
+      return;
+    }
+    // Delete the test row immediately
+    await db2.from('patients').delete().eq('id', data.id);
+    errEl.style.background='#dcfce7'; errEl.style.borderColor='#16a34a'; errEl.style.color='#14532d';
+    errEl.textContent = '✅ כל הבדיקות עברו! Supabase מחובר ומוכן לכתיבה. ניתן לשמור מטופלים.';
+  } catch(e) {
+    errEl.style.background='#fee2e2'; errEl.style.borderColor='#dc2626'; errEl.style.color='#7f1d1d';
+    errEl.textContent += ' | ❌ שלב 4 exception: ' + e.message;
+  }
+}
+
 async function submitForm(e) {
   e.preventDefault();
 
@@ -2002,10 +2067,11 @@ async function submitForm(e) {
       .single();
 
     if (pe) {
-      // Show EXACT Supabase error
-      const detail = pe.message || pe.details || pe.hint || pe.code || JSON.stringify(pe);
-      console.error('[SAVE] Supabase error:', pe);
-      showDiag('❌ שגיאת Supabase: ' + detail, true);
+      // Show EXACT Supabase error — all fields
+      const detail = [pe.message, pe.details, pe.hint, pe.code]
+        .filter(Boolean).join(' | ') || JSON.stringify(pe);
+      console.error('[SAVE] Supabase patient error FULL:', JSON.stringify(pe));
+      showDiag('❌ שגיאת DB: ' + detail, true);
       btn.disabled = false; btn.textContent = '✅ שלח ושמור'; return;
     }
 
@@ -2022,8 +2088,8 @@ async function submitForm(e) {
       await _db.from('patient_assessments').insert({
         patient_id:       saved.id,
         pregnancy_status: d.pregnancy_status || null,
-        medications:      d.current_medications ? [d.current_medications] : null,
-        form_data:        { ...d, has_signature: hasSig, version: '3.3' },
+        form_data:        { ...d, has_signature: hasSig, version: '3.3',
+                            medications: d.current_medications || null },
         submitted_by:     fullName
       });
     } catch(ae) {
