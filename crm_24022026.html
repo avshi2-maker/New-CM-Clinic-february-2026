@@ -332,7 +332,7 @@ async function loadPatients() {
   try {
     const { data, error } = await db
       .from('patients')
-      .select(`*, patient_assessments(form_data, pregnancy_status, medications, created_at)`)
+      .select(`*, patient_assessments(form_data, pregnancy_status, created_at)`)
       .order('created_at', { ascending: false });
     if (error) throw error;
     allPatients = (data || []).map(p => {
