@@ -97,8 +97,16 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
   padding:1px 4px;display:inline-block;margin-top:1px;}
 
 /* ── NOW LINE ── */
-.now-line{position:absolute;right:0;left:52px;height:2px;background:#ef4444;z-index:30;pointer-events:none;}
-.now-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;position:absolute;right:-4px;top:-3.5px;}
+.now-line{position:absolute;right:0;left:52px;height:0;border-top:2px dashed rgba(239,68,68,0.7);
+  z-index:30;pointer-events:none;display:flex;align-items:center;}
+.now-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;
+  position:absolute;right:-4px;top:-4px;
+  box-shadow:0 0 0 3px rgba(239,68,68,0.2);}
+.now-label{position:absolute;right:10px;top:-9px;
+  font-size:9px;font-weight:700;color:rgba(239,68,68,0.8);
+  letter-spacing:2px;font-family:'Heebo',sans-serif;
+  background:rgba(255,255,255,0.85);padding:1px 5px;border-radius:4px;
+  white-space:nowrap;}
 
 /* ── DETAIL POPUP ── */
 .popup{position:fixed;background:white;border-radius:14px;padding:18px;
@@ -327,7 +335,10 @@ body{padding-bottom:52px;}
   <div class="cal-scroll" id="calScroll">
     <div style="position:relative;">
       <div id="calGrid"></div>
-      <div class="now-line" id="nowLine" style="display:none;"><div class="now-dot"></div></div>
+      <div class="now-line" id="nowLine" style="display:none;">
+        <div class="now-dot"></div>
+        <div class="now-label" id="nowLabel">- - current time - -</div>
+      </div>
       <div class="loading" id="loader"><div class="spinner"></div></div>
     </div>
   </div>
@@ -558,6 +569,11 @@ function updateNowLine(){
   const line=document.getElementById('nowLine');
   if(!isToday||h<START_H||h>END_H){line.style.display='none';return;}
   line.style.display='block'; line.style.top=((h-START_H)*HOUR_H)+'px';
+  const lbl=document.getElementById('nowLabel');
+  if(lbl){
+    const m=now.getMinutes().toString().padStart(2,'0');
+    lbl.textContent='- - ' + now.getHours()+':'+m + ' - -';
+  }
 }
 function scrollToNow(){
   const h=new Date().getHours();
