@@ -13,7 +13,7 @@
   --gold2:   #c9a84c;
   --ink:     #1a1200;
   --paper:   #1a1200;
-  --muted:   #6b5a1e;
+  --muted:   #3a2a00;
   --border:  rgba(184,134,11,0.3);
   --radius:  14px;
 }
@@ -55,13 +55,13 @@ body::after {
   position: relative; z-index: 1;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px 64px;
+  padding: 20px 20px 24px;
 }
 
 /* ── HEADER ─────────────────────────────────────────────────── */
 header {
   text-align: center;
-  margin-bottom: 56px;
+  margin-bottom: 24px;
   animation: fadeDown 0.7s ease both;
 }
 
@@ -73,17 +73,17 @@ header {
 }
 
 .logo-symbol {
-  width: 52px; height: 52px;
+  width: 36px; height: 36px;
   background: linear-gradient(135deg, var(--teal), var(--gold));
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26px;
+  font-size: 18px;
   box-shadow: 0 0 32px rgba(13,92,99,0.5);
 }
 
 .logo-text {
   font-family: 'Space Mono', monospace;
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: 6px;
   background: linear-gradient(135deg, #0d5c63 30%, #b8860b);
@@ -93,58 +93,58 @@ header {
 }
 
 .tagline {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 300;
   letter-spacing: 4px;
   color: #8b6400;
   text-transform: uppercase;
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .divider {
-  width: 80px; height: 1px;
+  width: 60px; height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin: 20px auto;
+  margin: 10px auto;
 }
 
 .subtitle {
   font-size: 14px;
-  color: rgba(60,40,0,0.5);
+  color: rgba(60,40,0,0.9);
   letter-spacing: 1px;
 }
 
 /* ── SECTION LABEL ──────────────────────────────────────────── */
 .section-label {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 4px;
   color: #8b6400;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding-right: 4px;
-  opacity: 0.7;
+  opacity: 1;
 }
 
 /* ── PRIMARY GRID ───────────────────────────────────────────── */
 .primary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .secondary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .tertiary-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 48px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 /* ── MODULE CARD ────────────────────────────────────────────── */
@@ -152,7 +152,7 @@ header {
   background: rgba(255,255,255,0.65);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px 20px 20px;
+  padding: 14px 14px 14px;
   cursor: pointer;
   text-decoration: none;
   display: block;
@@ -190,23 +190,23 @@ header {
 }
 
 .card-icon {
-  font-size: 28px;
-  margin-bottom: 12px;
+  font-size: 22px;
+  margin-bottom: 6px;
   display: block;
   line-height: 1;
 }
 
 .card-title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 900;
   color: #2c1e00;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   letter-spacing: 0.5px;
 }
 
 .card-sub {
-  font-size: 11px;
-  color: rgba(60,40,0,0.55);
+  font-size: 10px;
+  color: rgba(60,40,0,0.9);
   line-height: 1.5;
   font-weight: 400;
 }
@@ -238,7 +238,7 @@ header {
   background: rgba(255,255,255,0.5);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px 24px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   gap: 32px;
@@ -252,7 +252,7 @@ header {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: rgba(60,40,0,0.5);
+  color: rgba(60,40,0,0.9);
 }
 
 .status-dot {
@@ -275,10 +275,10 @@ header {
 footer {
   text-align: center;
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 3px;
-  color: rgba(60,40,0,0.3);
-  padding-top: 32px;
+  color: rgba(60,40,0,0.75);
+  padding-top: 14px;
   border-top: 1px solid rgba(184,134,11,0.2);
 }
 
@@ -302,7 +302,7 @@ footer {
   .primary-grid   { grid-template-columns: 1fr 1fr; }
   .secondary-grid { grid-template-columns: 1fr 1fr; }
   .tertiary-grid  { grid-template-columns: 1fr; }
-  .logo-text      { font-size: 26px; }
+  .logo-text      { font-size: 18px; }
 }
 
 @media (max-width: 480px) {
