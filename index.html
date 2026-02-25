@@ -2172,79 +2172,138 @@ function toggleClinicalSymptoms() {
       // Therapist clicks any chip → fills next empty query box
       const allIssues = [c, ...extraIssues].filter(Boolean);
 
-      if (allIssues.length > 1) {
-        const panel = document.createElement('div');
-        panel.id = 'bridgeIssuesPanel';
-        panel.style.cssText = [
-          'direction:rtl;font-family:Heebo,sans-serif;',
-          'background:linear-gradient(135deg,#f0fdf9,#ecfdf5);',
-          'border:2px solid #0d5c63;border-radius:12px;',
-          'padding:12px 16px;margin-bottom:16px;'
-        ].join('');
+      if (allIssues.length > 0) {
+        // ── Inject CSS for floating panel ──────────────────
+        const style = document.createElement('style');
+        style.textContent = `
+          #bridgeFloat {
+            position: fixed;
+            top: 80px;
+            left: 16px;
+            z-index: 8000;
+            font-family: Heebo, sans-serif;
+            direction: rtl;
+            width: 230px;
+            transition: all 0.25s ease;
+          }
+          #bridgeToggle {
+            background: linear-gradient(135deg,#0d5c63,#0a4a50);
+            color: #4fd1c7;
+            border: 1px solid #4fd1c7;
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            width: 100%;
+            text-align: right;
+            font-family: Heebo, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            box-shadow: 0 2px 12px rgba(13,92,99,0.4);
+          }
+          #bridgeToggle:hover { background: linear-gradient(135deg,#0f6b73,#0d5c63); }
+          #bridgeBody {
+            background: white;
+            border: 1px solid #0d5c63;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+          }
+          #bridgeBody.open { display: block; }
+          .b-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 700;
+            margin: 3px 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid #0d5c63;
+            color: #0d5c63;
+            background: white;
+          }
+          .b-chip:hover { background: #0d5c63; color: white; }
+          .b-chip.used { background: #0d5c63; color: white; cursor: default; opacity: 0.6; }
+          .b-chip.used:hover { background: #0d5c63; }
+          .b-chip.warn { background: #fef3c7; border-color: #d97706; color: #92400e; }
+        `;
+        document.head.appendChild(style);
 
-        const title = document.createElement('div');
-        title.style.cssText = 'font-size:11px;font-weight:900;color:#0d5c63;letter-spacing:2px;margin-bottom:10px;';
-        title.textContent = '📋 בעיות מהאינטייק — לחץ להוסיף לחיפוש';
-        panel.appendChild(title);
+        // ── Build floating panel ────────────────────────────
+        const floatEl = document.createElement('div');
+        floatEl.id = 'bridgeFloat';
 
-        const chips = document.createElement('div');
-        chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
+        // Toggle button
+        const toggle = document.createElement('button');
+        toggle.id = 'bridgeToggle';
+        const remaining = allIssues.filter((_,i)=>i>0).length;
+        toggle.innerHTML = '<span>📋 אינטייק</span><span id="bridgeBadge" style="background:#c9a84c;color:#1a0f00;border-radius:10px;padding:1px 7px;font-size:10px;">' + allIssues.length + ' בעיות</span>';
+        toggle.onclick = function() {
+          const body = document.getElementById('bridgeBody');
+          body.classList.toggle('open');
+          toggle.style.borderRadius = body.classList.contains('open') ? '10px 10px 0 0' : '10px';
+        };
+        floatEl.appendChild(toggle);
 
+        // Body with chips
+        const body = document.createElement('div');
+        body.id = 'bridgeBody';
+
+        const hint = document.createElement('div');
+        hint.style.cssText = 'font-size:9px;color:#64748b;margin-bottom:8px;letter-spacing:0.5px;';
+        hint.textContent = 'לחץ על בעיה → תועבר לתיבת חיפוש';
+        body.appendChild(hint);
+
+        const chipsWrap = document.createElement('div');
         allIssues.forEach(function(issue, idx) {
           const chip = document.createElement('span');
-          chip.style.cssText = [
-            'padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;',
-            'cursor:pointer;transition:all 0.2s;user-select:none;',
-            idx === 0
-              ? 'background:#0d5c63;color:white;border:2px solid #0d5c63;' // first = already in box1
-              : 'background:white;color:#0d5c63;border:2px solid #0d5c63;'
-          ].join('');
-          chip.textContent = idx === 0 ? '✅ ' + issue : '➕ ' + issue;
-          chip.title = idx === 0 ? 'כבר בשאלה 1' : 'לחץ להוסיף לתיבת חיפוש';
+          chip.className = idx === 0 ? 'b-chip used' : 'b-chip';
+          chip.textContent = idx === 0 ? '✅ ' + issue : issue;
+          chip.title = idx === 0 ? 'כבר בשאלה 1' : 'לחץ להוסיף';
 
-          if (idx === 0) {
-            chip.style.cursor = 'default';
-            chip.style.opacity = '0.7';
-          } else {
+          if (idx > 0) {
             chip.onclick = function() {
-              // Find next empty box (1-4)
               for (let n = 1; n <= 4; n++) {
                 const box = document.getElementById('searchInput' + n);
                 if (box && !box.value.trim()) {
                   box.value = issue;
                   box.dispatchEvent(new Event('input'));
-                  box.scrollIntoView({ behavior:'smooth', block:'center' });
                   box.style.borderColor = '#0d5c63';
                   setTimeout(() => box.style.borderColor = '', 1500);
-                  chip.style.background = '#0d5c63';
-                  chip.style.color = 'white';
+                  chip.className = 'b-chip used';
                   chip.textContent = '✅ ' + issue;
-                  chip.style.cursor = 'default';
                   chip.onclick = null;
+                  // Update badge count
+                  const remaining = document.querySelectorAll('.b-chip:not(.used)').length;
+                  const badge = document.getElementById('bridgeBadge');
+                  if (badge) badge.textContent = remaining + ' נותרו';
                   return;
                 }
               }
-              // All boxes full — flash warning
-              chip.style.background = '#fef3c7';
-              chip.style.borderColor = '#d97706';
-              chip.style.color = '#92400e';
-              chip.textContent = '⚠️ כל התיבות מלאות — נקה תיבה ונסה שוב';
-              setTimeout(() => {
-                chip.style.background = 'white';
-                chip.style.borderColor = '#0d5c63';
-                chip.style.color = '#0d5c63';
-                chip.textContent = '➕ ' + issue;
-              }, 2500);
+              chip.className = 'b-chip warn';
+              chip.textContent = '⚠️ מלא';
+              setTimeout(() => { chip.className='b-chip'; chip.textContent=issue; }, 2000);
             };
           }
-          chips.appendChild(chip);
+          chipsWrap.appendChild(chip);
         });
+        body.appendChild(chipsWrap);
+        floatEl.appendChild(body);
+        document.body.appendChild(floatEl);
 
-        panel.appendChild(chips);
-
-        // Inject panel above the query boxes
-        const queryArea = document.querySelector('.space-y-3');
-        if (queryArea) queryArea.parentNode.insertBefore(panel, queryArea);
+        // Auto-open briefly to show therapist it's there, then collapse
+        body.classList.add('open');
+        toggle.style.borderRadius = '10px 10px 0 0';
+        setTimeout(() => {
+          body.classList.remove('open');
+          toggle.style.borderRadius = '10px';
+        }, 3000);
       }
     }
 
