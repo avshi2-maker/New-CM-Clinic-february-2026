@@ -2052,5 +2052,153 @@ function toggleClinicalSymptoms() {
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/body-images.js"></script>
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/body-image-integration.js"></script>
 
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MERIDIAN BRIDGE — CRM → Session Module                     -->
+<!-- Reads URL params, shows patient context bar, pre-fills AI  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style>
+#meridianPatientBar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #0a3d42, #0d5c63);
+  border-bottom: 2px solid #c9a84c;
+  padding: 8px 20px;
+  font-family: 'Heebo', sans-serif;
+  direction: rtl;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+#meridianPatientBar.show { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.mpb-chip {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f5f2eb;
+  white-space: nowrap;
+}
+.mpb-chip.gold { background: rgba(201,168,76,0.2); border-color: #c9a84c; color: #e8c96e; }
+.mpb-spacer { flex: 1; }
+.mpb-back {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: 'Heebo', sans-serif;
+}
+.mpb-back:hover { background: rgba(255,255,255,0.2); }
+#meridianPatientBar.show ~ * { padding-top: 44px; }
+.bridge-loaded body { padding-top: 44px; }
+</style>
+
+<!-- Patient context bar (hidden until CRM launch detected) -->
+<div id="meridianPatientBar">
+  <span style="font-size:16px;">⚕️</span>
+  <span class="mpb-chip gold" id="mpbPatient">👤 מטופל</span>
+  <span class="mpb-chip" id="mpbComplaint"></span>
+  <span class="mpb-chip" id="mpbApt" style="display:none"></span>
+  <div class="mpb-spacer"></div>
+  <a class="mpb-back" id="mpbBack" href="crm.html">← חזור ל-CRM</a>
+</div>
+
+<script>
+// ── READ URL PARAMS & ACTIVATE BRIDGE ────────────────────────
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const patient   = params.get('patient');
+  const complaint = params.get('complaint');
+  const aptId     = params.get('apt');
+  const fromCRM   = params.get('from') === 'crm';
+
+  if (!fromCRM && !patient) return; // Not launched from CRM — do nothing
+
+  // ── Show patient bar ──────────────────────────────────────
+  const bar = document.getElementById('meridianPatientBar');
+  bar.classList.add('show');
+  document.body.style.paddingTop = '44px';
+
+  if (patient) {
+    document.getElementById('mpbPatient').textContent = '👤 ' + decodeURIComponent(patient);
+  }
+  if (complaint) {
+    const c = decodeURIComponent(complaint);
+    document.getElementById('mpbComplaint').textContent = '🩺 ' + c;
+  }
+  if (aptId) {
+    const aptEl = document.getElementById('mpbApt');
+    aptEl.textContent = '📅 ' + aptId.substring(0,8) + '...';
+    aptEl.style.display = 'inline-block';
+  }
+
+  // ── Pre-fill inputs after page settles ───────────────────
+  setTimeout(function() {
+    if (complaint) {
+      const c = decodeURIComponent(complaint);
+
+      // Fill searchInput1 (primary multi-query field)
+      const s1 = document.getElementById('searchInput1');
+      if (s1) { s1.value = c; s1.dispatchEvent(new Event('input')); }
+
+      // Also fill smart search
+      const ss = document.getElementById('smartSearchInput');
+      if (ss) { ss.value = c; }
+
+      // Add patient name context to searchInput2 if available
+      if (patient) {
+        const s2 = document.getElementById('searchInput2');
+        if (s2 && !s2.value) {
+          s2.value = 'מטופל: ' + decodeURIComponent(patient);
+          s2.dispatchEvent(new Event('input'));
+        }
+      }
+
+      // Highlight the run button to draw attention
+      const runBtn = document.querySelector('.run-query-button');
+      if (runBtn) {
+        runBtn.style.animation = 'bridgePulse 1.5s 3';
+        runBtn.style.boxShadow = '0 0 20px rgba(13,92,99,0.8)';
+        setTimeout(() => {
+          runBtn.style.animation = '';
+          runBtn.style.boxShadow = '';
+        }, 5000);
+      }
+    }
+
+    // Show success toast
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;' +
+      'background:#0d5c63;color:white;padding:12px 20px;border-radius:12px;' +
+      'font-family:Heebo,sans-serif;font-size:13px;font-weight:700;direction:rtl;' +
+      'border:1px solid #c9a84c;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
+      'animation:toastIn 0.4s ease;';
+    toast.textContent = '✅ מטופל טעון — לחץ 🔍 הרץ חיפוש להתחלה';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+
+  }, 800); // Wait for page modules to load
+
+})();
+</script>
+
+<style>
+@keyframes bridgePulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.04); box-shadow: 0 0 30px rgba(13,92,99,0.9); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+
 </body>
 </html>
