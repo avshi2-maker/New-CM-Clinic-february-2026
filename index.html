@@ -510,6 +510,43 @@ function exitToClose() {
 }
 
 loadCategories();
+
+// ── SAFETY: supabaseClient for clinical-modules.js ─────────────────
+// app.js sets this on GitHub Pages; this fallback covers local testing
+(function() {
+  if (!window.supabaseClient) {
+    try {
+      const lib = window.supabase || window.Supabase;
+      if (lib) {
+        window.supabaseClient = lib.createClient(SUPA_URL, SUPA_KEY);
+        window.dbClient = window.supabaseClient;
+        console.log('✅ supabaseClient initialized inline');
+      }
+    } catch(e) { console.warn('supabaseClient init failed:', e.message); }
+  }
+})();
+
+// ── SAFETY STUBS: yinyang.js functions ────────────────────────────
+// yinyang.js overwrites these on GitHub Pages; stubs prevent errors locally
+if (typeof showYinYang === 'undefined') {
+  window.showYinYang = function() {
+    const m = document.getElementById('yinyang-module');
+    if (m) m.style.display = 'block';
+    else console.warn('yinyang.js not loaded yet');
+  };
+}
+if (typeof hideYinYang === 'undefined') {
+  window.hideYinYang = function() {
+    const m = document.getElementById('yinyang-module');
+    if (m) m.style.display = 'none';
+  };
+}
+if (typeof showYinYangResults === 'undefined') {
+  window.showYinYangResults = function() {
+    showYinYang();
+    setTimeout(function() { if (typeof showResults === 'function') showResults(); }, 300);
+  };
+}
 </script>
 
     <!-- Modules from Supabase Storage -->
