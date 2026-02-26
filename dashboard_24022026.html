@@ -14,8 +14,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
-
-/* HEADER */
 .hdr{background:linear-gradient(135deg,#0a3d44 0%,var(--teal) 50%,#0a4a52 100%);
   color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .hdr-brand{display:flex;align-items:center;gap:16px;}
@@ -27,8 +25,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 .hdr-right{display:flex;gap:12px;align-items:center;}
 .clock{background:rgba(0,0,0,0.25);color:#4adeac;font-family:monospace;
   font-size:16px;font-weight:900;padding:8px 16px;border-radius:10px;letter-spacing:2px;}
-
-/* ── EXTERNAL AI CHAT MENU ─────────────────────────────── */
 .ai-menu-wrap{position:relative;}
 .ai-menu-btn{
   background:linear-gradient(135deg,#c9a84c,#e8c96e);
@@ -77,23 +73,17 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 }
 .date-badge{background:rgba(255,255,255,0.1);color:white;padding:8px 14px;
   border-radius:10px;font-size:12px;font-weight:700;text-align:center;}
-
-/* STATS ROW */
 .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 24px;}
 @media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr);padding:16px;}}
 .stat-card{background:var(--card);border-radius:14px;padding:18px 20px;
   border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);text-align:center;}
 .stat-n{font-size:22px;font-weight:900;color:var(--teal);}
 .stat-l{font-size:10px;color:var(--muted);margin-top:2px;font-weight:700;}
-
-/* MAIN MODULES GRID */
 .modules-wrap{padding:0 24px 16px;}
 @media(max-width:700px){.modules-wrap{padding:0 12px 16px;}}
 .section-title{font-size:11px;font-weight:800;color:var(--muted);
   text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;margin-top:14px;}
 .modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
-
-/* MODULE CARD */
 .mod{background:var(--card);border-radius:16px;border:2px solid var(--border);
   box-shadow:0 2px 12px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s;
   text-decoration:none;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;}
@@ -106,20 +96,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
   border-top:1px solid var(--border);}
 .mod-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;}
 .mod-arrow{font-size:14px;color:var(--muted);}
-
-/* PRIMARY (large) modules */
 .mod.primary{border-color:var(--teal);}
 .mod.primary .mod-footer{background:var(--teal);color:white;}
 .mod.primary .mod-badge{background:rgba(255,255,255,0.2);color:white;}
 .mod.primary .mod-arrow{color:rgba(255,255,255,0.7);}
-
-/* GOLD module */
 .mod.gold{border-color:var(--gold);}
 .mod.gold .mod-footer{background:var(--gold);color:white;}
 .mod.gold .mod-badge{background:rgba(255,255,255,0.2);color:white;}
 .mod.gold .mod-arrow{color:rgba(255,255,255,0.7);}
-
-/* TODAY PANEL */
 .today-panel{background:var(--card);border-radius:16px;border:1px solid var(--border);
   box-shadow:0 2px 12px rgba(0,0,0,0.05);padding:22px 26px;margin:0 40px 28px;}
 @media(max-width:700px){.today-panel{margin:0 16px 20px;}}
@@ -136,8 +120,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 .s-confirmed{background:#d1fae5;color:#065f46;}
 .s-done{background:#f3f4f6;color:#374151;}
 .no-apts{text-align:center;padding:20px;color:var(--muted);font-size:13px;}
-
-/* QUICK ACTIONS */
 .qa-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 24px 14px;}
 @media(max-width:700px){.qa-row{padding:0 16px 20px;}}
 .qa-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;
@@ -147,8 +129,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 .qa-btn:hover{border-color:var(--teal);background:#e8f4f5;color:var(--teal);}
 .qa-btn.primary{background:var(--teal);color:white;border-color:var(--teal);}
 .qa-btn.primary:hover{background:var(--teal-l);}
-
-/* DASHBOARD BACK BUTTON */
 .dash-back{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--gold,#c9933a),#e8a84c);
   color:white!important;text-decoration:none!important;padding:8px 16px;border-radius:10px;
   font-family:'Heebo',sans-serif;font-size:12px;font-weight:800;border:none;cursor:pointer;
@@ -156,10 +136,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
   animation:dashPulse 2.5s ease-in-out infinite;}
 .dash-back:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,147,58,0.6);animation:none;}
 @keyframes dashPulse{0%,100%{box-shadow:0 3px 12px rgba(201,147,58,0.4);}50%{box-shadow:0 3px 20px rgba(201,147,58,0.8);}}
-/* THERAPIST NAME BADGE */
 .therapist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);
   color:white;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;}
-/* FOOTER BACK BAR */
 .footer-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;
   background:rgba(10,61,68,0.95);backdrop-filter:blur(8px);
   padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
@@ -167,8 +145,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);min-he
 .footer-bar .footer-module{font-size:11px;color:rgba(255,255,255,0.95);font-family:'Heebo',sans-serif;}
 .footer-bar .footer-user{font-size:11px;color:#4adeac;font-family:'Heebo',sans-serif;font-weight:700;}
 body{padding-bottom:36px;}
-
-/* ── CLINICAL INTELLIGENCE WIDGET ─────────────────────────── */
 .ci-wrap{padding:0 24px 14px;}
 @media(max-width:700px){.ci-wrap{padding:0 16px 20px;}}
 .ci-panel{background:var(--card);border-radius:16px;border:2px solid #d97706;
@@ -184,8 +160,6 @@ body{padding-bottom:36px;}
 .ci-body{padding:16px 20px;}
 .ci-loading{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
 .ci-empty{text-align:center;padding:20px;color:var(--muted);font-size:13px;}
-
-/* Patient intel card */
 .ci-patient-card{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
 .ci-patient-card:last-child{margin-bottom:0;}
 .ci-pt-header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
@@ -202,8 +176,6 @@ body{padding-bottom:36px;}
 .ci-chevron.open{transform:rotate(180deg);}
 .ci-pt-body{display:none;padding:0 16px 14px;border-top:1px solid var(--border);}
 .ci-pt-body.open{display:block;}
-
-/* Category sections */
 .ci-cat{margin-top:12px;}
 .ci-cat-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;
   color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:6px;padding:4px 0;
@@ -217,8 +189,6 @@ body{padding-bottom:36px;}
 .ci-flag.warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
 .ci-flag.danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
 .ci-flag.info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;}
-
-/* ── PREGNANCY REFERENCE BUTTON (floating in header) ──── */
 .preg-ref-btn{
   background:linear-gradient(135deg,#831843,#be185d);
   color:white;border:none;padding:9px 16px;border-radius:10px;
@@ -227,39 +197,15 @@ body{padding-bottom:36px;}
   transition:all 0.2s;box-shadow:0 2px 10px rgba(190,24,93,0.4);
 }
 .preg-ref-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(190,24,93,0.5);}
-
-/* ── PREGNANCY REFERENCE OVERLAY ─────────────────────── */
-#pregOverlay{
-  display:none;position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,0.88);overflow-y:auto;padding:20px 16px 40px;
-}
+#pregOverlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.88);overflow-y:auto;padding:20px 16px 40px;}
 #pregOverlay.show{display:block;}
-.preg-overlay-inner{
-  max-width:900px;margin:0 auto;
-}
-.preg-overlay-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 0 16px;
-}
-.preg-overlay-title{
-  font-size:22px;font-weight:900;color:white;
-  font-family:'Heebo',sans-serif;
-  display:flex;align-items:center;gap:12px;
-}
-.preg-close-btn{
-  background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);
-  color:white;padding:8px 20px;border-radius:10px;cursor:pointer;
-  font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;
-}
+.preg-overlay-inner{max-width:900px;margin:0 auto;}
+.preg-overlay-header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 16px;}
+.preg-overlay-title{font-size:22px;font-weight:900;color:white;font-family:'Heebo',sans-serif;display:flex;align-items:center;gap:12px;}
+.preg-close-btn{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);color:white;padding:8px 20px;border-radius:10px;cursor:pointer;font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;}
 .preg-close-btn:hover{background:rgba(255,255,255,0.2);}
-.preg-month-tabs{
-  display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;
-}
-.preg-month-tab{
-  padding:8px 14px;border-radius:10px;border:2px solid rgba(255,255,255,0.15);
-  color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;font-size:12px;
-  font-weight:700;cursor:pointer;transition:all 0.15s;background:transparent;
-}
+.preg-month-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.preg-month-tab{padding:8px 14px;border-radius:10px;border:2px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;background:transparent;}
 .preg-month-tab:hover{border-color:rgba(255,255,255,0.4);color:white;}
 .preg-month-tab.active{background:#be185d;border-color:#be185d;color:white;}
 .preg-month-tab.tri1{border-color:#dc2626;}
@@ -268,46 +214,20 @@ body{padding-bottom:36px;}
 .preg-month-tab.tri2.active{background:#d97706;border-color:#d97706;}
 .preg-month-tab.tri3{border-color:#7c3aed;}
 .preg-month-tab.tri3.active{background:#7c3aed;border-color:#7c3aed;}
-#pregCardContainer{ min-height:200px; }
-.preg-trimester-legend{
-  display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;
-}
-.preg-tri-badge{
-  display:flex;align-items:center;gap:6px;
-  font-family:'Heebo',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);
-}
+#pregCardContainer{min-height:200px;}
+.preg-trimester-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.preg-tri-badge{display:flex;align-items:center;gap:6px;font-family:'Heebo',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);}
 .preg-tri-dot{width:10px;height:10px;border-radius:50%;}
-
-
-/* ── MODE SWITCHER: Pregnancy | Breastfeeding ──────────────── */
-.mode-switcher{
-  display:flex;background:rgba(255,255,255,0.08);border-radius:14px;padding:4px;
-  gap:4px;margin-bottom:20px;width:fit-content;
-}
-.mode-btn{
-  padding:10px 24px;border-radius:10px;border:none;cursor:pointer;
-  font-family:'Heebo',sans-serif;font-size:13px;font-weight:800;
-  transition:all 0.2s;color:rgba(255,255,255,0.5);background:transparent;
-}
-.mode-btn.active-preg{background:linear-gradient(135deg,#831843,#be185d);color:white;
-  box-shadow:0 4px 12px rgba(190,24,93,0.4);}
-.mode-btn.active-bf{background:linear-gradient(135deg,#0f4c75,#1976a8);color:white;
-  box-shadow:0 4px 12px rgba(25,118,168,0.4);}
+.mode-switcher{display:flex;background:rgba(255,255,255,0.08);border-radius:14px;padding:4px;gap:4px;margin-bottom:20px;width:fit-content;}
+.mode-btn{padding:10px 24px;border-radius:10px;border:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:13px;font-weight:800;transition:all 0.2s;color:rgba(255,255,255,0.5);background:transparent;}
+.mode-btn.active-preg{background:linear-gradient(135deg,#831843,#be185d);color:white;box-shadow:0 4px 12px rgba(190,24,93,0.4);}
+.mode-btn.active-bf{background:linear-gradient(135deg,#0f4c75,#1976a8);color:white;box-shadow:0 4px 12px rgba(25,118,168,0.4);}
 .mode-btn:hover:not(.active-preg):not(.active-bf){color:white;background:rgba(255,255,255,0.1);}
-
-/* BF phase tabs */
 .bf-phase-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
-.bf-phase-tab{
-  padding:10px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.15);
-  color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;font-size:12px;
-  font-weight:700;cursor:pointer;transition:all 0.15s;background:transparent;
-  text-align:center;
-}
+.bf-phase-tab{padding:10px 16px;border-radius:10px;border:2px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;background:transparent;text-align:center;}
 .bf-phase-tab:hover{border-color:rgba(255,255,255,0.4);color:white;}
-.bf-phase-tab.active{background:linear-gradient(135deg,#0f4c75,#1976a8);
-  border-color:#1976a8;color:white;}
+.bf-phase-tab.active{background:linear-gradient(135deg,#0f4c75,#1976a8);border-color:#1976a8;color:white;}
 #bfCardContainer{min-height:200px;}
-
 </style>
 </head>
 <body>
@@ -325,85 +245,44 @@ body{padding-bottom:36px;}
     <span class="therapist-badge therapist-name-slot" style="display:none;background:rgba(255,255,255,0.2);color:white;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;"></span>
     <div class="date-badge" id="dateDisp">—</div>
     <button class="preg-ref-btn" onclick="openPregRef()">🤰 מדריך הריון</button>
-
-    <!-- ── EXTERNAL AI CHAT MENU ─────────────────────────── -->
     <div class="ai-menu-wrap">
-      <button class="ai-menu-btn" onclick="toggleAIMenu(event)">
-        🤖 AI חיצוני ▾
-      </button>
+      <button class="ai-menu-btn" onclick="toggleAIMenu(event)">🤖 AI חיצוני ▾</button>
       <div class="ai-dropdown" id="aiDropdown">
         <div class="ai-drop-title">// כלי AI חיצוניים — נפתחים בלשונית חדשה</div>
-
         <a class="ai-drop-item" href="https://claude.ai" target="_blank" rel="noopener">
           <span class="ai-icon">🟠</span>
-          <span class="ai-info">
-            <span class="ai-name">Claude (Anthropic)</span>
-            <span class="ai-desc">ללא הרשמה במצב אורח · מקצועי וארוך טווח</span>
-          </span>
+          <span class="ai-info"><span class="ai-name">Claude (Anthropic)</span><span class="ai-desc">ללא הרשמה במצב אורח · מקצועי וארוך טווח</span></span>
         </a>
-
         <a class="ai-drop-item" href="https://chat.openai.com" target="_blank" rel="noopener">
           <span class="ai-icon">🟢</span>
-          <span class="ai-info">
-            <span class="ai-name">ChatGPT (OpenAI)</span>
-            <span class="ai-desc">GPT-4o · ללא הרשמה בגרסה החופשית</span>
-          </span>
+          <span class="ai-info"><span class="ai-name">ChatGPT (OpenAI)</span><span class="ai-desc">GPT-4o · ללא הרשמה בגרסה החופשית</span></span>
         </a>
-
         <a class="ai-drop-item" href="https://gemini.google.com" target="_blank" rel="noopener">
           <span class="ai-icon">🔵</span>
-          <span class="ai-info">
-            <span class="ai-name">Gemini (Google)</span>
-            <span class="ai-desc">ללא הרשמה · חיבור Google חופשי</span>
-          </span>
+          <span class="ai-info"><span class="ai-name">Gemini (Google)</span><span class="ai-desc">ללא הרשמה · חיבור Google חופשי</span></span>
         </a>
-
         <a class="ai-drop-item" href="https://www.perplexity.ai" target="_blank" rel="noopener">
           <span class="ai-icon">🔍</span>
-          <span class="ai-info">
-            <span class="ai-name">Perplexity AI</span>
-            <span class="ai-desc">חיפוש + AI · ללא הרשמה · מצוין למחקר</span>
-          </span>
+          <span class="ai-info"><span class="ai-name">Perplexity AI</span><span class="ai-desc">חיפוש + AI · ללא הרשמה · מצוין למחקר</span></span>
         </a>
-
         <a class="ai-drop-item" href="https://copilot.microsoft.com" target="_blank" rel="noopener">
           <span class="ai-icon">🪟</span>
-          <span class="ai-info">
-            <span class="ai-name">Microsoft Copilot</span>
-            <span class="ai-desc">ללא הרשמה · GPT-4 · חיפוש רשת</span>
-          </span>
+          <span class="ai-info"><span class="ai-name">Microsoft Copilot</span><span class="ai-desc">ללא הרשמה · GPT-4 · חיפוש רשת</span></span>
         </a>
-
         <div class="ai-drop-note">✅ כל הכלים נפתחים בלשונית חדשה — אתה נשאר בדשבורד</div>
       </div>
     </div>
-
-  <div class="clock" id="clock">00:00:00</div>
+    <div class="clock" id="clock">00:00:00</div>
   </div>
 </div>
 
 <!-- STATS -->
 <div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-n" id="stPatients">—</div>
-    <div class="stat-l">👥 מטופלים רשומים</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="stTherapists">—</div>
-    <div class="stat-l">🧑‍⚕️ מטפלים</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="stRooms">—</div>
-    <div class="stat-l">🚪 חדרים פעילים</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="stToday">—</div>
-    <div class="stat-l">📅 תורים היום</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-n" id="stWeek">—</div>
-    <div class="stat-l">📆 תורים השבוע</div>
-  </div>
+  <div class="stat-card"><div class="stat-n" id="stPatients">—</div><div class="stat-l">👥 מטופלים רשומים</div></div>
+  <div class="stat-card"><div class="stat-n" id="stTherapists">—</div><div class="stat-l">🧑‍⚕️ מטפלים</div></div>
+  <div class="stat-card"><div class="stat-n" id="stRooms">—</div><div class="stat-l">🚪 חדרים פעילים</div></div>
+  <div class="stat-card"><div class="stat-n" id="stToday">—</div><div class="stat-l">📅 תורים היום</div></div>
+  <div class="stat-card"><div class="stat-n" id="stWeek">—</div><div class="stat-l">📆 תורים השבוע</div></div>
 </div>
 
 <!-- TODAY'S APPOINTMENTS -->
@@ -411,7 +290,6 @@ body{padding-bottom:36px;}
   <h3>📅 תורים היום <span id="todayDate" style="font-weight:400;font-size:12px;color:var(--muted);"></span></h3>
   <div id="todayList"><div class="no-apts">⏳ טוען...</div></div>
 </div>
-
 
 <!-- CLINICAL INTELLIGENCE WIDGET -->
 <div class="ci-wrap">
@@ -440,106 +318,48 @@ body{padding-bottom:36px;}
 
 <!-- MODULES GRID -->
 <div class="modules-wrap">
-
   <div class="section-title">📋 ניהול יומי / Daily Operations</div>
   <div class="modules">
-
     <a class="mod primary" href="calendar_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">📅</span>
-        <div class="mod-title">לוח שנה</div>
-        <div class="mod-sub">תצוגת יום / שבוע / מטפלים<br>צבעי סטטוס, סנכרון Google Calendar</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge">CALENDAR</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">📅</span><div class="mod-title">לוח שנה</div><div class="mod-sub">תצוגת יום / שבוע / מטפלים<br>צבעי סטטוס, סנכרון Google Calendar</div></div>
+      <div class="mod-footer"><span class="mod-badge">CALENDAR</span><span class="mod-arrow">←</span></div>
     </a>
-
     <a class="mod primary" href="appointments_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">✏️</span>
-        <div class="mod-title">קביעת תור</div>
-        <div class="mod-sub">אשף 7 שלבים<br>פיזי / וידאו, תזכורות WhatsApp</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge">BOOKING</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">✏️</span><div class="mod-title">קביעת תור</div><div class="mod-sub">אשף 7 שלבים<br>פיזי / וידאו, תזכורות WhatsApp</div></div>
+      <div class="mod-footer"><span class="mod-badge">BOOKING</span><span class="mod-arrow">←</span></div>
     </a>
-
     <a class="mod primary" href="queue_board_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">🏥</span>
-        <div class="mod-title">לוח תור המתנה</div>
-        <div class="mod-sub">ניהול תור בזמן אמת<br>מצב חדרים, שלב הטיפול</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge">QUEUE</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">🏥</span><div class="mod-title">לוח תור המתנה</div><div class="mod-sub">ניהול תור בזמן אמת<br>מצב חדרים, שלב הטיפול</div></div>
+      <div class="mod-footer"><span class="mod-badge">QUEUE</span><span class="mod-arrow">←</span></div>
     </a>
-
   </div>
 
   <div class="section-title">👥 ניהול מטופלים ומטפלים / People</div>
   <div class="modules">
-
     <a class="mod" href="patient_intake_v3_23022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">👤</span>
-        <div class="mod-title">רישום מטופל</div>
-        <div class="mod-sub">טופס קבלה דו-לשוני<br>זיהוי קולי עברי, אזהרות הריון</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">INTAKE</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">👤</span><div class="mod-title">רישום מטופל</div><div class="mod-sub">טופס קבלה דו-לשוני<br>זיהוי קולי עברי, אזהרות הריון</div></div>
+      <div class="mod-footer"><span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">INTAKE</span><span class="mod-arrow">←</span></div>
     </a>
 
-    <a class="mod" href="crm_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">📊</span>
-        <div class="mod-title">CRM מטופלים</div>
-        <div class="mod-sub">היסטוריה רפואית<br>תורים, הערות, מסמכים</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">CRM</span>
-        <span class="mod-arrow">←</span>
-      </div>
+    <!-- ✅ FIX 1: Changed from crm_24022026.html to crm.html -->
+    <a class="mod" href="crm.html">
+      <div class="mod-top"><span class="mod-ico">📊</span><div class="mod-title">CRM מטופלים</div><div class="mod-sub">היסטוריה רפואית<br>תורים, הערות, מסמכים</div></div>
+      <div class="mod-footer"><span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">CRM</span><span class="mod-arrow">←</span></div>
     </a>
 
     <a class="mod" href="therapist_intake_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">🧑‍⚕️</span>
-        <div class="mod-title">רישום מטפל</div>
-        <div class="mod-sub">פרופיל מלא, לוח עבודה<br>מחשבון עלות טוקנים</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">THERAPIST</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">🧑‍⚕️</span><div class="mod-title">רישום מטפל</div><div class="mod-sub">פרופיל מלא, לוח עבודה<br>מחשבון עלות טוקנים</div></div>
+      <div class="mod-footer"><span class="mod-badge" style="background:#e8f4f5;color:var(--teal);">THERAPIST</span><span class="mod-arrow">←</span></div>
     </a>
-
   </div>
 
   <div class="section-title">⚙️ הגדרות / Setup</div>
   <div class="modules">
-
     <a class="mod gold" href="rooms_manager_24022026.html">
-      <div class="mod-top">
-        <span class="mod-ico">🚪</span>
-        <div class="mod-title">ניהול חדרים</div>
-        <div class="mod-sub">הגדרת חדרים, ציוד<br>שירותים מורשים לכל חדר</div>
-      </div>
-      <div class="mod-footer">
-        <span class="mod-badge">ROOMS</span>
-        <span class="mod-arrow">←</span>
-      </div>
+      <div class="mod-top"><span class="mod-ico">🚪</span><div class="mod-title">ניהול חדרים</div><div class="mod-sub">הגדרת חדרים, ציוד<br>שירותים מורשים לכל חדר</div></div>
+      <div class="mod-footer"><span class="mod-badge">ROOMS</span><span class="mod-arrow">←</span></div>
     </a>
-
   </div>
-
 </div>
 
 <script>
@@ -547,10 +367,8 @@ const SUPA_URL='https://iqfglrwjemogoycbzltt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
 let db=null;
 function getDB(){if(!db){const s=window.supabase||window.Supabase;if(s)db=s.createClient(SUPA_URL,SUPA_KEY);}return db;}
-
 function h(v){return String(v).padStart(2,'0');}
 
-// Clock + Date
 setInterval(()=>{
   const n=new Date();
   document.getElementById('clock').textContent=`${h(n.getHours())}:${h(n.getMinutes())}:${h(n.getSeconds())}`;
@@ -558,13 +376,11 @@ setInterval(()=>{
 
 document.addEventListener('DOMContentLoaded',()=>{
   const now=new Date();
-  document.getElementById('dateDisp').textContent=
-    now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('todayDate').textContent=
-    now.toLocaleDateString('he-IL',{day:'numeric',month:'long'});
+  document.getElementById('dateDisp').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('todayDate').textContent=now.toLocaleDateString('he-IL',{day:'numeric',month:'long'});
   loadStats();
   loadTodayApts();
-  setTimeout(loadClinicalIntel, 800); // slight delay so appointments load first
+  setTimeout(loadClinicalIntel, 800);
 });
 
 async function loadStats(){
@@ -572,19 +388,13 @@ async function loadStats(){
   try{
     const today=new Date().toISOString().split('T')[0];
     const weekEnd=new Date(); weekEnd.setDate(weekEnd.getDate()+7);
-
     const [p,t,r,td,wk]=await Promise.all([
       db.from('patients').select('id',{count:'exact',head:true}),
       db.from('therapists').select('id',{count:'exact',head:true}),
       db.from('rooms').select('id',{count:'exact',head:true}).eq('status','active'),
-      db.from('appointments').select('id',{count:'exact',head:true})
-        .gte('start_datetime',today+'T00:00:00').lte('start_datetime',today+'T23:59:59')
-        .not('status','in','("cancelled","noShow")'),
-      db.from('appointments').select('id',{count:'exact',head:true})
-        .gte('start_datetime',today+'T00:00:00').lte('start_datetime',weekEnd.toISOString())
-        .not('status','in','("cancelled","noShow")')
+      db.from('appointments').select('id',{count:'exact',head:true}).gte('start_datetime',today+'T00:00:00').lte('start_datetime',today+'T23:59:59').not('status','in','("cancelled","noShow")'),
+      db.from('appointments').select('id',{count:'exact',head:true}).gte('start_datetime',today+'T00:00:00').lte('start_datetime',weekEnd.toISOString()).not('status','in','("cancelled","noShow")')
     ]);
-
     document.getElementById('stPatients').textContent=p.count??'—';
     document.getElementById('stTherapists').textContent=t.count??'—';
     document.getElementById('stRooms').textContent=r.count??'—';
@@ -597,1031 +407,268 @@ async function loadTodayApts(){
   const db=getDB(); if(!db){setTimeout(loadTodayApts,600);return;}
   const today=new Date().toISOString().split('T')[0];
   try{
-    const{data,error}=await db.from('appointments').select('*')
-      .gte('start_datetime',today+'T00:00:00')
-      .lte('start_datetime',today+'T23:59:59')
-      .order('start_datetime');
+    const{data,error}=await db.from('appointments').select('*').gte('start_datetime',today+'T00:00:00').lte('start_datetime',today+'T23:59:59').order('start_datetime');
     if(error)throw error;
     const list=document.getElementById('todayList');
     if(!data||!data.length){list.innerHTML='<div class="no-apts">📭 אין תורים היום</div>';return;}
-    const statusLabel={'booked':'קבוע','confirmed':'אושר','inTreatment':'בטיפול',
-      'completed':'הושלם','cancelled':'בוטל','noShow':'לא הגיע','checkedIn':'הגיע'};
-    const statusClass={'booked':'s-booked','confirmed':'s-confirmed','completed':'s-done',
-      'inTreatment':'s-confirmed','cancelled':'s-done','noShow':'s-done','checkedIn':'s-confirmed'};
+    const statusLabel={'booked':'קבוע','confirmed':'אושר','inTreatment':'בטיפול','completed':'הושלם','cancelled':'בוטל','noShow':'לא הגיע','checkedIn':'הגיע'};
+    const statusClass={'booked':'s-booked','confirmed':'s-confirmed','completed':'s-done','inTreatment':'s-confirmed','cancelled':'s-done','noShow':'s-done','checkedIn':'s-confirmed'};
     list.innerHTML=data.map(a=>{
       const t=new Date(a.start_datetime);
       const time=`${h(t.getHours())}:${h(t.getMinutes())}`;
       const sl=statusLabel[a.status]||a.status;
       const sc=statusClass[a.status]||'s-booked';
-      return `<div class="apt-row">
-        <div class="apt-time">${time}</div>
-        <div class="apt-name">${a.patient_name||'—'}</div>
-        <div class="apt-therapist">${a.therapist_name||''}</div>
-        <span class="apt-status ${sc}">${sl}</span>
-      </div>`;
+      return `<div class="apt-row"><div class="apt-time">${time}</div><div class="apt-name">${a.patient_name||'—'}</div><div class="apt-therapist">${a.therapist_name||''}</div><span class="apt-status ${sc}">${sl}</span></div>`;
     }).join('');
   }catch(e){document.getElementById('todayList').innerHTML='<div class="no-apts">שגיאה בטעינה</div>';}
 }
 
+// ══ OPEN SESSION — ✅ FIX 2: now sends from=crm, patient=, apt= so index.html shows patient bar ══
+function openSession(event, patientId, patientNameEncoded) {
+  event.stopPropagation();
+  var patientName = decodeURIComponent(patientNameEncoded);
+  sessionStorage.setItem('tcm_patient_id',   patientId);
+  sessionStorage.setItem('tcm_patient_name', patientName);
+  // ✅ FIXED: was ?patient_id=X&patient_name=X (bridge not triggered)
+  // NOW sends from=crm + patient= + apt= so index.html activates patient bar + chips + SOS
+  window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/index.html'
+    + '?from=crm'
+    + '&patient='      + encodeURIComponent(patientName)
+    + '&patient_name=' + encodeURIComponent(patientName)
+    + '&apt='          + encodeURIComponent(patientId);
+}
 
-// ═══════════════════════════════════════════════════════════
-// CLINICAL INTELLIGENCE ENGINE
-// Maps patient demographics → 589 RAG categories → key Q&As
-// ═══════════════════════════════════════════════════════════
+// ══ CLINICAL INTELLIGENCE ENGINE ══
 const CI_CAT_LABELS = {
-  'pediatrics':'👶 ילדים',
-  'adolescent':'🧒 מתבגרים',
-  'adult':'🧑 מבוגרים',
-  'elderly':'👴 קשישים',
-  'elderly_neuro':'🧠 קשישים — נוירולוגיה',
-  'pregnancy':'🤰 הריון',
-  'breastfeeding':'🍼 הנקה',
-  'allergies':'🌿 אלרגיות',
-  'cardiology':'❤️ קרדיולוגיה',
-  'anxiety':'😰 חרדה',
-  'oncology':'🎗️ אונקולוגיה',
-  'herbs':'🌱 עשבי מרפא'
+  'pediatrics':'👶 ילדים','adolescent':'🧒 מתבגרים','adult':'🧑 מבוגרים',
+  'elderly':'👴 קשישים','elderly_neuro':'🧠 קשישים — נוירולוגיה',
+  'pregnancy':'🤰 הריון','breastfeeding':'🍼 הנקה','allergies':'🌿 אלרגיות',
+  'cardiology':'❤️ קרדיולוגיה','anxiety':'😰 חרדה','oncology':'🎗️ אונקולוגיה','herbs':'🌱 עשבי מרפא'
 };
 
 function mapDemoToCategories(patient) {
-  var cats = [];
-  var age = parseInt(patient.age) || 0;
-  var gender = (patient.gender || '').toLowerCase();
-  var pregStatus = (patient.pregnancy_status || '').toLowerCase();
-  var meds = (patient.current_medications || '').toLowerCase();
-  var allergies = (patient.allergies || '').trim();
-  var complaints = ((patient.chief_complaint||'') + ' ' + (patient.current_symptoms||'')).toLowerCase();
-  var prevCond = (patient.previous_conditions || '').toLowerCase();
-
-  // Age groups
-  if(age > 0 && age <= 12) cats.push('pediatrics');
-  else if(age >= 13 && age <= 18) cats.push('adolescent');
-  else if(age >= 19 && age <= 69) cats.push('adult');
-  else if(age >= 70) { cats.push('elderly'); cats.push('elderly_neuro'); }
-
-  // Pregnancy / breastfeeding
-  if(gender === 'female' || gender === 'f' || gender === 'נקבה') {
-    if(pregStatus && pregStatus !== 'not_pregnant' && pregStatus !== '' && pregStatus !== 'no') {
-      cats.push('pregnancy');
-    }
-    var bfVal = (patient.breastfeeding || '').toLowerCase();
-    if(bfVal === 'yes' || bfVal === 'כן') cats.push('breastfeeding');
+  var cats=[];var age=parseInt(patient.age)||0;var gender=(patient.gender||'').toLowerCase();
+  var pregStatus=(patient.pregnancy_status||'').toLowerCase();var meds=(patient.current_medications||'').toLowerCase();
+  var allergies=(patient.allergies||'').trim();
+  var complaints=((patient.chief_complaint||'')+' '+(patient.current_symptoms||'')).toLowerCase();
+  var prevCond=(patient.previous_conditions||'').toLowerCase();
+  if(age>0&&age<=12)cats.push('pediatrics');
+  else if(age>=13&&age<=18)cats.push('adolescent');
+  else if(age>=19&&age<=69)cats.push('adult');
+  else if(age>=70){cats.push('elderly');cats.push('elderly_neuro');}
+  if(gender==='female'||gender==='f'||gender==='נקבה'){
+    if(pregStatus&&pregStatus!=='not_pregnant'&&pregStatus!==''&&pregStatus!=='no')cats.push('pregnancy');
+    var bfVal=(patient.breastfeeding||'').toLowerCase();
+    if(bfVal==='yes'||bfVal==='כן')cats.push('breastfeeding');
   }
-
-  // Allergies
-  if(allergies && allergies.length > 2) cats.push('allergies');
-
-  // Medications → clinical flags
-  if(meds.includes('heart') || meds.includes('לב') || meds.includes('blood pressure') || 
-     meds.includes('לחץ דם') || meds.includes('digox') || meds.includes('warfarin') ||
-     meds.includes('aspirin') || meds.includes('אספירין')) {
-    cats.push('cardiology');
-  }
-  if(meds.includes('anxiet') || meds.includes('depress') || meds.includes('xanax') ||
-     meds.includes('cipralex') || meds.includes('prozac') || meds.includes('antidepress') ||
-     complaints.includes('חרדה') || complaints.includes('anxiety') || complaints.includes('דיכאון')) {
-    cats.push('anxiety');
-  }
-  if(meds.includes('chemo') || meds.includes('cancer') || meds.includes('סרטן') ||
-     prevCond.includes('cancer') || prevCond.includes('סרטן') || prevCond.includes('tumor')) {
-    cats.push('oncology');
-  }
-
-  // Always include herbs for any patient
+  if(allergies&&allergies.length>2)cats.push('allergies');
+  if(meds.includes('heart')||meds.includes('לב')||meds.includes('blood pressure')||meds.includes('לחץ דם')||meds.includes('digox')||meds.includes('warfarin')||meds.includes('aspirin')||meds.includes('אספירין'))cats.push('cardiology');
+  if(meds.includes('anxiet')||meds.includes('depress')||meds.includes('xanax')||meds.includes('cipralex')||meds.includes('prozac')||meds.includes('antidepress')||complaints.includes('חרדה')||complaints.includes('anxiety')||complaints.includes('דיכאון'))cats.push('anxiety');
+  if(meds.includes('chemo')||meds.includes('cancer')||meds.includes('סרטן')||prevCond.includes('cancer')||prevCond.includes('סרטן')||prevCond.includes('tumor'))cats.push('oncology');
   cats.push('herbs');
-
-  // Remove duplicates
-  return cats.filter(function(v, i, a){ return a.indexOf(v) === i; });
+  return cats.filter(function(v,i,a){return a.indexOf(v)===i;});
 }
 
 function getRiskLevel(cats) {
-  if(cats.indexOf('pregnancy')>=0 || cats.indexOf('oncology')>=0 || cats.indexOf('cardiology')>=0)
-    return {level:'high', label:'🚫 סיכון גבוה', cls:'risk-high'};
-  if(cats.indexOf('elderly')>=0 || cats.indexOf('allergies')>=0 || cats.indexOf('anxiety')>=0)
-    return {level:'medium', label:'⚠️ דורש תשומת לב', cls:'risk-medium'};
-  if(cats.indexOf('pediatrics')>=0 || cats.indexOf('adolescent')>=0)
-    return {level:'low', label:'ℹ️ גיל מיוחד', cls:'risk-low'};
-  return {level:'none', label:'✅ סטנדרטי', cls:'risk-none'};
+  if(cats.indexOf('pregnancy')>=0||cats.indexOf('oncology')>=0||cats.indexOf('cardiology')>=0)return{level:'high',label:'🚫 סיכון גבוה',cls:'risk-high'};
+  if(cats.indexOf('elderly')>=0||cats.indexOf('allergies')>=0||cats.indexOf('anxiety')>=0)return{level:'medium',label:'⚠️ דורש תשומת לב',cls:'risk-medium'};
+  if(cats.indexOf('pediatrics')>=0||cats.indexOf('adolescent')>=0)return{level:'low',label:'ℹ️ גיל מיוחד',cls:'risk-low'};
+  return{level:'none',label:'✅ סטנדרטי',cls:'risk-none'};
 }
 
-async function fetchCategoryQAs(db, category, limit) {
-  limit = limit || 3;
-  try {
-    var res = await db.from('csv_32_589_hebrew_questions_20260201')
-      .select('question_hebrew,answer_hebrew')
-      .eq('category', category)
-      .limit(limit);
-    return (res.data || []);
-  } catch(e) { return []; }
+async function fetchCategoryQAs(db,category,limit){
+  limit=limit||3;
+  try{var res=await db.from('csv_32_589_hebrew_questions_20260201').select('question_hebrew,answer_hebrew').eq('category',category).limit(limit);return(res.data||[]);}catch(e){return[];}
 }
 
-async function loadClinicalIntel() {
-  var db = getDB();
-  var body = document.getElementById('ciBody');
-  if(!db || !body) return;
-  body.innerHTML = '<div class="ci-loading">⏳ טוען נתוני מודיעין קליני...</div>';
-
-  try {
-    // Step 1: Load today's appointments
-    var today = new Date().toISOString().split('T')[0];
-    var aptRes = await db.from('appointments')
-      .select('id,patient_id,patient_name,start_datetime,status')
-      .gte('start_datetime', today + 'T00:00:00')
-      .lte('start_datetime', today + 'T23:59:59')
-      .not('status','in','("cancelled","noShow","completed")')
-      .order('start_datetime');
-
-    var apts = aptRes.data || [];
-    if(!apts.length) {
-      body.innerHTML = '<div class="ci-empty">📭 אין תורים פעילים היום — אין נתונים קליניים להצגה</div>';
-      return;
-    }
-
-    // Step 2: Fetch patient records for today's patients
-    var patientIds = apts.map(function(a){ return a.patient_id; }).filter(Boolean);
-    var uniqueIds = patientIds.filter(function(v,i,a){ return a.indexOf(v)===i; });
-
-    if(!uniqueIds.length) {
-      body.innerHTML = '<div class="ci-empty">⚠️ לא נמצאו מזהי מטופלים — וודא שהתורים קשורים לרשומות מטופלים</div>';
-      return;
-    }
-
-    // patients table only has: id, full_name, date_of_birth, sex, phone, email, id_number, notes
-    // clinical fields live in patient_assessments.form_data (JSONB)
-    var patRes = await db.from('patients')
-      .select('id,full_name,date_of_birth,sex,notes,patient_assessments(form_data,pregnancy_status,medications,created_at)')
-      .in('id', uniqueIds);
-
-    // Flatten: merge form_data into the patient object
-    var patients = (patRes.data || []).map(function(p) {
-      var fd = (p.patient_assessments && p.patient_assessments[0] && p.patient_assessments[0].form_data) || {};
-      return Object.assign({}, p, {
-        gender:             fd.gender || p.sex || '',
-        age:                fd.age || '',
-        pregnancy_status:   fd.pregnancy_status || (p.patient_assessments&&p.patient_assessments[0]&&p.patient_assessments[0].pregnancy_status) || '',
-        breastfeeding:      fd.breastfeeding || '',
-        allergies:          fd.allergies || '',
-        current_medications:fd.current_medications || '',
-        chief_complaint:    fd.chief_complaint || '',
-        current_symptoms:   fd.current_symptoms || '',
-        previous_conditions:fd.previous_conditions || ''
+async function loadClinicalIntel(){
+  var db=getDB();var body=document.getElementById('ciBody');
+  if(!db||!body)return;
+  body.innerHTML='<div class="ci-loading">⏳ טוען נתוני מודיעין קליני...</div>';
+  try{
+    var today=new Date().toISOString().split('T')[0];
+    var aptRes=await db.from('appointments').select('id,patient_id,patient_name,start_datetime,status').gte('start_datetime',today+'T00:00:00').lte('start_datetime',today+'T23:59:59').not('status','in','("cancelled","noShow","completed")').order('start_datetime');
+    var apts=aptRes.data||[];
+    if(!apts.length){body.innerHTML='<div class="ci-empty">📭 אין תורים פעילים היום — אין נתונים קליניים להצגה</div>';return;}
+    var patientIds=apts.map(function(a){return a.patient_id;}).filter(Boolean);
+    var uniqueIds=patientIds.filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(!uniqueIds.length){body.innerHTML='<div class="ci-empty">⚠️ לא נמצאו מזהי מטופלים</div>';return;}
+    var patRes=await db.from('patients').select('id,full_name,date_of_birth,sex,notes,patient_assessments(form_data,pregnancy_status,medications,created_at)').in('id',uniqueIds);
+    var patients=(patRes.data||[]).map(function(p){
+      var fd=(p.patient_assessments&&p.patient_assessments[0]&&p.patient_assessments[0].form_data)||{};
+      return Object.assign({},p,{
+        gender:fd.gender||p.sex||'',age:fd.age||'',
+        pregnancy_status:fd.pregnancy_status||(p.patient_assessments&&p.patient_assessments[0]&&p.patient_assessments[0].pregnancy_status)||'',
+        breastfeeding:fd.breastfeeding||'',allergies:fd.allergies||'',
+        current_medications:fd.current_medications||'',chief_complaint:fd.chief_complaint||'',
+        current_symptoms:fd.current_symptoms||'',previous_conditions:fd.previous_conditions||''
       });
     });
-
-    if(!patients.length) {
-      body.innerHTML = '<div class="ci-empty">ℹ️ לא נמצאו רשומות מטופלים מפורטות — הוסף מטופלים דרך טופס הרשמה</div>';
-      return;
+    if(!patients.length){body.innerHTML='<div class="ci-empty">ℹ️ לא נמצאו רשומות מטופלים מפורטות</div>';return;}
+    var html='';
+    for(var pi=0;pi<patients.length;pi++){
+      var pat=patients[pi];
+      var apt=apts.find(function(a){return a.patient_id===pat.id;});
+      var cats=mapDemoToCategories(pat);var risk=getRiskLevel(cats);
+      var ageDisplay=pat.age||'';
+      if(!ageDisplay&&pat.date_of_birth)ageDisplay=Math.floor((new Date()-new Date(pat.date_of_birth))/(365.25*24*60*60*1000));
+      var genderHe=pat.gender==='Female'||pat.gender==='נקבה'?'נקבה ♀':pat.gender==='Male'||pat.gender==='זכר'?'זכר ♂':(pat.gender||'—');
+      var aptTime=apt?new Date(apt.start_datetime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'';
+      var bodyId='ci_body_'+pi;var chevId='ci_chev_'+pi;
+      var patNameEnc=encodeURIComponent(pat.full_name||'מטופל');
+      html+='<div class="ci-patient-card">';
+      html+='<div class="ci-pt-header" onclick="toggleCI(\''+bodyId+'\',\''+chevId+'\')">';
+      html+='<div><div class="ci-pt-name">'+(pat.full_name||'מטופל')+(aptTime?' — '+aptTime:'')+'</div>';
+      html+='<div class="ci-pt-meta">'+(ageDisplay?'גיל: '+ageDisplay:'')+(genderHe?' | '+genderHe:'')+(cats.length>1?' | '+cats.length+' קטגוריות קליניות':'')+'</div></div>';
+      html+='<div style="display:flex;align-items:center;gap:8px;">';
+      html+='<span class="ci-risk-badge '+risk.cls+'">'+risk.label+'</span>';
+      html+='<button onclick="openSession(event,\''+pat.id+'\',\''+patNameEnc+'\')" style="background:linear-gradient(135deg,#0d5c63,#1a8a94);color:white;border:none;border-radius:8px;padding:5px 12px;font-family:\'Heebo\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🟢 פתח מפגש</button>';
+      html+='<span class="ci-chevron" id="'+chevId+'">▼</span></div></div>';
+      html+='<div class="ci-pt-body" id="'+bodyId+'" data-patient-id="'+pat.id+'" data-cats="'+encodeURIComponent(JSON.stringify(cats))+'" data-loaded="false">';
+      html+='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">⏳ לחץ לטעינת נתונים קליניים...</div>';
+      html+='</div></div>';
     }
-
-    // Step 3: Build intel for each patient
-    var html = '';
-    for(var pi = 0; pi < patients.length; pi++) {
-      var pat = patients[pi];
-      var apt = apts.find(function(a){ return a.patient_id === pat.id; });
-      var cats = mapDemoToCategories(pat);
-      var risk = getRiskLevel(cats);
-
-      // Calc age if missing
-      var ageDisplay = pat.age || '';
-      if(!ageDisplay && pat.date_of_birth) {
-        ageDisplay = Math.floor((new Date() - new Date(pat.date_of_birth))/(365.25*24*60*60*1000));
-      }
-      var genderHe = pat.gender === 'Female' || pat.gender === 'נקבה' ? 'נקבה ♀' :
-                     pat.gender === 'Male' || pat.gender === 'זכר' ? 'זכר ♂' : (pat.gender||'—');
-      var aptTime = apt ? new Date(apt.start_datetime).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '';
-
-      var cardId = 'ci_card_' + pi;
-      var bodyId = 'ci_body_' + pi;
-      var chevId = 'ci_chev_' + pi;
-
-      html += '<div class="ci-patient-card">';
-      html += '<div class="ci-pt-header" onclick="toggleCI(&quot;' + bodyId + '&quot;,&quot;' + chevId + '&quot;)">';
-      html += '<div>';
-      html += '<div class="ci-pt-name">' + (pat.full_name||'מטופל') + (aptTime?' — '+aptTime:'') + '</div>';
-      html += '<div class="ci-pt-meta">' + 
-        (ageDisplay ? 'גיל: ' + ageDisplay : '') + 
-        (genderHe ? ' | ' + genderHe : '') + 
-        (cats.length > 1 ? ' | ' + cats.length + ' קטגוריות קליניות' : '') +
-        '</div>';
-      html += '</div>';
-      html += '<div style="display:flex;align-items:center;gap:8px;">';
-      html += '<span class="ci-risk-badge ' + risk.cls + '">' + risk.label + '</span>';
-      html += '<button onclick="openSession(event,\'' + pat.id + '\',\'' + encodeURIComponent(pat.full_name||'מטופל') + '\')" style="background:linear-gradient(135deg,#0d5c63,#1a8a94);color:white;border:none;border-radius:8px;padding:5px 12px;font-family:\'Heebo\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🟢 פתח מפגש</button>';
-      html += '<span class="ci-chevron" id="' + chevId + '">▼</span>';
-      html += '</div>';
-      html += '</div>';
-
-      // Body — loads lazily when opened
-      html += '<div class="ci-pt-body" id="' + bodyId + '" data-patient-id="' + pat.id + '" data-cats="' + encodeURIComponent(JSON.stringify(cats)) + '" data-loaded="false">';
-      html += '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">⏳ לחץ לטעינת נתונים קליניים...</div>';
-      html += '</div>';
-      html += '</div>';
-    }
-
-    body.innerHTML = html || '<div class="ci-empty">ℹ️ לא נמצאו פרופילים קליניים להיום</div>';
-
-  } catch(e) {
-    console.error('CI error:', e);
-    body.innerHTML = '<div class="ci-empty">❌ שגיאה בטעינת נתונים — ' + e.message + '</div>';
-  }
+    body.innerHTML=html||'<div class="ci-empty">ℹ️ לא נמצאו פרופילים קליניים להיום</div>';
+  }catch(e){console.error('CI error:',e);body.innerHTML='<div class="ci-empty">❌ שגיאה בטעינת נתונים — '+e.message+'</div>';}
 }
 
-function toggleCI(bodyId, chevId) {
-  var bodyEl = document.getElementById(bodyId);
-  var chevEl = document.getElementById(chevId);
-  if(!bodyEl) return;
-
-  var isOpen = bodyEl.classList.contains('open');
-  if(isOpen) {
-    bodyEl.classList.remove('open');
-    if(chevEl) chevEl.classList.remove('open');
-  } else {
-    bodyEl.classList.add('open');
-    if(chevEl) chevEl.classList.add('open');
-    // Lazy load Q&As on first open
-    if(bodyEl.dataset.loaded === 'false') {
-      loadPatientIntelBody(bodyEl);
-    }
-  }
+function toggleCI(bodyId,chevId){
+  var bodyEl=document.getElementById(bodyId);var chevEl=document.getElementById(chevId);if(!bodyEl)return;
+  var isOpen=bodyEl.classList.contains('open');
+  if(isOpen){bodyEl.classList.remove('open');if(chevEl)chevEl.classList.remove('open');}
+  else{bodyEl.classList.add('open');if(chevEl)chevEl.classList.add('open');if(bodyEl.dataset.loaded==='false')loadPatientIntelBody(bodyEl);}
 }
 
-async function loadPatientIntelBody(bodyEl) {
-  bodyEl.dataset.loaded = 'true';
-  var db = getDB();
-  if(!db) return;
-
-  var cats = [];
-  try { cats = JSON.parse(decodeURIComponent(bodyEl.dataset.cats || '[]')); } catch(e){}
-  var patientId = bodyEl.dataset.patientId;
-
-  if(!cats.length) {
-    bodyEl.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--muted);">ℹ️ לא זוהו קטגוריות קליניות ספציפיות לפרופיל זה</div>';
-    return;
-  }
-
-  // Fetch patient flags for display
-  var flagsHtml = '';
-  try {
-    var patRes = await db.from('patient_assessments')
-      .select('form_data,pregnancy_status')
-      .eq('patient_id', patientId)
-      .order('created_at', {ascending: false})
-      .limit(1).single();
-    if(patRes.data) {
-      var fd = patRes.data.form_data || {};
-      var p = Object.assign({}, fd, {pregnancy_status: patRes.data.pregnancy_status || fd.pregnancy_status});
-      var flags = [];
-      if(p.allergies && String(p.allergies).trim()) flags.push({txt:'🌿 ' + String(p.allergies).substring(0,60), cls:'warn'});
-      if(p.current_medications && String(p.current_medications).trim()) flags.push({txt:'💊 ' + String(p.current_medications).substring(0,60), cls:'info'});
-      if(p.pregnancy_status && p.pregnancy_status !== 'not_pregnant' && p.pregnancy_status !== 'no') flags.push({txt:'🤰 ' + p.pregnancy_status, cls:'danger'});
-      if(p.chief_complaint && String(p.chief_complaint).trim()) flags.push({txt:'📋 ' + String(p.chief_complaint).substring(0,60), cls:'info'});
-      if(flags.length) {
-        flagsHtml = '<div class="ci-flag-row">' + flags.map(function(f){ return '<span class="ci-flag '+f.cls+'">'+f.txt+'</span>'; }).join('') + '</div>';
-      }
+async function loadPatientIntelBody(bodyEl){
+  bodyEl.dataset.loaded='true';var db=getDB();if(!db)return;
+  var cats=[];try{cats=JSON.parse(decodeURIComponent(bodyEl.dataset.cats||'[]'));}catch(e){}
+  var patientId=bodyEl.dataset.patientId;
+  if(!cats.length){bodyEl.innerHTML='<div style="padding:12px;font-size:12px;color:var(--muted);">ℹ️ לא זוהו קטגוריות קליניות ספציפיות</div>';return;}
+  var flagsHtml='';
+  try{
+    var patRes=await db.from('patient_assessments').select('form_data,pregnancy_status').eq('patient_id',patientId).order('created_at',{ascending:false}).limit(1).single();
+    if(patRes.data){
+      var fd=patRes.data.form_data||{};var p=Object.assign({},fd,{pregnancy_status:patRes.data.pregnancy_status||fd.pregnancy_status});
+      var flags=[];
+      if(p.allergies&&String(p.allergies).trim())flags.push({txt:'🌿 '+String(p.allergies).substring(0,60),cls:'warn'});
+      if(p.current_medications&&String(p.current_medications).trim())flags.push({txt:'💊 '+String(p.current_medications).substring(0,60),cls:'info'});
+      if(p.pregnancy_status&&p.pregnancy_status!=='not_pregnant'&&p.pregnancy_status!=='no')flags.push({txt:'🤰 '+p.pregnancy_status,cls:'danger'});
+      if(p.chief_complaint&&String(p.chief_complaint).trim())flags.push({txt:'📋 '+String(p.chief_complaint).substring(0,60),cls:'info'});
+      if(flags.length)flagsHtml='<div class="ci-flag-row">'+flags.map(function(f){return'<span class="ci-flag '+f.cls+'">'+f.txt+'</span>';}).join('')+'</div>';
     }
-  } catch(e) {}
-
-  // Fetch Q&As for each category
-  var catsHtml = '';
-  for(var ci = 0; ci < cats.length; ci++) {
-    var cat = cats[ci];
-    var label = CI_CAT_LABELS[cat] || cat;
-    // Limit: 3 Q&As for primary categories, 2 for others
-    var limit = (cat === 'pregnancy' || cat === 'cardiology' || cat === 'oncology') ? 4 : 2;
-    var qas = await fetchCategoryQAs(db, cat, limit);
-    if(!qas.length) continue;
-
-    catsHtml += '<div class="ci-cat">';
-    catsHtml += '<div class="ci-cat-title">' + label + '</div>';
-    qas.forEach(function(qa) {
-      catsHtml += '<div class="ci-qa-row">';
-      catsHtml += '<div class="ci-q">❓ ' + (qa.question_hebrew||'') + '</div>';
-      if(qa.answer_hebrew) {
-        catsHtml += '<div class="ci-a">→ ' + qa.answer_hebrew.substring(0,200) + (qa.answer_hebrew.length>200?'...':'') + '</div>';
-      }
-      catsHtml += '</div>';
-    });
-    catsHtml += '</div>';
+  }catch(e){}
+  var catsHtml='';
+  for(var ci=0;ci<cats.length;ci++){
+    var cat=cats[ci];var label=CI_CAT_LABELS[cat]||cat;
+    var limit=(cat==='pregnancy'||cat==='cardiology'||cat==='oncology')?4:2;
+    var qas=await fetchCategoryQAs(db,cat,limit);if(!qas.length)continue;
+    catsHtml+='<div class="ci-cat"><div class="ci-cat-title">'+label+'</div>';
+    qas.forEach(function(qa){catsHtml+='<div class="ci-qa-row"><div class="ci-q">❓ '+(qa.question_hebrew||'')+'</div>'+(qa.answer_hebrew?'<div class="ci-a">→ '+qa.answer_hebrew.substring(0,200)+(qa.answer_hebrew.length>200?'..':'')+'</div>':'')+'</div>';});
+    catsHtml+='</div>';
   }
-
-  bodyEl.innerHTML = (flagsHtml ? '<div style="padding:12px 0 8px;">' + flagsHtml + '</div>' : '') +
-    (catsHtml || '<div style="padding:12px;font-size:12px;color:var(--muted);">✅ לא נמצאו נושאים ספציפיים לקטגוריות אלו</div>');
+  bodyEl.innerHTML=(flagsHtml?'<div style="padding:12px 0 8px;">'+flagsHtml+'</div>':'')+(catsHtml||'<div style="padding:12px;font-size:12px;color:var(--muted);">✅ לא נמצאו נושאים ספציפיים</div>');
 }
 
-
-// ════════════════════════════════════════════════════════════
-// TCM PREGNANCY PROTOCOL — COMPLETE MONTH-BY-MONTH DATA
-// Source: Standard TCM clinical protocols, Maciocia (Obstetrics),
-//         Deadman (Manual of Acupuncture), Beijing TCM University
-// ════════════════════════════════════════════════════════════
-const TCM_PREGNANCY_PROTOCOL = {
-
-  1: {
-    title_he: 'חודש ראשון', weeks: '1–4', trimester: 1,
-    organ_he: 'כליות — Kidney (Shaoyin)', organ_color: '#1d4ed8',
-    risk: 'critical', risk_label_he: '🔴 קריטי — השרשה',
-    risk_color: '#7f1d1d',
-    forbidden_points: ['LI4 (הגו)', 'SP6 (סאניינג׳יאו)', 'BL60 (קונלון)', 'BL67 (ז׳ייין)', 'GB21 (ג׳יאנג׳ינג)', 'CV3', 'CV4', 'CV5', 'CV6', 'CV7', 'GV4', 'ST25', 'ST28', 'ST29'],
-    caution_points: ['כל נקודות הבטן', 'נקודות גב תחתון חזקות', 'מוקסה חזקה בכלל', 'LV3 — ב-מינון גבוה'],
-    safe_points: ['PC6 (נייגואן) — עדין, לבחילות', 'HT7 — עדין, לחרדה', 'KD3 — חיזוק כליות', 'ST36 — ב-עדינות', 'SP3 — תמיכה'],
-    forbidden_herbs: ['Dong Quai / אנג׳ליקה (דאנג גואי)', 'Hong Hua — חריע', 'Tao Ren — גרעיני אפרסק', 'Mo Yao — מור', 'Ru Xiang — לבונה', 'Pennyroyal', 'Blue Cohosh', 'Barberry', 'Cascara', 'Senna', 'Wormwood / לענה', 'Tansy'],
-    caution_herbs: ['קינמון — מנה גדולה', 'ג׳ינג׳ר — מנה גדולה', 'ליקוריץ — שימוש מופרז'],
-    notes_he: 'שלב ההשרשה — המטופלת עשויה לא לדעת שהיא בהריון. שאל תמיד על תאריך וסת אחרון. זהירות מקסימלית. אסור לדחוף Qi כלפי מטה בשום צורה.'
-  },
-
-  2: {
-    title_he: 'חודש שני', weeks: '5–8', trimester: 1,
-    organ_he: 'כבד — Liver (Jueyin)', organ_color: '#166534',
-    risk: 'high', risk_label_he: '🔴 גבוה — אורגנוגנזה',
-    risk_color: '#7f1d1d',
-    forbidden_points: ['LI4', 'SP6', 'BL60', 'BL67', 'GB21', 'CV3–CV7', 'ST25', 'כל נקודות בטן'],
-    caution_points: ['LV3 — בעדינות בלבד', 'נקודות כבד חזקות — אסורות', 'לא להזיז Qi חזק'],
-    safe_points: ['PC6 — לבחילות בוקר (עדין)', 'ST36 — חיזוק Qi', 'SP3', 'LV3 — עדין מאוד, לכבד'],
-    forbidden_herbs: ['כל אמנגוגים', 'Dong Quai', 'Hong Hua', 'Chai Hu (Bupleurum) — מינון גדול', 'Bitter Orange / כתום מר', 'Rhubarb root'],
-    caution_herbs: ['ג׳ינג׳ר — רק בכמות קטנה לבחילות', 'כורכום — לא בכמות רפואית'],
-    notes_he: 'שיא בחילות הבוקר — PC6 יעיל מאוד אך בעדינות. תקופת יצירת האיברים — כל טעות עשויה לפגוע בעובר. שכיבה על הבטן אסורה.'
-  },
-
-  3: {
-    title_he: 'חודש שלישי', weeks: '9–12', trimester: 1,
-    organ_he: 'פריקרד — Pericardium (Hand Jueyin)', organ_color: '#7e22ce',
-    risk: 'high', risk_label_he: '🔴 גבוה — שיא הסיכון להפלה',
-    risk_color: '#7f1d1d',
-    forbidden_points: ['LI4 — מחמיר', 'SP6 — מחמיר מאוד', 'BL60', 'BL67', 'GB21', 'CV3–CV7', 'ST25', 'ST28', 'ST29', 'GV4'],
-    caution_points: ['כל נקודות עם אפקט Descending', 'מוקסה — אסורה על נקודות אסורות', 'שכיבה על הגב — להגביל'],
-    safe_points: ['KD7 — תמיכה בכליות', 'HT7 — חרדה ושינה', 'PC6 — לב ובחילות', 'BL20 / BL21 — ב-עדינות'],
-    forbidden_herbs: ['כל רשימה קודמת + חמור יותר', 'Cimicifuga / שחור קוהוש', 'Partridge berry'],
-    caution_herbs: ['שום — מינון רפואי', 'כל צמח חם מאוד'],
-    notes_he: 'שבועות 9-12 הם שיא הסיכון להפלה ספונטנית. SP6 אסור לחלוטין בשלב זה. סיום הטרימסטר הראשון — אחרי שבוע 12 הסיכון יורד משמעותית. שכיבה על הצד בלבד.'
-  },
-
-  4: {
-    title_he: 'חודש רביעי', weeks: '13–16', trimester: 2,
-    organ_he: 'שלושה מחממים — Triple Burner (Shaoyang)', organ_color: '#b45309',
-    risk: 'medium', risk_label_he: '🟡 בינוני — תחילת טרימסטר 2',
-    risk_color: '#92400e',
-    forbidden_points: ['LI4', 'SP6', 'BL60', 'BL67', 'GB21 — עדיין אסורות לחלוטין'],
-    caution_points: ['נקודות בטן — זהירות יותר', 'שכיבה על הבטן אסורה לגמרי', 'נקודות גב תחתון — עדינות'],
-    safe_points: ['ST36', 'SP3', 'KD3', 'PC6', 'HT7', 'BL20/21 — ב-עדינות', 'GB34 — שרירים'],
-    forbidden_herbs: ['Dong Quai', 'Hong Hua', 'Tao Ren', 'כל אמנגוגים'],
-    caution_herbs: ['ג׳ינג׳ר — מותר בכמות קטנה', 'ג׳ינסנג — לא בהגזמה'],
-    notes_he: 'תחילת תקופה בטוחה יותר. הסיכון להפלה ירד. שכיבה על הצד שמאל מועדפת. ניתן להתחיל לטפל יותר אך נקודות האיסור — ללא שינוי.'
-  },
-
-  5: {
-    title_he: 'חודש חמישי', weeks: '17–20', trimester: 2,
-    organ_he: 'טחול — Spleen (Taiyin)', organ_color: '#b45309',
-    risk: 'medium', risk_label_he: '🟡 בינוני',
-    risk_color: '#92400e',
-    forbidden_points: ['LI4', 'SP6', 'BL60', 'BL67', 'GB21'],
-    caution_points: ['לא לשכב על הגב זמן ממושך', 'נקודות בטן — הגבל'],
-    safe_points: ['ST36 — אנרגיה ועיכול', 'SP3 — טחול', 'SP9 — בצקת (עדין)', 'BL20/21', 'PC6', 'ST25 (עדין מאוד)'],
-    forbidden_herbs: ['Dong Quai', 'כל אמנגוגים', 'Cascara / Senna — ממריצי מעיים חזקים'],
-    caution_herbs: ['שורש ליקוריץ — בכמות מועטה', 'כמון שחור — לא לרוב'],
-    notes_he: 'בצקות, כאבי גב ועייפות שכיחים. ST36 ו-SP3 מצוינים לתמיכה. תנועות עובר מורגשות. טיפול בעמידה או שכיבה על הצד.'
-  },
-
-  6: {
-    title_he: 'חודש שישי', weeks: '21–24', trimester: 2,
-    organ_he: 'קיבה — Stomach (Yangming)', organ_color: '#b45309',
-    risk: 'medium', risk_label_he: '🟡 בינוני',
-    risk_color: '#92400e',
-    forbidden_points: ['LI4', 'SP6', 'BL60', 'BL67', 'GB21'],
-    caution_points: ['לא לשכב על הגב כלל', 'Braxton Hicks — עצור טיפול אם מגיעות'],
-    safe_points: ['ST36', 'ST25 (בעדינות)', 'PC6 — צרבת', 'SP9 — בצקת', 'BL25 — גב תחתון'],
-    forbidden_herbs: ['Dong Quai', 'כל אמנגוגים', 'תה שורש ג׳ינג׳ר מרוכז'],
-    caution_herbs: ['פיפרמינט — מקובל בכמות קטנה', 'קמומיל — לא לרוב'],
-    notes_he: 'צרבת ובחילות חוזרות שכיחות. ST36 ו-PC6 מצוינים. תיאום עם מיילדת / גינקולוג מומלץ. ביקורות סדירות נדרשות.'
-  },
-
-  7: {
-    title_he: 'חודש שביעי', weeks: '25–28', trimester: 3,
-    organ_he: 'ריאות — Lung (Taiyin)', organ_color: '#dc2626',
-    risk: 'high', risk_label_he: '🟠 גבוה — סיכון לידה מוקדמת',
-    risk_color: '#7f1d1d',
-    forbidden_points: ['LI4', 'SP6', 'BL60', 'BL67', 'GB21 — אסורות מחמיר'],
-    caution_points: ['LU7 — גורם Descending, זהירות', 'נקודות גב חזקות', 'גירוי חשמלי — אסור'],
-    safe_points: ['ST36', 'KD3', 'LU9 (עדין)', 'BL13 (עדין, לנשימה)', 'SP6 — עדיין אסורה!'],
-    forbidden_herbs: ['כל הרשימה הקודמת', 'Motherwort (Yi Mu Cao) — אסורה כעת', 'אפרסמון (בכמות גדולה)'],
-    caution_herbs: ['Astragalus (Huang Qi) — מותר בכמות מתונה', 'ג׳ינסנג — מותר בכמות קטנה'],
-    notes_he: 'קוצר נשימה ועייפות גוברים. סיכון ללידה מוקדמת גדל. גירוי חשמלי (electro-acupuncture) אסור לחלוטין. שיתוף פעולה עם צוות הריון חובה.'
-  },
-
-  8: {
-    title_he: 'חודש שמיני', weeks: '29–36', trimester: 3,
-    organ_he: 'מעי גס — Large Intestine (Yangming)', organ_color: '#dc2626',
-    risk: 'high', risk_label_he: '🔴 גבוה — טרימסטר שלישי',
-    risk_color: '#7f1d1d',
-    forbidden_points: ['LI4 — אסור ב-100%', 'SP6 — אסור ב-100%', 'BL60', 'BL67 — רק אחרי שבוע 36 להפיכת עובר', 'GB21', 'כל נקודות Descending', 'גירוי חשמלי — אסור לחלוטין'],
-    caution_points: ['BL32/54 — לכאב גב, עדין מאוד', 'נקודות ירכיים — עדינות', 'תנוחת שכיבה — צד שמאל בלבד'],
-    safe_points: ['ST36 — ב-עדינות', 'KD3 — תמיכה', 'HT7 — שינה', 'PC6 — בחילות / לב'],
-    forbidden_herbs: ['כל הרשימה + מחמיר', 'Cinnamon bark בכמות רפואית', 'Cloves בכמות גדולה', 'Turmeric / כורכום — מינון רפואי'],
-    caution_herbs: ['כל צמח ממריץ — זהירות', 'Raspberry leaf — לא לפני שבוע 36'],
-    notes_he: 'תקופת הסיכון המרבי. כל נקודה המעוררת Descending Qi אסורה. כאבי גב ועצב סיאטי שכיחים — BL32 עדין יעיל. עצב קרפלי — PC6 בעדינות. גב תחתון — BL25 ב-עדינות.'
-  },
-
-  9: {
-    title_he: 'חודש תשיעי', weeks: '37–42', trimester: 3,
-    organ_he: 'כליות — חזרה למקור (Kidney)', organ_color: '#7c3aed',
-    risk: 'special', risk_label_he: '🟣 מיוחד — פרוטוקול לידה',
-    risk_color: '#4c1d95',
-    forbidden_points: ['CV3', 'CV4', 'CV5 — עדיין אסורות', 'גירוי חשמלי חזק'],
-    caution_points: ['GB21 — מותר לסייע ללידה רק בפיקוח', 'LI4 — מותר לסייע ללידה רק בפיקוח'],
-    safe_points: ['SP6 — ✅ מותר עכשיו לסייע ללידה', 'BL67 — ✅ להפיכת עובר (breech)', 'BL32 — תמיכה בלידה', 'GB21 — בפיקוח, לזרז לידה', 'KD1 — ליציאת Qi כלפי מטה'],
-    forbidden_herbs: ['Dong Quai — עדיין אסור ללא פיקוח רופא', 'Pennyroyal — אסור'],
-    caution_herbs: ['Raspberry leaf — ✅ מותר לחיזוק רחם', 'Blue Cohosh — רק בפיקוח מיילדת'],
-    notes_he: '⚠️ שינוי פרוטוקול חשוב! SP6 ו-BL67 — שהיו אסורים לחלוטין — מותרים עכשיו לסיוע בלידה. BL67 להפיכת עובר בישיבת ברך. GB21 ו-LI4 מותרים לזרוז לידה בפיקוח. תאם עם מיילדת לפני כל שימוש.'
-  }
+// ══ PREGNANCY PROTOCOL DATA ══
+const TCM_PREGNANCY_PROTOCOL={
+  1:{title_he:'חודש ראשון',weeks:'1–4',trimester:1,organ_he:'כליות — Kidney (Shaoyin)',organ_color:'#1d4ed8',risk:'critical',risk_label_he:'🔴 קריטי — השרשה',risk_color:'#7f1d1d',forbidden_points:['LI4 (הגו)','SP6 (סאניינג׳יאו)','BL60 (קונלון)','BL67 (ז׳ייין)','GB21 (ג׳יאנג׳ינג)','CV3','CV4','CV5','CV6','CV7','GV4','ST25','ST28','ST29'],caution_points:['כל נקודות הבטן','נקודות גב תחתון חזקות','מוקסה חזקה בכלל','LV3 — ב-מינון גבוה'],safe_points:['PC6 (נייגואן) — עדין, לבחילות','HT7 — עדין, לחרדה','KD3 — חיזוק כליות','ST36 — ב-עדינות','SP3 — תמיכה'],forbidden_herbs:['Dong Quai / אנג׳ליקה (דאנג גואי)','Hong Hua — חריע','Tao Ren — גרעיני אפרסק','Mo Yao — מור','Ru Xiang — לבונה','Pennyroyal','Blue Cohosh','Barberry','Cascara','Senna','Wormwood / לענה','Tansy'],caution_herbs:['קינמון — מנה גדולה','ג׳ינג׳ר — מנה גדולה','ליקוריץ — שימוש מופרז'],notes_he:'שלב ההשרשה — המטופלת עשויה לא לדעת שהיא בהריון. שאל תמיד על תאריך וסת אחרון. זהירות מקסימלית. אסור לדחוף Qi כלפי מטה בשום צורה.'},
+  2:{title_he:'חודש שני',weeks:'5–8',trimester:1,organ_he:'כבד — Liver (Jueyin)',organ_color:'#166534',risk:'high',risk_label_he:'🔴 גבוה — אורגנוגנזה',risk_color:'#7f1d1d',forbidden_points:['LI4','SP6','BL60','BL67','GB21','CV3–CV7','ST25','כל נקודות בטן'],caution_points:['LV3 — בעדינות בלבד','נקודות כבד חזקות — אסורות','לא להזיז Qi חזק'],safe_points:['PC6 — לבחילות בוקר (עדין)','ST36 — חיזוק Qi','SP3','LV3 — עדין מאוד, לכבד'],forbidden_herbs:['כל אמנגוגים','Dong Quai','Hong Hua','Chai Hu (Bupleurum) — מינון גדול','Bitter Orange / כתום מר','Rhubarb root'],caution_herbs:["ג'ינג'ר — רק בכמות קטנה לבחילות",'כורכום — לא בכמות רפואית'],notes_he:"שיא בחילות הבוקר — PC6 יעיל מאוד אך בעדינות. תקופת יצירת האיברים — כל טעות עשויה לפגוע בעובר. שכיבה על הבטן אסורה."},
+  3:{title_he:'חודש שלישי',weeks:'9–12',trimester:1,organ_he:'פריקרד — Pericardium (Hand Jueyin)',organ_color:'#7e22ce',risk:'high',risk_label_he:'🔴 גבוה — שיא הסיכון להפלה',risk_color:'#7f1d1d',forbidden_points:['LI4 — מחמיר','SP6 — מחמיר מאוד','BL60','BL67','GB21','CV3–CV7','ST25','ST28','ST29','GV4'],caution_points:['כל נקודות עם אפקט Descending','מוקסה — אסורה על נקודות אסורות','שכיבה על הגב — להגביל'],safe_points:['KD7 — תמיכה בכליות','HT7 — חרדה ושינה','PC6 — לב ובחילות','BL20 / BL21 — ב-עדינות'],forbidden_herbs:['כל רשימה קודמת + חמור יותר','Cimicifuga / שחור קוהוש','Partridge berry'],caution_herbs:['שום — מינון רפואי','כל צמח חם מאוד'],notes_he:'שבועות 9-12 הם שיא הסיכון להפלה ספונטנית. SP6 אסור לחלוטין בשלב זה. סיום הטרימסטר הראשון — אחרי שבוע 12 הסיכון יורד משמעותית. שכיבה על הצד בלבד.'},
+  4:{title_he:'חודש רביעי',weeks:'13–16',trimester:2,organ_he:'שלושה מחממים — Triple Burner (Shaoyang)',organ_color:'#b45309',risk:'medium',risk_label_he:'🟡 בינוני — תחילת טרימסטר 2',risk_color:'#92400e',forbidden_points:['LI4','SP6','BL60','BL67','GB21 — עדיין אסורות לחלוטין'],caution_points:['נקודות בטן — זהירות יותר','שכיבה על הבטן אסורה לגמרי','נקודות גב תחתון — עדינות'],safe_points:['ST36','SP3','KD3','PC6','HT7','BL20/21 — ב-עדינות','GB34 — שרירים'],forbidden_herbs:['Dong Quai','Hong Hua','Tao Ren','כל אמנגוגים'],caution_herbs:["ג'ינג'ר — מותר בכמות קטנה",'ג׳ינסנג — לא בהגזמה'],notes_he:'תחילת תקופה בטוחה יותר. הסיכון להפלה ירד. שכיבה על הצד שמאל מועדפת. ניתן להתחיל לטפל יותר אך נקודות האיסור — ללא שינוי.'},
+  5:{title_he:'חודש חמישי',weeks:'17–20',trimester:2,organ_he:'טחול — Spleen (Taiyin)',organ_color:'#b45309',risk:'medium',risk_label_he:'🟡 בינוני',risk_color:'#92400e',forbidden_points:['LI4','SP6','BL60','BL67','GB21'],caution_points:['לא לשכב על הגב זמן ממושך','נקודות בטן — הגבל'],safe_points:['ST36 — אנרגיה ועיכול','SP3 — טחול','SP9 — בצקת (עדין)','BL20/21','PC6','ST25 (עדין מאוד)'],forbidden_herbs:['Dong Quai','כל אמנגוגים','Cascara / Senna — ממריצי מעיים חזקים'],caution_herbs:['שורש ליקוריץ — בכמות מועטה','כמון שחור — לא לרוב'],notes_he:'בצקות, כאבי גב ועייפות שכיחים. ST36 ו-SP3 מצוינים לתמיכה. תנועות עובר מורגשות. טיפול בעמידה או שכיבה על הצד.'},
+  6:{title_he:'חודש שישי',weeks:'21–24',trimester:2,organ_he:'קיבה — Stomach (Yangming)',organ_color:'#b45309',risk:'medium',risk_label_he:'🟡 בינוני',risk_color:'#92400e',forbidden_points:['LI4','SP6','BL60','BL67','GB21'],caution_points:['לא לשכב על הגב כלל','Braxton Hicks — עצור טיפול אם מגיעות'],safe_points:['ST36','ST25 (בעדינות)','PC6 — צרבת','SP9 — בצקת','BL25 — גב תחתון'],forbidden_herbs:['Dong Quai','כל אמנגוגים','תה שורש ג׳ינג׳ר מרוכז'],caution_herbs:['פיפרמינט — מקובל בכמות קטנה','קמומיל — לא לרוב'],notes_he:'צרבת ובחילות חוזרות שכיחות. ST36 ו-PC6 מצוינים. תיאום עם מיילדת / גינקולוג מומלץ.'},
+  7:{title_he:'חודש שביעי',weeks:'25–28',trimester:3,organ_he:'ריאות — Lung (Taiyin)',organ_color:'#dc2626',risk:'high',risk_label_he:'🟠 גבוה — סיכון לידה מוקדמת',risk_color:'#7f1d1d',forbidden_points:['LI4','SP6','BL60','BL67','GB21 — אסורות מחמיר'],caution_points:['LU7 — גורם Descending, זהירות','נקודות גב חזקות','גירוי חשמלי — אסור'],safe_points:['ST36','KD3','LU9 (עדין)','BL13 (עדין, לנשימה)'],forbidden_herbs:['כל הרשימה הקודמת','Motherwort (Yi Mu Cao) — אסורה כעת','אפרסמון (בכמות גדולה)'],caution_herbs:['Astragalus (Huang Qi) — מותר בכמות מתונה','ג׳ינסנג — מותר בכמות קטנה'],notes_he:'קוצר נשימה ועייפות גוברים. סיכון ללידה מוקדמת גדל. גירוי חשמלי (electro-acupuncture) אסור לחלוטין.'},
+  8:{title_he:'חודש שמיני',weeks:'29–36',trimester:3,organ_he:'מעי גס — Large Intestine (Yangming)',organ_color:'#dc2626',risk:'high',risk_label_he:'🔴 גבוה — טרימסטר שלישי',risk_color:'#7f1d1d',forbidden_points:['LI4 — אסור ב-100%','SP6 — אסור ב-100%','BL60','BL67 — רק אחרי שבוע 36 להפיכת עובר','GB21','כל נקודות Descending','גירוי חשמלי — אסור לחלוטין'],caution_points:['BL32/54 — לכאב גב, עדין מאוד','נקודות ירכיים — עדינות','תנוחת שכיבה — צד שמאל בלבד'],safe_points:['ST36 — ב-עדינות','KD3 — תמיכה','HT7 — שינה','PC6 — בחילות / לב'],forbidden_herbs:['כל הרשימה + מחמיר','Cinnamon bark בכמות רפואית','Cloves בכמות גדולה','Turmeric / כורכום — מינון רפואי'],caution_herbs:['כל צמח ממריץ — זהירות','Raspberry leaf — לא לפני שבוע 36'],notes_he:'תקופת הסיכון המרבי. כל נקודה המעוררת Descending Qi אסורה. עצב סיאטי שכיח — BL32 עדין יעיל.'},
+  9:{title_he:'חודש תשיעי',weeks:'37–42',trimester:3,organ_he:'כליות — חזרה למקור (Kidney)',organ_color:'#7c3aed',risk:'special',risk_label_he:'🟣 מיוחד — פרוטוקול לידה',risk_color:'#4c1d95',forbidden_points:['CV3','CV4','CV5 — עדיין אסורות','גירוי חשמלי חזק'],caution_points:['GB21 — מותר לסייע ללידה רק בפיקוח','LI4 — מותר לסייע ללידה רק בפיקוח'],safe_points:['SP6 — ✅ מותר עכשיו לסייע ללידה','BL67 — ✅ להפיכת עובר (breech)','BL32 — תמיכה בלידה','GB21 — בפיקוח, לזרז לידה','KD1 — ליציאת Qi כלפי מטה'],forbidden_herbs:['Dong Quai — עדיין אסור ללא פיקוח רופא','Pennyroyal — אסור'],caution_herbs:['Raspberry leaf — ✅ מותר לחיזוק רחם','Blue Cohosh — רק בפיקוח מיילדת'],notes_he:'⚠️ שינוי פרוטוקול חשוב! SP6 ו-BL67 — שהיו אסורים לחלוטין — מותרים עכשיו לסיוע בלידה. תאם עם מיילדת לפני כל שימוש.'}
 };
 
-// ── Map weeks to month ──────────────────────────────────────
-function weeksToMonth(w) {
-  if(!w) return null;
-  w = parseInt(w);
-  if(w <= 4)  return 1;
-  if(w <= 8)  return 2;
-  if(w <= 12) return 3;
-  if(w <= 16) return 4;
-  if(w <= 20) return 5;
-  if(w <= 24) return 6;
-  if(w <= 28) return 7;
-  if(w <= 36) return 8;
-  return 9;
-}
+function weeksToMonth(w){if(!w)return null;w=parseInt(w);if(w<=4)return 1;if(w<=8)return 2;if(w<=12)return 3;if(w<=16)return 4;if(w<=20)return 5;if(w<=24)return 6;if(w<=28)return 7;if(w<=36)return 8;return 9;}
 
-// ── Render the full protocol card ──────────────────────────
-function buildPregnancyProtocolCard(month, compact) {
-  if(!month) return '';
-  var p = TCM_PREGNANCY_PROTOCOL[month];
-  if(!p) return '';
-  compact = compact || false;
-
-  var trimesterColors = ['','#dc2626','#d97706','#7c3aed'];
-  var trimesterLabel = ['','טרימסטר ראשון ⚠️','טרימסטר שני','טרימסטר שלישי'];
-  var tColor = trimesterColors[p.trimester] || '#0d5c63';
-  var tLabel = trimesterLabel[p.trimester] || '';
-
-  var monthWeekLabel = p.title_he + ' — שבועות ' + p.weeks;
-
-  var riskBg = p.risk === 'critical' ? '#450a0a' :
-               p.risk === 'high'     ? '#3d0000' :
-               p.risk === 'medium'   ? '#451a03' :
-               p.risk === 'special'  ? '#2e1065' : '#0a2e1f';
-
-  var html = '';
-  html += '<div class="preg-card" style="background:' + riskBg + ';border:2px solid ' + (p.risk==='medium'?'#d97706':p.risk==='special'?'#7c3aed':'#dc2626') + ';border-radius:14px;padding:0;overflow:hidden;margin-top:12px;">';
-
-  // Header
-  html += '<div style="background:linear-gradient(135deg,' + (p.risk==='medium'?'#451a03,#92400e':p.risk==='special'?'#2e1065,#5b21b6':'#3b0000,#7f1d1d') + ');padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">';
-  html += '<div>';
-  html += '<div style="font-size:15px;font-weight:900;color:white;font-family:Heebo,sans-serif;">🤰 ' + monthWeekLabel + '</div>';
-  html += '<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px;font-family:Heebo,sans-serif;">מריאן: ' + p.organ_he + '</div>';
-  html += '</div>';
-  html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">';
-  html += '<span style="background:' + tColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;font-family:Heebo,sans-serif;">' + tLabel + '</span>';
-  html += '<span style="background:rgba(255,255,255,0.15);color:white;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;font-family:Heebo,sans-serif;">' + p.risk_label_he + '</span>';
-  html += '</div>';
-  html += '</div>';
-
-  // Body
-  html += '<div style="padding:14px 16px;">';
-
-  // Forbidden points
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🚫 נקודות אסורות לחלוטין</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  p.forbidden_points.forEach(function(pt) {
-    html += '<span style="background:rgba(220,38,38,0.25);border:1px solid #dc2626;color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-  });
-  html += '</div></div>';
-
-  if(!compact) {
-    // Caution points
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:900;color:#fde68a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">⚠️ זהירות</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-    p.caution_points.forEach(function(pt) {
-      html += '<span style="background:rgba(217,119,6,0.2);border:1px solid #d97706;color:#fde68a;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-    });
-    html += '</div></div>';
+function buildPregnancyProtocolCard(month,compact){
+  if(!month)return'';var p=TCM_PREGNANCY_PROTOCOL[month];if(!p)return'';compact=compact||false;
+  var trimesterColors=['','#dc2626','#d97706','#7c3aed'];var trimesterLabel=['','טרימסטר ראשון ⚠️','טרימסטר שני','טרימסטר שלישי'];
+  var tColor=trimesterColors[p.trimester]||'#0d5c63';var tLabel=trimesterLabel[p.trimester]||'';
+  var riskBg=p.risk==='critical'?'#450a0a':p.risk==='high'?'#3d0000':p.risk==='medium'?'#451a03':p.risk==='special'?'#2e1065':'#0a2e1f';
+  var html='<div style="background:'+riskBg+';border:2px solid '+(p.risk==='medium'?'#d97706':p.risk==='special'?'#7c3aed':'#dc2626')+';border-radius:14px;padding:0;overflow:hidden;margin-top:12px;">';
+  html+='<div style="background:linear-gradient(135deg,'+(p.risk==='medium'?'#451a03,#92400e':p.risk==='special'?'#2e1065,#5b21b6':'#3b0000,#7f1d1d')+');padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">';
+  html+='<div><div style="font-size:15px;font-weight:900;color:white;font-family:Heebo,sans-serif;">🤰 '+p.title_he+' — שבועות '+p.weeks+'</div>';
+  html+='<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px;font-family:Heebo,sans-serif;">מריאן: '+p.organ_he+'</div></div>';
+  html+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">';
+  html+='<span style="background:'+tColor+';color:white;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;font-family:Heebo,sans-serif;">'+tLabel+'</span>';
+  html+='<span style="background:rgba(255,255,255,0.15);color:white;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;font-family:Heebo,sans-serif;">'+p.risk_label_he+'</span></div></div>';
+  html+='<div style="padding:14px 16px;">';
+  html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🚫 נקודות אסורות לחלוטין</div><div style="display:flex;flex-wrap:wrap;gap:5px;">';
+  p.forbidden_points.forEach(function(pt){html+='<span style="background:rgba(220,38,38,0.25);border:1px solid #dc2626;color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">'+pt+'</span>';});
+  html+='</div></div>';
+  if(!compact){
+    html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:900;color:#fde68a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">⚠️ זהירות</div><div style="display:flex;flex-wrap:wrap;gap:5px;">';
+    p.caution_points.forEach(function(pt){html+='<span style="background:rgba(217,119,6,0.2);border:1px solid #d97706;color:#fde68a;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">'+pt+'</span>';});
+    html+='</div></div>';
   }
-
-  // Safe points
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#6ee7b7;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">✅ בטוח ומומלץ</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  p.safe_points.forEach(function(pt) {
-    html += '<span style="background:rgba(5,150,105,0.2);border:1px solid #059669;color:#6ee7b7;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-  });
-  html += '</div></div>';
-
-  // Herbs
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבי מרפא אסורים</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  p.forbidden_herbs.forEach(function(h) {
-    html += '<span style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">🌿 ' + h + '</span>';
-  });
-  html += '</div></div>';
-
-  if(!compact && p.caution_herbs && p.caution_herbs.length) {
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:900;color:#fde68a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבים — זהירות</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-    p.caution_herbs.forEach(function(h) {
-      html += '<span style="background:rgba(217,119,6,0.15);border:1px solid rgba(217,119,6,0.4);color:#fde68a;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">⚠️ ' + h + '</span>';
-    });
-    html += '</div></div>';
+  html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:900;color:#6ee7b7;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">✅ בטוח ומומלץ</div><div style="display:flex;flex-wrap:wrap;gap:5px;">';
+  p.safe_points.forEach(function(pt){html+='<span style="background:rgba(5,150,105,0.2);border:1px solid #059669;color:#6ee7b7;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">'+pt+'</span>';});
+  html+='</div></div>';
+  html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבי מרפא אסורים</div><div style="display:flex;flex-wrap:wrap;gap:5px;">';
+  p.forbidden_herbs.forEach(function(hb){html+='<span style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">🌿 '+hb+'</span>';});
+  html+='</div></div>';
+  if(!compact&&p.caution_herbs&&p.caution_herbs.length){
+    html+='<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:900;color:#fde68a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבים — זהירות</div><div style="display:flex;flex-wrap:wrap;gap:5px;">';
+    p.caution_herbs.forEach(function(hb){html+='<span style="background:rgba(217,119,6,0.15);border:1px solid rgba(217,119,6,0.4);color:#fde68a;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">⚠️ '+hb+'</span>';});
+    html+='</div></div>';
   }
-
-  // Notes
-  html += '<div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:10px 12px;">';
-  html += '<div style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;font-family:Heebo,sans-serif;">📋 הערות חודש זה</div>';
-  html += '<div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;font-family:Heebo,sans-serif;">' + p.notes_he + '</div>';
-  html += '</div>';
-
-  html += '</div></div>'; // close body + card
-
+  html+='<div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:10px 12px;"><div style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;font-family:Heebo,sans-serif;">📋 הערות חודש זה</div>';
+  html+='<div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;font-family:Heebo,sans-serif;">'+p.notes_he+'</div></div>';
+  html+='</div></div>';
   return html;
 }
 
-// ── Main update function — fired on month OR week change ────
-function updatePregnancyProtocol() {
-  var monthSel = document.getElementById('pregnancy_month');
-  var weeksSel = document.getElementById('pregnancy_weeks');
-  var cardEl   = document.getElementById('pregnancyProtocolCard');
-  if(!cardEl) return;
+function openPregRef(){document.getElementById('pregOverlay').classList.add('show');showPregMonth(1,document.querySelector('.preg-month-tab'));}
+function closePregRef(){document.getElementById('pregOverlay').classList.remove('show');}
+function showPregMonth(month,tabEl){document.querySelectorAll('.preg-month-tab').forEach(function(t){t.classList.remove('active');});if(tabEl)tabEl.classList.add('active');var container=document.getElementById('pregCardContainer');if(container)container.innerHTML=buildPregnancyProtocolCard(month,false);}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePregRef();});
 
-  var month = monthSel ? parseInt(monthSel.value) : null;
-  var weeks = weeksSel ? parseInt(weeksSel.value) : null;
-
-  // Sync: if month selected, update weeks display; if weeks, update month
-  if(monthSel && weeksSel) {
-    if(monthSel.value && !weeksSel.value) {
-      // month was picked — set weeks to midpoint
-      var midpoints = {1:3,2:6,3:10,4:14,5:18,6:22,7:26,8:32,9:38};
-      if(midpoints[month]) weeksSel.value = midpoints[month];
-    } else if(weeksSel.value && !monthSel.value) {
-      var m = weeksToMonth(weeks);
-      if(m) monthSel.value = m;
-      month = m;
-    } else if(weeksSel.value) {
-      month = weeksToMonth(parseInt(weeksSel.value));
-      if(monthSel && month) monthSel.value = month;
-    }
-  }
-
-  if(!month) { cardEl.innerHTML=''; return; }
-
-  cardEl.innerHTML = buildPregnancyProtocolCard(month, false);
-  updateProgress();
-}
-
-
-
-// ════════════════════════════════════════════════════════════
-// TCM BREASTFEEDING PROTOCOL
-// Source: Hale's Medications & Mothers' Milk, WHO breastfeeding
-//         guidelines, Maciocia TCM Obstetrics, Bensky Materia Medica
-// ════════════════════════════════════════════════════════════
-const TCM_BF_PROTOCOL = {
-
-  phases: [
-    {
-      id: 'bf_newborn',
-      title_he: 'יילוד — שבועות 1–6',
-      icon: '🍼',
-      risk: 'high',
-      risk_label_he: '🔴 גבוה — מערכת עיכול עדינה',
-      risk_color: '#7f1d1d',
-      bg_color: '#1a0000',
-      border_color: '#dc2626',
-      tcm_focus_he: 'חיזוק Qi של הטחול, תמיכה בייצור חלב, שחרור גודש בחזה',
-      forbidden_points: [
-        'GB21 (ג׳יאנג׳ינג) — גורם Qi לרדת, עלול להפחית חלב',
-        'CV17 (שאנג׳ונג) — ישירות על עצם החזה, אסור',
-        'ST1–ST18 — כל נקודות השד אסורות לדיקור',
-        'LI4 (הגו) — גורם Qi הכללי לרדת, זהירות',
-        'SP6 — אחרי לידה עדין, אסור לגירוי חזק'
-      ],
-      caution_points: [
-        'LV3 — בעדינות בלבד',
-        'BL17/18 — גב, בעדינות',
-        'ST36 — עדין, לחיזוק אנרגיה',
-        'נקודות בטן — 6 שבועות ראשונות — הגבל'
-      ],
-      safe_points: [
-        'ST36 (זוסאנלי) — ✅ מצוין לחיזוק ייצור חלב',
-        'SP6 (סאניינג׳יאו) — ✅ עדין, לאחר 6 שבועות',
-        'SI1 (שאוזה) — ✅ לדלקת ולעיכוב חלב',
-        'GB44 — ✅ לכאב בשד ודלקת',
-        'LV2 — ✅ לגודש חום בכבד (דלקת)',
-        'PC6 — ✅ לחרדה ועייפות',
-        'KD3 — ✅ לחיזוק כליות ועייפות אחרי לידה'
-      ],
-      forbidden_herbs: [
-        'Sage / מרווה — מפחית חלב בכמות גדולה',
-        'Peppermint / נענע — מפחית חלב',
-        'Parsley / פטרוזיליה — כמות גדולה',
-        'Oregano / אורגנו — כמות גדולה',
-        'Dan Shen (Salvia miltiorrhiza) — עובר לחלב',
-        'Ephedra / אפדרה — עובר לחלב, מסוכן',
-        'Rhubarb root / ריבס — Anthraquinones עוברים לחלב',
-        'Cascara / Senna — ממריצי מעיים — עוברים לחלב',
-        'Dong Quai — אסטרוגני, עלול לפגוע בתינוק',
-        'Goldenseal / Berberine — רעיל לתינוק דרך חלב',
-        'Motherwort — עובר לחלב, לב תינוק',
-        'Pennyroyal — רעיל'
-      ],
-      safe_herbs: [
-        'Fennel seed / שומר — ✅ מגדיל ייצור חלב',
-        'Fenugreek / חילבה — ✅ מגדיל ייצור חלב (Galactagogue)',
-        'Blessed thistle — ✅ מגדיל ייצור חלב',
-        'Nettle / סרפד — ✅ עשיר בברזל ומינרלים',
-        'Oat straw — ✅ מרגיע, מחזק',
-        'Ginger / ג׳ינג׳ר — ✅ בכמות קטנה',
-        'Chamomile / קמומיל — ✅ מרגיע, בכמות מתונה',
-        'Moringa — ✅ Galactagogue חזק',
-        'He Shou Wu (prepared) — ✅ מחזק דם'
-      ],
-      notes_he: 'תקופת הנקה ראשונית — גוף האם עדיין מתאושש מהלידה. SP6 חזה נסגר — הימנע מגירוי ישיר. עייפות קיצונית שכיחה — KD3 ו-ST36 מצוינים. דלקת שד (mastitis) — SI1 ו-GB44 בעדינות לפני שמפנים לרופא.'
-    },
-    {
-      id: 'bf_established',
-      title_he: 'הנקה מבוססת — שבועות 6–26',
-      icon: '🌸',
-      risk: 'medium',
-      risk_label_he: '🟡 בינוני — הנקה מלאה',
-      risk_color: '#92400e',
-      bg_color: '#1a0e00',
-      border_color: '#d97706',
-      tcm_focus_he: 'שמירה על ייצור חלב, איזון Blood ו-Qi, תמיכה בשינה',
-      forbidden_points: [
-        'CV17 — עדיין עדין, להימנע',
-        'ST1–ST16 — נקודות שד — אסורות',
-        'LI4 חזק מדי — להגביל'
-      ],
-      caution_points: [
-        'GB21 — בעדינות, לפינוי גודש בלבד',
-        'נקודות עם Descending Qi חזק',
-        'מוקסה חזקה — להגביל'
-      ],
-      safe_points: [
-        'ST36 — ✅ אנרגיה וחלב',
-        'SP6 — ✅ טחול ודם',
-        'SP10 — ✅ חיזוק דם',
-        'LV3 — ✅ כבד וזרימה',
-        'PC6 — ✅ חרדה ועייפות',
-        'KD3/KD7 — ✅ עייפות אחרי לידה',
-        'HT7 — ✅ שינה',
-        'BL20/21 — ✅ טחול, עיכול',
-        'GV20 — ✅ קלארי, עייפות מוחית',
-        'GB34 — ✅ גמישות ושרירים'
-      ],
-      forbidden_herbs: [
-        'Sage מרוכז — מפחית חלב',
-        'Peppermint — מפחית חלב',
-        'Dan Shen — זהירות',
-        'כל Anthraquinones (Senna, Cascara, Rhubarb) — מעבר לחלב'
-      ],
-      safe_herbs: [
-        'Fennel / שומר — ✅',
-        'Fenugreek / חילבה — ✅',
-        'Nettle / סרפד — ✅',
-        'Blessed thistle — ✅',
-        'Ginger — ✅ כמות רגילה',
-        'Moringa — ✅',
-        'Astragalus (Huang Qi) — ✅ חיזוק Qi',
-        'Dang Gui (small dose) — ✅ בכמות קטנה לחיזוק דם',
-        'Jujube (Da Zao) — ✅ חיזוק Blood ושינה'
-      ],
-      notes_he: 'הנקה מבוססת — ייצור חלב מתייצב. ניתן לטפל בצורה רגילה יותר תוך שמירה על הגבלות. שינה גרועה שכיחה מאוד — HT7 ו-PC6. כאבי גב שכיחים — BL25 ו-BL32 בעדינות. Baby blues / דיכאון אחרי לידה — PC6, HT7, LV3.'
-    },
-    {
-      id: 'bf_extended',
-      title_he: 'הנקה מורחבת — 6 חודשים ומעלה',
-      icon: '🌿',
-      risk: 'low',
-      risk_label_he: '🟢 נמוך — הגבלות מינימליות',
-      risk_color: '#064e3b',
-      bg_color: '#001a0e',
-      border_color: '#059669',
-      tcm_focus_he: 'חיזוק Qi ו-Blood, איזון עייפות כרונית',
-      forbidden_points: [
-        'ST1–ST16 — עדיין הימנע מנקודות שד',
-        'Extreme Descending — הגבל'
-      ],
-      caution_points: [
-        'שים לב לגירוי חזק כשהתינוק טרי יניק'
-      ],
-      safe_points: [
-        'כל הנקודות הסטנדרטיות — ✅',
-        'LI4 — ✅ מותר',
-        'SP6 — ✅ מותר',
-        'GB21 — ✅ מותר בעדינות',
-        'ST36, SP6, LV3, PC6, HT7, KD3 — ✅'
-      ],
-      forbidden_herbs: [
-        'Sage מרוכז — עדיין מפחית חלב',
-        'Peppermint טרי — מפחית חלב'
-      ],
-      safe_herbs: [
-        'כמעט כל עשבי TCM — ✅',
-        'Dang Gui — ✅ רגיל',
-        'Astragalus — ✅',
-        'חיזוק ספציפי לפי מצב — ✅'
-      ],
-      notes_he: 'הנקה מורחבת — הגבלות מינימליות. עייפות כרונית ואנמיה שכיחות. שילוב ייצוב אנרגיה ו-Yin הוא המוקד הטיפולי הנפוץ. ניתן לחזור לטיפול TCM כמעט רגיל.'
-    },
-    {
-      id: 'bf_weaning',
-      title_he: 'גמילה מהנקה',
-      icon: '🌙',
-      risk: 'special',
-      risk_label_he: '🔵 מיוחד — פרוטוקול גמילה',
-      risk_color: '#1d4ed8',
-      bg_color: '#00091a',
-      border_color: '#3b82f6',
-      tcm_focus_he: 'הפחתה הדרגתית בייצור חלב, מניעת גודש וכאב',
-      forbidden_points: [
-        'SI1 — מגרה ייצור חלב — אסור בגמילה',
-        'Galactagogue points — לא לגרות'
-      ],
-      caution_points: [
-        'GB21 — בעדינות, לא לגירוי חזק'
-      ],
-      safe_points: [
-        'LI4 — ✅ לסיוע בהפחתת חלב',
-        'Sage (תה) — ✅ מקובל לגמילה, מפחית חלב',
-        'GB44 — ✅ לכאב חזה בגמילה',
-        'LV3 — ✅ לזרימה וכאב'
-      ],
-      forbidden_herbs: [
-        'Fenugreek / חילבה — מגדיל חלב — אסור',
-        'Blessed thistle — Galactagogue — אסור',
-        'Fennel מרוכז — מגדיל חלב — הגבל'
-      ],
-      safe_herbs: [
-        'Sage / מרווה — ✅ מפחית חלב הדרגתית',
-        'Peppermint — ✅ מפחית חלב',
-        'Jasmine flowers — ✅ מסורתי לגמילה',
-        'Parsley — ✅ בכמות גדולה, מפחית חלב'
-      ],
-      notes_he: '⚠️ שינוי: צמחים שהיו אסורים (Sage, Peppermint) הם כעת הכלי העיקרי! גמילה הדרגתית עדיפה לשניהם. כאב חזה שכיח — GB44 ו-cold compress. Baby blues בגמילה שכיח — PC6, HT7 חשובים.'
-    }
-  ]
-};
-
-// ── Build breastfeeding card ─────────────────────────────────
-function buildBFCard(phase) {
-  var riskBg = phase.risk === 'high'   ? '#1a0000' :
-               phase.risk === 'medium' ? '#1a0e00' :
-               phase.risk === 'low'    ? '#001a0e' : '#00091a';
-  var borderCol = phase.border_color || '#059669';
-
-  var html = '<div style="background:' + riskBg + ';border:2px solid ' + borderCol + ';border-radius:14px;overflow:hidden;">';
-
-  // Header
-  html += '<div style="background:linear-gradient(135deg,' + riskBg + ',' + borderCol.replace('#','rgba(') + ',0.4));padding:14px 16px;">';
-  html += '<div style="font-size:15px;font-weight:900;color:white;font-family:Heebo,sans-serif;">' + phase.icon + ' ' + phase.title_he + '</div>';
-  html += '<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;font-family:Heebo,sans-serif;">מוקד TCM: ' + phase.tcm_focus_he + '</div>';
-  html += '<div style="margin-top:6px;"><span style="background:rgba(255,255,255,0.15);color:white;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:800;font-family:Heebo,sans-serif;">' + phase.risk_label_he + '</span></div>';
-  html += '</div>';
-
-  html += '<div style="padding:14px 16px;">';
-
-  // Forbidden points
-  if(phase.forbidden_points && phase.forbidden_points.length) {
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🚫 נקודות אסורות</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-    phase.forbidden_points.forEach(function(pt){
-      html += '<span style="background:rgba(220,38,38,0.2);border:1px solid #dc2626;color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-    });
-    html += '</div></div>';
-  }
-
-  // Caution points
-  if(phase.caution_points && phase.caution_points.length) {
-    html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:900;color:#fde68a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">⚠️ זהירות</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-    phase.caution_points.forEach(function(pt){
-      html += '<span style="background:rgba(217,119,6,0.2);border:1px solid #d97706;color:#fde68a;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-    });
-    html += '</div></div>';
-  }
-
-  // Safe points
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#6ee7b7;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">✅ בטוח ומומלץ</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  phase.safe_points.forEach(function(pt){
-    html += '<span style="background:rgba(5,150,105,0.2);border:1px solid #059669;color:#6ee7b7;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;font-family:Heebo,sans-serif;">' + pt + '</span>';
-  });
-  html += '</div></div>';
-
-  // Forbidden herbs
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#fca5a5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבים אסורים / מזיקים</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  phase.forbidden_herbs.forEach(function(h){
-    html += '<span style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">🌿 ' + h + '</span>';
-  });
-  html += '</div></div>';
-
-  // Safe herbs
-  html += '<div style="margin-bottom:12px;">';
-  html += '<div style="font-size:11px;font-weight:900;color:#6ee7b7;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;font-family:Heebo,sans-serif;">🌿 עשבים בטוחים / מומלצים</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-  phase.safe_herbs.forEach(function(h){
-    html += '<span style="background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.4);color:#6ee7b7;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;font-family:Heebo,sans-serif;">✅ ' + h + '</span>';
-  });
-  html += '</div></div>';
-
-  // Notes
-  html += '<div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:10px 12px;">';
-  html += '<div style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;font-family:Heebo,sans-serif;">📋 הערות המטפל</div>';
-  html += '<div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;font-family:Heebo,sans-serif;">' + phase.notes_he + '</div>';
-  html += '</div>';
-
-  html += '</div></div>';
-  return html;
-}
-
-// ── Mode switcher control ────────────────────────────────────
-function switchMode(mode) {
-  var pregSec = document.getElementById('pregSection');
-  var bfSec   = document.getElementById('bfSection');
-  var btnPreg = document.getElementById('modeBtnPreg');
-  var btnBF   = document.getElementById('modeBtnBF');
-  var title   = document.getElementById('pregOverlayTitle');
-
-  if(mode === 'pregnancy') {
-    pregSec.style.display = 'block';
-    bfSec.style.display   = 'none';
-    btnPreg.className = 'mode-btn active-preg';
-    btnBF.className   = 'mode-btn';
-    title.innerHTML = '🤰 מדריך פרוטוקול הריון — TCM <span style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:400;">נקודות · עשבים · הוראות לפי חודש</span>';
-    showPregMonth(1, document.querySelector('.preg-month-tab'));
-  } else {
-    pregSec.style.display = 'none';
-    bfSec.style.display   = 'block';
-    btnPreg.className = 'mode-btn';
-    btnBF.className   = 'mode-btn active-bf';
-    title.innerHTML = '🍼 מדריך פרוטוקול הנקה — TCM <span style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:400;">נקודות · עשבים · הגבלות לפי שלב</span>';
-    showBFPhase(0, document.querySelector('.bf-phase-tab'));
-  }
-}
-
-function showBFPhase(index, tabEl) {
-  document.querySelectorAll('.bf-phase-tab').forEach(function(t){ t.classList.remove('active'); });
-  if(tabEl) tabEl.classList.add('active');
-  var container = document.getElementById('bfCardContainer');
-  var phase = TCM_BF_PROTOCOL.phases[index];
-  if(container && phase) container.innerHTML = buildBFCard(phase);
-}
-
-// ── Pregnancy overlay controls ────────────────────────────
-function openPregRef() {
-  document.getElementById('pregOverlay').classList.add('show');
-  showPregMonth(1, document.querySelector('.preg-month-tab'));
-}
-function closePregRef() {
-  document.getElementById('pregOverlay').classList.remove('show');
-}
-function showPregMonth(month, tabEl) {
-  // Update active tab
-  document.querySelectorAll('.preg-month-tab').forEach(function(t){ t.classList.remove('active'); });
-  if(tabEl) tabEl.classList.add('active');
-  // Render card (full, not compact)
-  var container = document.getElementById('pregCardContainer');
-  if(container) container.innerHTML = buildPregnancyProtocolCard(month, false);
-}
-// Close on ESC
-document.addEventListener('keydown', function(e){
-  if(e.key === 'Escape') closePregRef();
-});
-
-// ── THERAPIST NAME LOADER ────────────────────────────────────────
 async function loadCurrentTherapist(){
   try{
-    // 1. Check sessionStorage first
-    const saved=sessionStorage.getItem('tcm_current_therapist');
-    let name='';
+    const saved=sessionStorage.getItem('tcm_current_therapist');let name='';
     const db=typeof getDB==='function'?getDB():null;
     if(db){
-      if(saved){
-        const{data}=await db.from('therapists').select('full_name').eq('id',saved).single();
-        if(data)name=data.full_name;
-      }
-      if(!name){
-        const{data}=await db.from('therapists').select('full_name,id').order('full_name').limit(1);
-        if(data&&data.length){name=data[0].full_name;sessionStorage.setItem('tcm_current_therapist',data[0].id);}
-      }
+      if(saved){const{data}=await db.from('therapists').select('full_name').eq('id',saved).single();if(data)name=data.full_name;}
+      if(!name){const{data}=await db.from('therapists').select('full_name,id').order('full_name').limit(1);if(data&&data.length){name=data[0].full_name;sessionStorage.setItem('tcm_current_therapist',data[0].id);}}
     }
-    if(name){
-      document.querySelectorAll('.therapist-name-slot').forEach(el=>{el.textContent='👤 '+name;el.style.display='inline-flex';});
-      document.querySelectorAll('.footer-user').forEach(el=>el.textContent='👤 מחובר: '+name);
-    }
+    if(name){document.querySelectorAll('.therapist-name-slot').forEach(el=>{el.textContent='👤 '+name;el.style.display='inline-flex';});}
   }catch(e){}
 }
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(loadCurrentTherapist,300);});
 
-// ── EXTERNAL AI MENU TOGGLE ──────────────────────────────────
-function toggleAIMenu(e) {
-  e.stopPropagation();
-  const dd = document.getElementById('aiDropdown');
-  dd.classList.toggle('open');
-}
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.ai-menu-wrap')) {
-    const dd = document.getElementById('aiDropdown');
-    if (dd) dd.classList.remove('open');
-  }
-});
-
-
-// ══ OPEN SESSION — passes patient ID + name to index.html ══
-function openSession(event, patientId, patientNameEncoded) {
-  event.stopPropagation(); // prevent card expand/collapse
-  var patientName = decodeURIComponent(patientNameEncoded);
-  // Store in sessionStorage so index.html can read it
-  sessionStorage.setItem('tcm_patient_id',   patientId);
-  sessionStorage.setItem('tcm_patient_name', patientName);
-  // Navigate to session module
-  window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/index.html?patient_id=' + encodeURIComponent(patientId) + '&patient_name=' + encodeURIComponent(patientName);
-}
-
+function toggleAIMenu(e){e.stopPropagation();const dd=document.getElementById('aiDropdown');dd.classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.ai-menu-wrap')){const dd=document.getElementById('aiDropdown');if(dd)dd.classList.remove('open');}});
 </script>
 
-<!-- ════════════════════════════════════════════════════════
-     PREGNANCY REFERENCE GUIDE OVERLAY
-     Full clinical reference — months 1-9
-     ════════════════════════════════════════════════════════ -->
+<!-- PREGNANCY REFERENCE OVERLAY -->
 <div id="pregOverlay">
   <div class="preg-overlay-inner">
-
-    <!-- Header -->
     <div class="preg-overlay-header">
-      <div class="preg-overlay-title" id="pregOverlayTitle">
-        🤰 מדריך פרוטוקול הריון — TCM
-        <span style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:400;">נקודות · עשבים · הוראות לפי חודש</span>
-      </div>
+      <div class="preg-overlay-title" id="pregOverlayTitle">🤰 מדריך פרוטוקול הריון — TCM <span style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:400;">נקודות · עשבים · הוראות לפי חודש</span></div>
       <button class="preg-close-btn" onclick="closePregRef()">✕ סגור</button>
     </div>
-
-    <!-- Mode switcher: Pregnancy ↔ Breastfeeding -->
-    <div class="mode-switcher">
-      <button class="mode-btn active-preg" id="modeBtnPreg" onclick="switchMode('pregnancy')">
-        🤰 הריון
-      </button>
-      <button class="mode-btn" id="modeBtnBF" onclick="switchMode('breastfeeding')">
-        🍼 הנקה
-      </button>
+    <div class="preg-trimester-legend">
+      <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#dc2626;"></div>טרימסטר ראשון (חודש 1–3)</div>
+      <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#d97706;"></div>טרימסטר שני (חודש 4–6)</div>
+      <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#7c3aed;"></div>טרימסטר שלישי (חודש 7–9)</div>
     </div>
-
-    <!-- ── PREGNANCY SECTION ── -->
-    <div id="pregSection">
-      <div class="preg-trimester-legend">
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#dc2626;"></div>טרימסטר ראשון (חודש 1–3)</div>
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#d97706;"></div>טרימסטר שני (חודש 4–6)</div>
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#7c3aed;"></div>טרימסטר שלישי (חודש 7–9)</div>
-      </div>
-      <div class="preg-month-tabs">
-        <button class="preg-month-tab tri1 active" onclick="showPregMonth(1,this)">חודש 1<br><span style="font-size:9px;font-weight:400;">שבוע 1–4</span></button>
-        <button class="preg-month-tab tri1" onclick="showPregMonth(2,this)">חודש 2<br><span style="font-size:9px;font-weight:400;">שבוע 5–8</span></button>
-        <button class="preg-month-tab tri1" onclick="showPregMonth(3,this)">חודש 3<br><span style="font-size:9px;font-weight:400;">שבוע 9–12</span></button>
-        <button class="preg-month-tab tri2" onclick="showPregMonth(4,this)">חודש 4<br><span style="font-size:9px;font-weight:400;">שבוע 13–16</span></button>
-        <button class="preg-month-tab tri2" onclick="showPregMonth(5,this)">חודש 5<br><span style="font-size:9px;font-weight:400;">שבוע 17–20</span></button>
-        <button class="preg-month-tab tri2" onclick="showPregMonth(6,this)">חודש 6<br><span style="font-size:9px;font-weight:400;">שבוע 21–24</span></button>
-        <button class="preg-month-tab tri3" onclick="showPregMonth(7,this)">חודש 7<br><span style="font-size:9px;font-weight:400;">שבוע 25–28</span></button>
-        <button class="preg-month-tab tri3" onclick="showPregMonth(8,this)">חודש 8<br><span style="font-size:9px;font-weight:400;">שבוע 29–36</span></button>
-        <button class="preg-month-tab tri3" onclick="showPregMonth(9,this)">חודש 9<br><span style="font-size:9px;font-weight:400;">שבוע 37–42</span></button>
-      </div>
-      <div id="pregCardContainer"></div>
+    <div class="preg-month-tabs">
+      <button class="preg-month-tab tri1 active" onclick="showPregMonth(1,this)">חודש 1<br><span style="font-size:9px;font-weight:400;">שבוע 1–4</span></button>
+      <button class="preg-month-tab tri1" onclick="showPregMonth(2,this)">חודש 2<br><span style="font-size:9px;font-weight:400;">שבוע 5–8</span></button>
+      <button class="preg-month-tab tri1" onclick="showPregMonth(3,this)">חודש 3<br><span style="font-size:9px;font-weight:400;">שבוע 9–12</span></button>
+      <button class="preg-month-tab tri2" onclick="showPregMonth(4,this)">חודש 4<br><span style="font-size:9px;font-weight:400;">שבוע 13–16</span></button>
+      <button class="preg-month-tab tri2" onclick="showPregMonth(5,this)">חודש 5<br><span style="font-size:9px;font-weight:400;">שבוע 17–20</span></button>
+      <button class="preg-month-tab tri2" onclick="showPregMonth(6,this)">חודש 6<br><span style="font-size:9px;font-weight:400;">שבוע 21–24</span></button>
+      <button class="preg-month-tab tri3" onclick="showPregMonth(7,this)">חודש 7<br><span style="font-size:9px;font-weight:400;">שבוע 25–28</span></button>
+      <button class="preg-month-tab tri3" onclick="showPregMonth(8,this)">חודש 8<br><span style="font-size:9px;font-weight:400;">שבוע 29–36</span></button>
+      <button class="preg-month-tab tri3" onclick="showPregMonth(9,this)">חודש 9<br><span style="font-size:9px;font-weight:400;">שבוע 37–42</span></button>
     </div>
-
-    <!-- ── BREASTFEEDING SECTION (hidden by default) ── -->
-    <div id="bfSection" style="display:none;">
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);">
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#dc2626;"></div>יילוד — שבועות 1–6</div>
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#d97706;"></div>הנקה מבוססת — שבועות 6–26</div>
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#059669;"></div>הנקה מורחבת — 6+ חודשים</div>
-        <div class="preg-tri-badge"><div class="preg-tri-dot" style="background:#3b82f6;"></div>גמילה</div>
-      </div>
-      <div class="bf-phase-tabs">
-        <button class="bf-phase-tab active" onclick="showBFPhase(0,this)">🍼 יילוד<br><span style="font-size:9px;font-weight:400;">שבועות 1–6</span></button>
-        <button class="bf-phase-tab" onclick="showBFPhase(1,this)">🌸 הנקה מבוססת<br><span style="font-size:9px;font-weight:400;">שבועות 6–26</span></button>
-        <button class="bf-phase-tab" onclick="showBFPhase(2,this)">🌿 הנקה מורחבת<br><span style="font-size:9px;font-weight:400;">6+ חודשים</span></button>
-        <button class="bf-phase-tab" onclick="showBFPhase(3,this)">🌙 גמילה<br><span style="font-size:9px;font-weight:400;">פרוטוקול סיום</span></button>
-      </div>
-      <div id="bfCardContainer"></div>
-    </div>
-
-    <div style="text-align:center;padding-top:20px;font-family:Heebo,sans-serif;font-size:11px;color:rgba(255,255,255,0.3);">
-      מקורות: Maciocia — Obstetrics in Chinese Medicine | Hale's Medications &amp; Mothers' Milk | Bensky Materia Medica | WHO Breastfeeding Guidelines
-    </div>
+    <div id="pregCardContainer"></div>
+    <div style="text-align:center;padding-top:20px;font-family:Heebo,sans-serif;font-size:11px;color:rgba(255,255,255,0.3);">מקורות: Maciocia — Obstetrics in Chinese Medicine | Bensky Materia Medica</div>
   </div>
 </div>
 
