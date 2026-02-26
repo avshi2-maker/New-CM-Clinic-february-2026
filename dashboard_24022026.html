@@ -806,6 +806,7 @@ async function loadClinicalIntel() {
       html += '</div>';
       html += '<div style="display:flex;align-items:center;gap:8px;">';
       html += '<span class="ci-risk-badge ' + risk.cls + '">' + risk.label + '</span>';
+      html += '<button onclick="openSession(event,\'' + pat.id + '\',\'' + encodeURIComponent(pat.full_name||'מטופל') + '\')" style="background:linear-gradient(135deg,#0d5c63,#1a8a94);color:white;border:none;border-radius:8px;padding:5px 12px;font-family:\'Heebo\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🟢 פתח מפגש</button>';
       html += '<span class="ci-chevron" id="' + chevId + '">▼</span>';
       html += '</div>';
       html += '</div>';
@@ -1539,6 +1540,18 @@ document.addEventListener('click', function(e) {
     if (dd) dd.classList.remove('open');
   }
 });
+
+
+// ══ OPEN SESSION — passes patient ID + name to index.html ══
+function openSession(event, patientId, patientNameEncoded) {
+  event.stopPropagation(); // prevent card expand/collapse
+  var patientName = decodeURIComponent(patientNameEncoded);
+  // Store in sessionStorage so index.html can read it
+  sessionStorage.setItem('tcm_patient_id',   patientId);
+  sessionStorage.setItem('tcm_patient_name', patientName);
+  // Navigate to session module
+  window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/index.html?patient_id=' + encodeURIComponent(patientId) + '&patient_name=' + encodeURIComponent(patientName);
+}
 
 </script>
 
