@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — סיום מפגש</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Heebo:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   MERIDIAN — SESSION CLOSE "THE SEAL"
+   26-02-2026
+══════════════════════════════════════ */
+:root {
+  --ink:    #fdf5e0;
+  --gold:   #c9a84c;
+  --gold2:  #8a6a10;
+  --gold3:  #5a3d08;
+  --dim:    #a07830;
+  --teal:   #0d5c63;
+  --teal2:  #1a8a94;
+  --paper:  #2a1a00;
+  --muted:  rgba(42,26,0,0.55);
+  --jade:   #2d5a45;
+  --seal:   #8b1a1a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;overflow-x:hidden;}
+
+body {
+  font-family:'Heebo',sans-serif;
+  background: #fdf5e0;
+  color: #2a1a00;
+  direction: rtl;
+  position: relative;
+}
+
+/* ── ATMOSPHERIC BACKGROUND ── */
+body::before {
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(13,92,99,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(247,232,184,0.5) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+/* ── GRAIN TEXTURE ── */
+body::after {
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;opacity:0.4;
+}
+
+.wrap {
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 20px 60px;
+  gap:0;
+}
+
+/* ── LOGO TOP ── */
+.logo {
+  text-align:center;
+  margin-bottom:32px;
+  animation: fadeDown 0.8s ease both;
+}
+.logo-name {
+  font-family:'Cinzel',serif;
+  font-size:22px;letter-spacing:12px;font-weight:600;
+  background:linear-gradient(135deg,#7a5520,#c9a84c,#8b6914);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo-sub {
+  font-size:9px;letter-spacing:5px;color:var(--dim);margin-top:4px;font-weight:300;
+}
+
+/* ── GOLD DIVIDER ── */
+.gold-line {
+  width:120px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:0 auto;
+}
+
+/* ── THE SEAL ── */
+.seal-wrap {
+  margin:36px 0 28px;
+  animation: sealDrop 1.2s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.seal {
+  width:130px;height:130px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 35%, #c9a84c, #8b6914 50%, #5a3d08);
+  box-shadow:
+    0 0 0 4px rgba(201,168,76,0.3),
+    0 0 0 8px rgba(201,168,76,0.1),
+    0 20px 60px rgba(0,0,0,0.6),
+    inset 0 2px 4px rgba(255,255,255,0.2),
+    inset 0 -4px 8px rgba(0,0,0,0.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.seal::before {
+  content:'';
+  position:absolute;inset:8px;
+  border-radius:50%;
+  border:1px solid rgba(245,228,160,0.3);
+}
+.seal::after {
+  content:'';
+  position:absolute;inset:14px;
+  border-radius:50%;
+  border:1px dashed rgba(245,228,160,0.2);
+}
+.seal-icon {
+  font-size:38px;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  position:relative;z-index:1;
+}
+.seal-text {
+  font-family:'Cinzel',serif;
+  font-size:7px;letter-spacing:3px;
+  color:rgba(245,228,160,0.7);
+  margin-top:4px;position:relative;z-index:1;
+}
+
+/* ── CHECKMARK ANIMATION ── */
+.check-ring {
+  position:absolute;
+  width:160px;height:160px;
+  border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:var(--gold);
+  border-right-color:var(--gold);
+  animation: spin 2s linear infinite;
+  opacity:0.3;
+}
+
+/* ── TITLE ── */
+.complete-title {
+  font-family:'Cinzel',serif;
+  font-size:28px;font-weight:700;
+  text-align:center;
+  background:linear-gradient(135deg,#8b6914,#c9a84c,#8b6914);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation: fadeUp 0.8s ease 0.6s both;
+  margin-bottom:8px;
+}
+.complete-sub {
+  font-family:'Cormorant Garamond',serif;
+  font-size:16px;font-style:italic;
+  color:rgba(42,26,0,0.55);text-align:center;
+  animation: fadeUp 0.8s ease 0.7s both;
+  margin-bottom:32px;
+}
+
+/* ── SESSION STATS CARD ── */
+.stats-card {
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(201,168,76,0.35);
+  border-radius:16px;
+  padding:24px 32px;
+  width:100%;max-width:520px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;
+  text-align:center;
+  animation: fadeUp 0.8s ease 0.8s both;
+  margin-bottom:28px;
+  backdrop-filter:blur(10px);
+}
+.stat-item {}
+.stat-val {
+  font-family:'Cinzel',serif;
+  font-size:22px;font-weight:700;
+  color:var(--gold2);
+  display:block;margin-bottom:4px;
+}
+.stat-lbl {
+  font-size:10px;letter-spacing:2px;
+  color:var(--muted);font-weight:300;text-transform:uppercase;
+}
+.stat-divider {
+  width:1px;background:rgba(201,168,76,0.15);
+  align-self:stretch;justify-self:center;
+}
+
+/* ── PATIENT BANNER ── */
+.patient-banner {
+  background:linear-gradient(135deg,rgba(13,92,99,0.12),rgba(26,138,148,0.08));
+  border:1px solid rgba(13,92,99,0.3);
+  border-radius:12px;
+  padding:14px 24px;
+  width:100%;max-width:520px;
+  display:flex;align-items:center;gap:12px;
+  animation: fadeUp 0.8s ease 0.9s both;
+  margin-bottom:28px;
+}
+.patient-icon {font-size:22px;}
+.patient-info {}
+.patient-name {
+  font-size:15px;font-weight:700;color:var(--paper);
+}
+.patient-lbl {
+  font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;
+}
+
+/* ── PRIVACY SEAL ── */
+.privacy-box {
+  background:rgba(45,90,69,0.08);
+  border:1px solid rgba(45,90,69,0.35);
+  border-radius:16px;
+  padding:20px 24px;
+  width:100%;max-width:520px;
+  display:flex;gap:16px;align-items:flex-start;
+  animation: fadeUp 0.8s ease 1.0s both;
+  margin-bottom:32px;
+  position:relative;overflow:hidden;
+}
+.privacy-box::before {
+  content:'';
+  position:absolute;top:0;right:0;
+  width:3px;height:100%;
+  background:linear-gradient(180deg,var(--jade),transparent);
+}
+.privacy-shield {
+  font-size:32px;flex-shrink:0;
+  filter:drop-shadow(0 0 12px rgba(45,90,69,0.6));
+}
+.privacy-content {}
+.privacy-title {
+  font-size:13px;font-weight:700;
+  color:#5dba8a;letter-spacing:1px;
+  margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.privacy-badge {
+  background:rgba(45,90,69,0.5);
+  border:1px solid rgba(93,186,138,0.3);
+  border-radius:4px;padding:2px 8px;
+  font-size:9px;letter-spacing:2px;color:#5dba8a;
+}
+.privacy-text {
+  font-size:12px;line-height:1.8;
+  color:rgba(245,240,232,0.6);font-weight:300;
+}
+
+/* ── ACTION BUTTONS ── */
+.actions {
+  width:100%;max-width:520px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+  animation: fadeUp 0.8s ease 1.1s both;
+  margin-bottom:16px;
+}
+.act-btn {
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 12px;
+  border:none;border-radius:14px;
+  font-family:'Heebo',sans-serif;
+  font-size:12px;font-weight:700;
+  cursor:pointer;
+  transition:all 0.25s;
+  letter-spacing:0.5px;
+}
+.act-btn .btn-icon {font-size:22px;}
+.act-btn:hover {transform:translateY(-4px);}
+
+.btn-export {
+  background:linear-gradient(135deg,#3a1f6e,#6b3fa0);
+  color:white;
+  box-shadow:0 4px 20px rgba(107,63,160,0.3);
+}
+.btn-export:hover {box-shadow:0 8px 30px rgba(107,63,160,0.5);}
+
+.btn-print {
+  background:linear-gradient(135deg,#1a4a8a,#2e6fd4);
+  color:white;
+  box-shadow:0 4px 20px rgba(46,111,212,0.3);
+}
+.btn-print:hover {box-shadow:0 8px 30px rgba(46,111,212,0.5);}
+
+.btn-whatsapp {
+  background:linear-gradient(135deg,#1a6e2e,#25a244);
+  color:white;
+  box-shadow:0 4px 20px rgba(37,162,68,0.3);
+}
+.btn-whatsapp:hover {box-shadow:0 8px 30px rgba(37,162,68,0.5);}
+
+/* ── EXIT BUTTON ── */
+.exit-btn {
+  width:100%;max-width:520px;
+  padding:18px 32px;
+  background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);
+  color:white;border:none;border-radius:14px;
+  font-family:'Cinzel',serif;
+  font-size:15px;font-weight:600;
+  letter-spacing:2px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  transition:all 0.3s;
+  animation: fadeUp 0.8s ease 1.2s both;
+  box-shadow:0 4px 24px rgba(13,92,99,0.4);
+  margin-bottom:32px;
+}
+.exit-btn:hover {
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(13,92,99,0.6);
+}
+.exit-btn:active {transform:translateY(0);}
+
+/* ── FAREWELL ── */
+.farewell {
+  text-align:center;
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;font-style:italic;
+  color:var(--muted);
+  animation: fadeUp 0.8s ease 1.3s both;
+  line-height:2;
+}
+
+/* ── BOTTOM GOLD LINE ── */
+.bottom-ornament {
+  margin-top:28px;
+  display:flex;align-items:center;gap:16px;
+  animation: fadeUp 0.8s ease 1.4s both;
+}
+.orn-line {
+  width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--dim));
+}
+.orn-line.r {background:linear-gradient(90deg,var(--dim),transparent);}
+.orn-symbol {font-size:14px;color:var(--dim);}
+
+/* ── TOOLTIP ── */
+.tooltip-wrap {
+  position:relative;display:inline-block;
+}
+.tooltip-trigger {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;color:rgba(93,186,138,0.7);
+  cursor:help;border-bottom:1px dashed rgba(93,186,138,0.3);
+  padding-bottom:1px;
+}
+.tooltip-box {
+  visibility:hidden;opacity:0;
+  position:absolute;bottom:130%;right:50%;transform:translateX(50%);
+  background:rgba(42,26,0,0.95);
+  border:1px solid rgba(201,168,76,0.3);
+  border-radius:10px;padding:12px 16px;
+  width:280px;
+  font-size:11px;line-height:1.7;color:var(--paper);
+  transition:opacity 0.2s;z-index:100;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);
+}
+.tooltip-wrap:hover .tooltip-box {visibility:visible;opacity:1;}
+
+/* ── LOADING STATE ── */
+.loading-state {
+  position:fixed;inset:0;z-index:999;
+  background:#fdf5e0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;
+  transition:opacity 0.5s;
+}
+.loading-state.hidden {opacity:0;pointer-events:none;}
+.load-spinner {
+  width:40px;height:40px;
+  border:2px solid rgba(201,168,76,0.2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+.load-text {
+  font-family:'Cinzel',serif;
+  font-size:11px;letter-spacing:4px;color:var(--dim);
+}
+
+/* ── SEAL FLANKING IMAGES ── */
+.seal-scene {
+  display:flex;align-items:center;justify-content:center;
+  gap:24px;
+  width:100%;max-width:640px;
+  margin:36px 0 28px;
+}
+.flank-img {
+  width:140px;height:140px;
+  object-fit:cover;
+  border-radius:50%;
+  border:2px solid rgba(201,168,76,0.4);
+  box-shadow:0 8px 32px rgba(0,0,0,0.15),0 0 0 1px rgba(201,168,76,0.15);
+  opacity:0.85;
+  transition:opacity 0.3s,transform 0.3s;
+  animation: fadeUp 0.9s ease 0.2s both;
+}
+.flank-img:hover{opacity:1;transform:scale(1.04);}
+.flank-img.right{animation-delay:0.4s;}
+
+/* ── FOOTER ── */
+.page-footer {
+  width:100%;max-width:520px;
+  text-align:center;
+  margin-top:20px;
+  padding:20px 24px;
+  border-top:1px solid rgba(201,168,76,0.2);
+  animation: fadeUp 0.8s ease 1.5s both;
+}
+.footer-title {
+  font-size:11px;letter-spacing:2px;
+  color:rgba(42,26,0,0.5);
+  text-transform:uppercase;margin-bottom:10px;
+  font-weight:300;
+}
+.footer-mail {
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--teal);
+  font-size:14px;font-weight:600;
+  text-decoration:none;
+  padding:8px 16px;
+  background:rgba(13,92,99,0.08);
+  border:1px solid rgba(13,92,99,0.2);
+  border-radius:8px;
+  transition:all 0.25s;
+}
+.footer-mail:hover{background:rgba(13,92,99,0.15);transform:translateY(-2px);}
+.footer-tagline {
+  font-size:10px;color:rgba(42,26,0,0.4);
+  margin-top:10px;letter-spacing:1px;font-style:italic;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown  {from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes fadeUp    {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes sealDrop  {from{opacity:0;transform:scale(0.3) rotate(-20deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes spin      {to{transform:rotate(360deg)}}
+@keyframes pulse     {0%,100%{opacity:1}50%{opacity:0.5}}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-state" id="loader">
+  <div class="load-spinner"></div>
+  <div class="load-text">MERIDIAN</div>
+</div>
+
+<div class="wrap" id="main-wrap" style="opacity:0;transition:opacity 0.6s;">
+
+  <!-- Logo -->
+  <div class="logo">
+    <div class="logo-name">MERIDIAN</div>
+    <div class="logo-sub">CM CLINICAL INTELLIGENCE</div>
+  </div>
+  <div class="gold-line"></div>
+
+  <!-- The Seal with flanking images -->
+  <div class="seal-scene">
+    <img class="flank-img" src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/sign/images/barin.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYzMwY2Y5MC1kYTY5LTRhNzgtYTAyYi1kNmZkNTA2NDc3NjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvYmFyaW4ucG5nIiwiaWF0IjoxNzcyMDgyNTMyLCJleHAiOjMzNDg4ODI1MzJ9.ZsDolw0YnOwpor73zlT30WiH9EtSEXG-1_c21u8C2nU" alt="AI Brain" />
+    <div class="seal-wrap" style="margin:0;">
+      <div class="check-ring"></div>
+      <div class="seal">
+        <div class="seal-icon">☯️</div>
+        <div class="seal-text" id="seal-text">חתום ומאובטח</div>
+      </div>
+    </div>
+    <img class="flank-img right" src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/sign/images/last.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYzMwY2Y5MC1kYTY5LTRhNzgtYTAyYi1kNmZkNTA2NDc3NjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvbGFzdC5wbmciLCJpYXQiOjE3NzIwODI1NjUsImV4cCI6MzM0ODg4MjU2NX0.coxGkByvTOyU16ryHa69VaWxrQzm40UdQ1YpnfZs_tY" alt="Meridian Body" />
+  </div>
+
+  <!-- Title -->
+  <div class="complete-title" id="complete-title">המפגש הושלם</div>
+  <div class="complete-sub" id="complete-sub">כל הנתונים נשמרו בהצלחה</div>
+
+  <!-- Session Stats -->
+  <div class="stats-card">
+    <div class="stat-item">
+      <span class="stat-val" id="stat-tokens">—</span>
+      <span class="stat-lbl">TOKENS</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-cost">—</span>
+      <span class="stat-lbl">עלות</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val" id="stat-time">—</span>
+      <span class="stat-lbl">משך מפגש</span>
+    </div>
+  </div>
+
+  <!-- Patient Banner -->
+  <div class="patient-banner">
+    <div class="patient-icon">👤</div>
+    <div class="patient-info">
+      <div class="patient-name" id="patient-name">—</div>
+      <div class="patient-lbl">מטופל · SESSION PATIENT</div>
+    </div>
+  </div>
+
+  <!-- Privacy Box -->
+  <div class="privacy-box">
+    <div class="privacy-shield">🛡️</div>
+    <div class="privacy-content">
+      <div class="privacy-title">
+        <span id="privacy-title">הגנת פרטיות מלאה</span>
+        <span class="privacy-badge">HIPAA READY</span>
+        <div class="tooltip-wrap">
+          <span class="tooltip-trigger">ℹ️ מידע נוסף</span>
+          <div class="tooltip-box" id="privacy-tooltip">כל המידע הרפואי הרגיש נשמר אך ורק על הדיסק הקשיח של המטפל. MERIDIAN אינה שומרת, מעבירה, או ניגשת לנתונים פרטיים של מטופלים.</div>
+        </div>
+      </div>
+      <div class="privacy-text" id="privacy-body">כל המידע הרפואי הרגיש — אנמנזה, אבחנות, וסיכום הטיפול — נשמר אך ורק על הדיסק הקשיח של המטפל. MERIDIAN אינה שומרת, מעבירה, או ניגשת לנתונים פרטיים של מטופלים.</div>
+    </div>
+  </div>
+
+  <!-- 3 Action Buttons -->
+  <div class="actions">
+    <button class="act-btn btn-export" onclick="doExport()">
+      <span class="btn-icon">📋</span>
+      <span id="btn-export">ייצוא דו"ח</span>
+    </button>
+    <button class="act-btn btn-print" onclick="doPrint()">
+      <span class="btn-icon">🖨️</span>
+      <span id="btn-print">הדפס</span>
+    </button>
+    <button class="act-btn btn-whatsapp" onclick="doWhatsApp()">
+      <span class="btn-icon">💬</span>
+      <span id="btn-whatsapp">ווטסאפ</span>
+    </button>
+  </div>
+
+  <!-- Exit Button -->
+  <button class="exit-btn" onclick="doExit()">
+    <span>🔐</span>
+    <span id="btn-exit">שמור וצא מהאפליקציה</span>
+    <span style="font-size:12px;opacity:0.6;">←</span>
+  </button>
+
+  <!-- Farewell -->
+  <div class="farewell" id="farewell-msg">
+    תודה על השימוש ב-MERIDIAN<br>
+    <span style="font-size:12px;opacity:0.5;color:rgba(42,26,0,0.5);">Ancient Wisdom · Modern Precision</span>
+  </div>
+
+  <!-- Bottom ornament -->
+  <div class="bottom-ornament">
+    <div class="orn-line"></div>
+    <div class="orn-symbol">☯</div>
+    <div class="orn-line r"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="page-footer">
+    <div class="footer-title">📬 שתף אותנו בחוויה שלך ובקשות לשיפור</div>
+    <a class="footer-mail" href="mailto:avshi2@gmail.com?subject=MERIDIAN — חוויה ובקשה לשיפור">
+      ✉️ avshi2@gmail.com
+    </a>
+    <div class="footer-tagline">Mail us your experience &amp; request to upgrade the treatment process</div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  MERIDIAN — Session Close Page
+//  session_close_26022026.html
+// ══════════════════════════════════════════
+
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const DASHBOARD_URL = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/dashboard_24022026.html';
+
+// ── Read session stats passed from index.html ──
+const params       = new URLSearchParams(window.location.search);
+const patientName  = params.get('patient_name')  || sessionStorage.getItem('tcm_patient_name') || '—';
+const tokens       = params.get('tokens')         || sessionStorage.getItem('tcm_last_tokens')  || '—';
+const cost         = params.get('cost')           || sessionStorage.getItem('tcm_last_cost')    || '—';
+const duration     = params.get('duration')       || sessionStorage.getItem('tcm_last_duration')|| '—';
+
+// ── Populate stats ──
+document.getElementById('patient-name').textContent = decodeURIComponent(patientName);
+document.getElementById('stat-tokens').textContent  = tokens !== '—' ? Number(tokens).toLocaleString() : '—';
+document.getElementById('stat-cost').textContent    = cost   !== '—' ? '$' + cost : '—';
+document.getElementById('stat-time').textContent    = duration;
+
+// ── Load content from Supabase ──
+async function loadContent() {
+  try {
+    const res = await fetch(
+      `${SUPA_URL}/rest/v1/session_closing_content?is_active=eq.true`,
+      { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } }
+    );
+    if (!res.ok) throw new Error('fetch failed');
+    const rows = await res.json();
+
+    // Build lookup map
+    const c = {};
+    rows.forEach(r => { c[r.key] = r.value_he; });
+
+    // Apply to page
+    if (c.title_he)      document.getElementById('complete-title').textContent  = c.title_he;
+    if (c.subtitle_he)   document.getElementById('complete-sub').textContent    = c.subtitle_he;
+    if (c.seal_text)     document.getElementById('seal-text').textContent       = c.seal_text;
+    if (c.privacy_title) document.getElementById('privacy-title').childNodes[0].textContent = c.privacy_title;
+    if (c.privacy_body)  {
+      document.getElementById('privacy-body').textContent    = c.privacy_body;
+      document.getElementById('privacy-tooltip').textContent = c.privacy_body;
+    }
+    if (c.btn_export)    document.getElementById('btn-export').textContent  = c.btn_export;
+    if (c.btn_print)     document.getElementById('btn-print').textContent   = c.btn_print;
+    if (c.btn_whatsapp)  document.getElementById('btn-whatsapp').textContent= c.btn_whatsapp;
+    if (c.btn_exit)      document.getElementById('btn-exit').textContent    = c.btn_exit;
+    if (c.exit_msg)      document.getElementById('farewell-msg').innerHTML  =
+      c.exit_msg + '<br><span style="font-size:12px;opacity:0.6;">Ancient Wisdom · Modern Precision</span>';
+
+  } catch(e) {
+    console.warn('Supabase content load failed — using defaults', e);
+  }
+}
+
+// ── Action Buttons ──
+function doExport() {
+  // Trigger the same export as index.html if available
+  if (window.opener && window.opener.exportReport) {
+    window.opener.exportReport();
+  } else {
+    window.print();
+  }
+}
+
+function doPrint() {
+  window.print();
+}
+
+function doWhatsApp() {
+  const name    = document.getElementById('patient-name').textContent;
+  const dateStr = new Date().toLocaleDateString('he-IL');
+  const msg     = `*MERIDIAN — סיכום מפגש*\n👤 מטופל: ${name}\n📅 תאריך: ${dateStr}\n✅ המפגש הושלם בהצלחה`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function doExit() {
+  // Clear sensitive session data from browser memory
+  const keysToRemove = [
+    'tcm_patient_id','tcm_patient_name','tcm_last_tokens',
+    'tcm_last_cost','tcm_last_duration','meridian_demo',
+    'meridian_tier','meridian_tier_badge'
+  ];
+  keysToRemove.forEach(k => sessionStorage.removeItem(k));
+
+  // Animate exit
+  document.getElementById('main-wrap').style.opacity = '0';
+  document.getElementById('main-wrap').style.transform = 'scale(0.97)';
+  document.getElementById('main-wrap').style.transition = 'all 0.5s ease';
+
+  setTimeout(() => {
+    window.location.href = DASHBOARD_URL;
+  }, 500);
+}
+
+// ── Boot ──
+async function init() {
+  await loadContent();
+  // Hide loader, show page
+  document.getElementById('loader').classList.add('hidden');
+  document.getElementById('main-wrap').style.opacity = '1';
+}
+
+init();
+</script>
+</body>
+</html>
