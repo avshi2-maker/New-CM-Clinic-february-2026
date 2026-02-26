@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — סימולטור ROI פרטי</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Heebo:wght@300;400;600;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #0b1f12;
+  --green:  #0d3320;
+  --green2: #1a5c35;
+  --green3: #2d7a4f;
+  --gold:   #c9a84c;
+  --gold2:  #e8c96e;
+  --cream:  #faf6ed;
+  --paper:  #f0e8d0;
+  --border: rgba(201,168,76,0.25);
+  --card:   rgba(255,255,255,0.92);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;direction:rtl;font-family:'Heebo',sans-serif;}
+body{background:#e8f5e9;color:#1a2e1a;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 20% 20%,rgba(200,230,200,0.8) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%,rgba(201,168,76,0.1) 0%,transparent 50%),
+    linear-gradient(160deg,#e8f5e9 0%,#d4edda 50%,#e0f0e3 100%);
+  pointer-events:none;
+}
+
+/* ══ GATE ══ */
+#gateWrap{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,#e8f5e9,#d0ead2);
+  padding:24px;
+}
+.gate-safe{
+  width:100%;max-width:380px;
+  background:rgba(255,255,255,0.9);
+  border:1px solid rgba(120,90,20,0.3);
+  border-radius:24px;padding:40px 36px;text-align:center;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 40px rgba(0,0,0,0.15),0 0 0 1px rgba(201,168,76,0.1);
+  animation:fadeUp 0.6s ease both;
+}
+.safe-icon{font-size:52px;display:block;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(201,168,76,0.4));}
+.gate-title{font-family:'Cinzel',serif;font-size:14px;letter-spacing:4px;color:#7a5520;margin-bottom:6px;}
+.gate-sub{font-size:12px;color:rgba(42,60,42,0.55);margin-bottom:28px;letter-spacing:1px;}
+.gate-input{
+  width:100%;padding:14px 18px;
+  background:rgba(255,255,255,0.9);
+  border:1px solid rgba(120,90,20,0.3);border-radius:12px;
+  color:#1a2e1a;font-family:'Heebo',sans-serif;font-size:20px;
+  text-align:center;letter-spacing:8px;outline:none;direction:ltr;
+  margin-bottom:8px;transition:border-color .2s,box-shadow .2s;
+}
+.gate-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.12);}
+.gate-hint{font-size:11px;color:rgba(42,60,42,0.6);margin-bottom:20px;min-height:16px;line-height:1.6;}
+.gate-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--green2),var(--green3));
+  color:var(--gold2);border:none;border-radius:12px;
+  font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:2px;
+  cursor:pointer;transition:all .25s;
+}
+.gate-btn:hover{box-shadow:0 8px 24px rgba(13,92,50,0.5);transform:translateY(-1px);}
+.gate-err{color:#ef4444;font-size:12px;margin-top:12px;min-height:18px;}
+.gate-privacy{margin-top:20px;font-size:10px;color:rgba(42,60,42,0.65);line-height:1.7;letter-spacing:.5px;}
+.gate-reset{margin-top:12px;font-size:10px;color:rgba(180,30,30,0.7);cursor:pointer;text-decoration:underline;}
+.gate-reset:hover{color:rgba(239,68,68,0.6);}
+
+/* ══ APP ══ */
+#appWrap{position:relative;z-index:1;min-height:100vh;padding:0 0 60px;}
+.topbar{
+  background:rgba(255,255,255,0.88);
+  border-bottom:1px solid rgba(201,168,76,0.35);
+  padding:12px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);
+}
+.tb-brand{font-family:'Cinzel',serif;font-size:13px;letter-spacing:4px;color:#7a5520;}
+.tb-brand-sub{font-size:9px;color:rgba(90,60,20,0.55);letter-spacing:2px;margin-top:2px;}
+.tb-actions{display:flex;gap:8px;}
+.tb-btn{
+  padding:7px 14px;border:1px solid rgba(120,90,20,0.3);border-radius:8px;
+  background:rgba(13,92,50,0.08);color:#5a3d08;
+  font-family:'Heebo',sans-serif;font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:.5px;
+}
+.tb-btn:hover{background:rgba(201,168,76,0.12);border-color:var(--gold);}
+.tb-btn.red{color:#c0392b;border-color:rgba(192,57,43,0.3);}
+.tb-btn.red:hover{background:rgba(248,113,113,0.1);border-color:#f87171;}
+
+/* MAIN */
+.main{max-width:1050px;margin:0 auto;padding:28px 20px;}
+
+/* MONTH BAR */
+.month-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-bottom:28px;animation:fadeUp .5s .1s ease both;
+}
+.month-lbl{font-size:10px;color:rgba(30,50,30,0.85);letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+.month-sel{
+  padding:8px 14px;background:rgba(255,255,255,0.7);
+  border:1px solid rgba(120,90,20,0.3);border-radius:10px;
+  color:#1a2e1a;font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;outline:none;cursor:pointer;
+}
+.month-note{font-size:10px;color:rgba(30,50,30,0.65);margin-right:auto;letter-spacing:.5px;}
+
+/* DASHBOARD */
+.dashboard{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  margin-bottom:32px;animation:fadeUp .5s .15s ease both;
+}
+@media(max-width:600px){.dashboard{grid-template-columns:1fr;}}
+.dash-card{
+  background:rgba(255,255,255,0.75);border:1px solid rgba(120,90,20,0.25);
+  border-radius:16px;padding:20px 22px;text-align:center;
+  position:relative;overflow:hidden;transition:transform .2s;
+}
+.dash-card:hover{transform:translateY(-2px);}
+.dash-card::before{content:'';position:absolute;top:0;right:0;left:0;height:2px;}
+.dash-card.income::before{background:linear-gradient(90deg,var(--green3),var(--gold));}
+.dash-card.expense::before{background:linear-gradient(90deg,#991b1b,#ef4444);}
+.dash-card.profit::before{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.dash-lbl{font-size:9px;letter-spacing:3px;color:rgba(42,60,42,0.75);margin-bottom:8px;text-transform:uppercase;}
+.dash-val{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;line-height:1;margin-bottom:6px;}
+.dash-val.g{color:#1a5c1a;}
+.dash-val.r{color:#c0392b;}
+.dash-val.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.dash-sub{font-size:10px;color:rgba(42,60,42,0.75);}
+.profit-badge{
+  display:inline-block;margin-top:8px;padding:3px 12px;
+  border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;
+}
+.profit-badge.pos{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+.profit-badge.neg{background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);}
+.profit-badge.zero{background:rgba(201,168,76,0.15);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);}
+
+/* SECTIONS */
+.section{margin-bottom:28px;animation:fadeUp .5s .2s ease both;}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid rgba(201,168,76,0.14);
+}
+.section-title{
+  font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  color:#5a3d08;display:flex;align-items:center;gap:10px;
+}
+.section-sum{font-family:'Playfair Display',serif;font-size:15px;color:#7a5520;}
+.add-row-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;background:rgba(13,92,50,0.35);
+  border:1px solid rgba(201,168,76,0.28);border-radius:8px;
+  color:var(--gold2);font-family:'Heebo',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.add-row-btn:hover{background:rgba(13,92,50,0.65);border-color:var(--gold);}
+
+/* TABLES */
+.ledger{width:100%;border-collapse:collapse;}
+.ledger th{
+  font-size:9px;letter-spacing:2px;color:rgba(42,60,42,0.6);
+  padding:9px 12px;text-align:right;font-weight:600;
+  border-bottom:1px solid rgba(120,90,20,0.15);
+  background:rgba(255,255,255,0.5);
+}
+.ledger td{padding:0;border-bottom:1px solid rgba(0,0,0,0.06);vertical-align:middle;}
+.ledger tr:hover td{background:rgba(13,92,50,0.05);}
+.rn{padding:10px 10px;font-size:11px;color:rgba(42,60,42,0.65);font-weight:700;text-align:center;width:36px;}
+.ci{
+  width:100%;padding:10px 12px;background:transparent;border:none;outline:none;
+  color:#1a2e1a;font-family:'Heebo',sans-serif;font-size:13px;
+  text-align:right;direction:rtl;transition:background .15s;
+}
+.ci:focus{background:rgba(13,92,50,0.08);}
+.ci.num{direction:ltr;text-align:left;font-weight:700;color:#2d5a1a;}
+.ci.tot{color:#1a3d1a;font-weight:700;font-family:'Playfair Display',serif;font-size:14px;pointer-events:none;background:rgba(13,92,50,0.06);}
+.ci.dim{color:rgba(20,40,20,0.65);}
+.del{
+  display:block;margin:auto;width:26px;height:26px;
+  background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);
+  border-radius:6px;color:#ef4444;font-size:13px;
+  cursor:pointer;transition:all .2s;text-align:center;line-height:26px;
+  font-family:monospace;
+}
+.del:hover{background:rgba(239,68,68,0.22);border-color:#ef4444;}
+.lock-icon{color:rgba(42,60,42,0.35);font-size:12px;text-align:center;display:block;padding:6px;}
+
+/* BOTTOM LINE */
+.bottomline{
+  background:rgba(255,255,255,0.75);
+  border:1px solid rgba(120,90,20,0.25);
+  border-radius:16px;padding:24px 28px;
+  margin-top:32px;animation:fadeUp .5s .35s ease both;
+}
+.bl-head{
+  font-family:'Playfair Display',serif;font-size:17px;color:#7a5520;
+  margin-bottom:20px;display:flex;align-items:center;gap:10px;
+  padding-bottom:12px;border-bottom:1px solid rgba(120,90,20,0.15);
+}
+.bl-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);
+}
+.bl-row:last-child{border-bottom:none;}
+.bl-row.grand{
+  margin-top:8px;padding-top:16px;
+  border-top:2px solid rgba(201,168,76,0.25);border-bottom:none;
+}
+.bl-lbl{font-size:13px;color:rgba(42,60,42,0.88);font-weight:500;}
+.bl-val{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+.bl-val.g{color:#1a5c1a;}
+.bl-val.r{color:#c0392b;}
+.bl-val.gold{color:#7a5520;}
+.roi-insight{
+  margin-top:16px;padding:14px 18px;
+  background:rgba(13,92,50,0.07);border:1px solid rgba(13,92,50,0.2);
+  border-radius:10px;font-size:12px;line-height:2;
+  color:rgba(20,40,20,0.85);text-align:center;
+}
+
+/* PRIVACY BOX */
+.privacy-box{
+  margin-top:24px;
+  background:rgba(255,255,255,0.6);border:1px solid rgba(13,92,50,0.3);
+  border-radius:12px;padding:14px 18px;
+  display:flex;gap:12px;align-items:flex-start;
+  animation:fadeUp .5s .45s ease both;
+}
+.privacy-txt{font-size:11px;line-height:1.8;color:rgba(20,40,20,0.82);}
+.privacy-txt strong{color:#1a5c35;}
+
+/* BACK */
+.back-bar{text-align:center;margin-top:32px;animation:fadeUp .5s .5s ease both;}
+.back-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;border:1px solid rgba(42,60,42,0.4);border-radius:10px;
+  color:rgba(42,60,42,0.8);font-size:12px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;transition:all .2s;background:none;font-family:'Heebo',sans-serif;
+}
+.back-btn:hover{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.06);}
+
+/* TOAST */
+.toast{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;
+  background:#0d3320;color:var(--gold2);
+  padding:10px 24px;border-radius:10px;
+  font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;
+  border:1px solid rgba(201,168,76,0.35);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  animation:toastIn .3s ease;pointer-events:none;
+}
+
+/* PRINT */
+@media print{
+  #gateWrap,.topbar,.tb-actions,.add-row-btn,.del,.back-bar,.privacy-box,.gate-reset{display:none!important;}
+  body{background:white!important;color:#000!important;}
+  .main{padding:0!important;}
+  .dash-val{-webkit-text-fill-color:inherit!important;}
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+
+<!-- ══ PASSWORD GATE ══ -->
+<div id="gateWrap">
+  <div class="gate-safe" id="gateSafe">
+    <span class="safe-icon">🔐</span>
+    <div class="gate-title">PRIVATE ROI SIMULATOR</div>
+    <div class="gate-sub" id="gateSub">סימולטור הכנסות פרטי — MERIDIAN</div>
+    <input type="password" id="gateInput" class="gate-input" placeholder="••••••" maxlength="30">
+    <div class="gate-hint" id="gateHint"></div>
+    <button class="gate-btn" id="gateBtn" onclick="gateSubmit()">פתח את הסימולטור ←</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-privacy">🔒 כל הנתונים שמורים על המכשיר שלך בלבד<br>לא נשלח דבר לשרת — פרטיות מוחלטת</div>
+    <div class="gate-reset" onclick="resetPassword()">שכחתי סיסמה — אפס והתחל מחדש</div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="appWrap" style="display:none;">
+  <div class="topbar">
+    <div>
+      <div class="tb-brand">📒 PRIVATE ROI SIMULATOR</div>
+      <div class="tb-brand-sub">MERIDIAN CLINICAL INTELLIGENCE</div>
+    </div>
+    <div class="tb-actions">
+      <button class="tb-btn" onclick="printReport()">🖨️ הדפס</button>
+      <button class="tb-btn red" onclick="clearAndReset()">🗑️ מחק והתחל חישוב מחדש</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Month Selector -->
+    <div class="month-bar">
+      <span class="month-lbl">חודש:</span>
+      <select class="month-sel" id="monthSel" onchange="onMonthChange()">
+        <option>ינואר 2026</option><option selected>פברואר 2026</option><option>מרץ 2026</option>
+        <option>אפריל 2026</option><option>מאי 2026</option><option>יוני 2026</option>
+        <option>יולי 2026</option><option>אוגוסט 2026</option><option>ספטמבר 2026</option>
+        <option>אוקטובר 2026</option><option>נובמבר 2026</option><option>דצמבר 2026</option>
+      </select>
+      <span class="month-note">🔒 פרטי — נשמר על המכשיר שלך בלבד</span>
+    </div>
+
+    <!-- Income Table -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">💰 הכנסות — מטופלים</div>
+        <button class="add-row-btn" onclick="addPatient()">➕ הוסף מטופל</button>
+      </div>
+      <table class="ledger">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">#</th>
+          <th>שם מטופל</th>
+          <th style="width:110px;">מספר טיפולים</th>
+          <th style="width:140px;">תעריף לטיפול ₪</th>
+          <th style="width:130px;">סה"כ ₪</th>
+          <th style="width:36px;"></th>
+        </tr></thead>
+        <tbody id="incTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Expenses Table -->
+    <div class="section" style="animation-delay:.25s;">
+      <div class="section-head">
+        <div class="section-title">📉 הוצאות קבועות</div>
+      </div>
+      <table class="ledger">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">#</th>
+          <th>סוג הוצאה</th>
+          <th style="width:200px;">סכום חודשי ₪</th>
+          <th style="width:36px;"></th>
+        </tr></thead>
+        <tbody id="expTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Bottom Line -->
+    <div class="bottomline">
+      <div class="bl-head">📊 סיכום — <span id="blMonth" style="color:rgba(80,60,20,0.7);font-size:13px;"></span></div>
+      <div class="bl-row">
+        <span class="bl-lbl">💰 סך הכנסות ממטופלים</span>
+        <span class="bl-val g" id="blInc">₪0</span>
+      </div>
+      <div class="bl-row">
+        <span class="bl-lbl">📉 סך הוצאות קבועות</span>
+        <span class="bl-val r" id="blExp">₪0</span>
+      </div>
+      <div class="bl-row grand">
+        <span class="bl-lbl" style="font-size:15px;font-weight:700;color:#1a2e1a;">💎 רווח / הפסד חזוי</span>
+        <span class="bl-val gold" id="blProfit" style="font-size:24px;">₪0</span>
+      </div>
+      <div class="roi-insight" id="roiInsight">הזן נתונים בטבלאות למעלה לקבלת הערכת ROI</div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="privacy-box">
+      <span style="font-size:22px;flex-shrink:0;">🛡️</span>
+      <div class="privacy-txt">
+        <strong>פרטיות מוחלטת:</strong> כל הנתונים הכספיים בסימולטור זה נשמרים אך ורק על המכשיר שלך.<br>
+        ❌ <strong>לא נשמרים בקבצי Cookies / Cache</strong> — הנתונים מאוחסנים ב-localStorage בלבד.<br>
+        🗑️ <strong>לחיצה על "מחק והתחל חישוב מחדש" מנקה את הכנסות החודש</strong> — הוצאות קבועות נשמרות לחישוב הבא.<br>
+        MERIDIAN לא שומרת, לא מעבירה, ולא ניגשת לנתוני הכנסות או הוצאות שלך — <strong>הנתונים הם שלך בלבד.</strong>
+      </div>
+    </div>
+
+    <div class="back-bar">
+      <button class="back-btn" onclick="history.back()">← חזור לעמוד סיום המפגש</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  MERIDIAN — PRIVATE ROI SIMULATOR
+//  roi_simulator_26022026.html
+//  Storage: localStorage only — 100% private
+// ══════════════════════════════════════════════
+
+const LS_DATA = 'mrd_roi_data_v1';
+const LS_PW   = 'mrd_roi_pw_v1';
+
+// ── Hash password (obfuscation, not cryptography) ──
+function hashPW(pw) {
+  let h = 5381;
+  for (let i = 0; i < pw.length; i++) h = ((h << 5) + h) ^ pw.charCodeAt(i);
+  return 'mrd_' + (h >>> 0).toString(36);
+}
+
+// ══ GATE ══
+let gateStep = localStorage.getItem(LS_PW) ? 'login' : 'set1';
+let pendingPW = '';
+
+if (gateStep === 'set1') {
+  document.getElementById('gateSub').textContent  = 'פעם ראשונה — הגדר סיסמה פרטית';
+  document.getElementById('gateHint').textContent = 'בחר סיסמה שתזכור (לפחות 3 תווים)';
+  document.getElementById('gateBtn').textContent  = 'הגדר סיסמה ←';
+} else {
+  document.getElementById('gateHint').textContent = 'הזן את הסיסמה שהגדרת';
+}
+
+function gateSubmit() {
+  const val = document.getElementById('gateInput').value.trim();
+  const err = document.getElementById('gateErr');
+  err.textContent = '';
+
+  if (!val || val.length < 3) {
+    err.textContent = '⚠️ סיסמה חייבת להכיל לפחות 3 תווים';
+    shake();
+    return;
+  }
+
+  if (gateStep === 'set1') {
+    pendingPW = val;
+    gateStep  = 'set2';
+    document.getElementById('gateSub').textContent  = 'אמת סיסמה — הקלד שוב';
+    document.getElementById('gateHint').textContent = 'הזן שוב את אותה הסיסמה לאימות';
+    document.getElementById('gateBtn').textContent  = 'אמת ←';
+    document.getElementById('gateInput').value = '';
+    return;
+  }
+  if (gateStep === 'set2') {
+    if (val !== pendingPW) {
+      err.textContent = '❌ הסיסמאות אינן תואמות — נסה שוב';
+      gateStep = 'set1'; pendingPW = '';
+      document.getElementById('gateInput').value = '';
+      document.getElementById('gateSub').textContent  = 'פעם ראשונה — הגדר סיסמה פרטית';
+      document.getElementById('gateHint').textContent = 'בחר סיסמה שתזכור';
+      document.getElementById('gateBtn').textContent  = 'הגדר סיסמה ←';
+      shake();
+      return;
+    }
+    localStorage.setItem(LS_PW, hashPW(val));
+    openApp();
+    return;
+  }
+  // login
+  if (hashPW(val) === localStorage.getItem(LS_PW)) {
+    openApp();
+  } else {
+    err.textContent = '❌ סיסמה שגויה';
+    document.getElementById('gateInput').value = '';
+    shake();
+  }
+}
+
+function shake() {
+  const s = document.getElementById('gateSafe');
+  s.style.animation = 'shake .4s ease';
+  setTimeout(() => s.style.animation = '', 400);
+}
+
+function openApp() {
+  const g = document.getElementById('gateWrap');
+  g.style.transition = 'opacity .4s';
+  g.style.opacity    = '0';
+  setTimeout(() => {
+    g.style.display = 'none';
+    document.getElementById('appWrap').style.display = 'block';
+    loadData();
+  }, 400);
+}
+
+function lockApp() {
+  // kept for internal use only (back-compat)
+  document.getElementById('appWrap').style.display = 'none';
+  const g = document.getElementById('gateWrap');
+  g.style.display = 'flex'; g.style.opacity = '1';
+  document.getElementById('gateInput').value = '';
+  document.getElementById('gateErr').textContent = '';
+  gateStep = 'login';
+  document.getElementById('gateSub').textContent  = 'סימולטור הכנסות פרטי — MERIDIAN';
+  document.getElementById('gateHint').textContent = 'הזן את הסיסמה שהגדרת';
+  document.getElementById('gateBtn').textContent  = 'פתח את הסימולטור ←';
+}
+
+// ── מחק והתחל חישוב מחדש ──────────────────────────
+// Clears all income rows + resets to 3 blank rows
+// Keeps: expenses, password, month
+function clearAndReset() {
+  if (!confirm('זה ימחק את כל שורות המטופלים ויתחיל חישוב חדש.\nהוצאות קבועות ישמרו.\nלהמשיך?')) return;
+  S.patients = [
+    {id:'p'+Date.now(),   name:'',sessions:1,rate:0},
+    {id:'p'+(Date.now()+1),name:'',sessions:1,rate:0},
+    {id:'p'+(Date.now()+2),name:'',sessions:1,rate:0},
+  ];
+  localStorage.setItem(LS_DATA, JSON.stringify(S));
+  renderAll();
+  calcAll();
+  showToast('✅ הכנסות נוקו — הוצאות נשמרו');
+}
+
+function resetPassword() {
+  if (!confirm('איפוס יוחק את הסיסמה וכל הנתונים הנשמרים. להמשיך?')) return;
+  localStorage.removeItem(LS_PW);
+  localStorage.removeItem(LS_DATA);
+  location.reload();
+}
+
+document.getElementById('gateInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') gateSubmit();
+});
+
+// ══ STATE ══
+const DEFAULT_EXPENSES = [
+  {id:'e1', label:'שכירות קליניקה / חדר',      amount:0,   locked:true},
+  {id:'e2', label:'חשמל / ארנונה / ועד בית',   amount:0,   locked:true},
+  {id:'e3', label:'MERIDIAN — מנוי חודשי',      amount:150, locked:true},
+  {id:'e4', label:'עלות טוקנים AI (הערכה)',      amount:0,   locked:true},
+  {id:'e5', label:'הוצאה נוספת 1',              amount:0,   locked:false},
+  {id:'e6', label:'הוצאה נוספת 2',              amount:0,   locked:false},
+  {id:'e7', label:'הוצאה נוספת 3',              amount:0,   locked:false},
+];
+
+let S = { month:'פברואר 2026', patients:[], expenses:[] };
+
+// ══ LOAD / SAVE ══
+function loadData() {
+  const raw = localStorage.getItem(LS_DATA);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      S = { ...S, ...parsed };
+      // Make sure all default expenses exist
+      DEFAULT_EXPENSES.forEach(def => {
+        if (!S.expenses.find(e => e.id === def.id))
+          S.expenses.push({...def});
+      });
+    } catch(e) { initDefaults(); }
+  } else {
+    initDefaults();
+  }
+  // Sync month selector
+  const sel = document.getElementById('monthSel');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].text === S.month) { sel.selectedIndex = i; break; }
+  }
+  renderAll(); calcAll();
+}
+
+function initDefaults() {
+  S.expenses = DEFAULT_EXPENSES.map(e => ({...e}));
+  S.patients = [
+    {id:'p1',name:'',sessions:1,rate:0},
+    {id:'p2',name:'',sessions:1,rate:0},
+    {id:'p3',name:'',sessions:1,rate:0},
+  ];
+}
+
+function saveData() {
+  S.month = document.getElementById('monthSel').options[document.getElementById('monthSel').selectedIndex].text;
+  localStorage.setItem(LS_DATA, JSON.stringify(S));
+  showToast('✅ נשמר בהצלחה');
+}
+
+function onMonthChange() {
+  S.month = document.getElementById('monthSel').options[document.getElementById('monthSel').selectedIndex].text;
+  document.getElementById('blMonth').textContent = S.month;
+}
+
+// ══ RENDER ══
+function renderAll() {
+  renderIncome();
+  renderExpenses();
+  document.getElementById('blMonth').textContent = S.month;
+}
+
+function renderIncome() {
+  const tbody = document.getElementById('incTbody');
+  tbody.innerHTML = '';
+  S.patients.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rn">${i+1}</span></td>
+      <td><input class="ci" value="${esc(p.name)}" placeholder="שם מטופל..."
+          oninput="S.patients[${i}].name=this.value"></td>
+      <td><input class="ci num" type="number" min="0" value="${p.sessions}"
+          oninput="S.patients[${i}].sessions=+this.value||0;recalcRow(${i})"></td>
+      <td><input class="ci num" type="number" min="0" value="${p.rate}" placeholder="₪"
+          oninput="S.patients[${i}].rate=+this.value||0;recalcRow(${i})"></td>
+      <td><input class="ci tot" id="ptot${i}" value="₪${fmt(p.sessions*p.rate)}" readonly></td>
+      <td><button class="del" onclick="rmPatient(${i})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function recalcRow(i) {
+  const el = document.getElementById('ptot'+i);
+  if (el) el.value = '₪' + fmt((S.patients[i].sessions||0) * (S.patients[i].rate||0));
+  calcAll();
+}
+
+function renderExpenses() {
+  const tbody = document.getElementById('expTbody');
+  tbody.innerHTML = '';
+  S.expenses.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rn">${i+1}</span></td>
+      <td>${e.locked
+        ? `<input class="ci dim" value="${esc(e.label)}" readonly>`
+        : `<input class="ci" value="${esc(e.label)}" placeholder="שם הוצאה..."
+             oninput="S.expenses[${i}].label=this.value">`
+      }</td>
+      <td><input class="ci num" type="number" min="0" value="${e.amount||0}" placeholder="₪"
+          oninput="S.expenses[${i}].amount=+this.value||0;calcAll()"></td>
+      <td>${e.locked
+        ? `<span class="lock-icon">🔒</span>`
+        : `<button class="del" onclick="rmExpense(${i})">✕</button>`
+      }</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ══ CALC ══
+function calcAll() {
+  let totalInc = 0, ptCount = 0;
+  S.patients.forEach(p => {
+    const t = (p.sessions||0)*(p.rate||0);
+    totalInc += t;
+    if (p.name || p.rate > 0) ptCount++;
+  });
+
+  let totalExp = 0;
+  S.expenses.forEach(e => { totalExp += (e.amount||0); });
+
+  const profit = totalInc - totalExp;
+
+  // Dashboard
+  // dashboard cards removed — totals shown in bottom line only
+  // ptCount tracked: ptCount (used in ROI calc)
+
+  // profit badge removed with dashboard
+
+  // Section totals
+  if(document.getElementById('incSum')) document.getElementById('incSum').textContent = '₪'+fmt(totalInc);
+  if(document.getElementById('expSum')) document.getElementById('expSum').textContent = '₪'+fmt(totalExp);
+
+  // Bottom line
+  document.getElementById('blInc').textContent = '₪'+fmt(totalInc);
+  document.getElementById('blExp').textContent = '₪'+fmt(totalExp);
+  const blP = document.getElementById('blProfit');
+  blP.textContent = (profit<0?'-':'')+'₪'+fmt(Math.abs(profit));
+  blP.className = 'bl-val '+(profit>0?'g':profit<0?'r':'gold');
+
+  // ROI Insight
+  const ins = document.getElementById('roiInsight');
+  const totalSessions   = S.patients.reduce((s,p)=>s+(p.sessions||0),0);
+  const avgRatePerSess  = totalSessions > 0 && totalInc > 0 ? totalInc/totalSessions : 0;
+  const targetProfit    = Math.max(totalExp * 0.5, 1500);  // "reasonable profit" = 50% above expenses, min ₪1,500
+
+  // ── Always show minimum-sessions block when expenses are set ──
+  if (totalExp > 0) {
+    const avgPt               = ptCount > 0 ? Math.round(totalInc/ptCount) : 0;
+    const roiPct              = totalInc > 0 && totalExp > 0 ? ((profit/totalExp)*100).toFixed(0) : null;
+    const perNIS              = totalInc > 0 && totalExp > 0 ? (totalInc/totalExp).toFixed(2) : null;
+    const minSessionsBreakeven= avgRatePerSess > 0 ? Math.ceil(totalExp / avgRatePerSess) : null;
+    const minSessionsProfit   = avgRatePerSess > 0 ? Math.ceil((totalExp + targetProfit) / avgRatePerSess) : null;
+    const breakevenPt         = avgPt > 0 ? Math.ceil(totalExp / avgPt) : null;
+
+    // ── Performance stats (only when income entered) ──
+    const statsHtml = totalInc > 0 ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;text-align:right;">
+        <div>💡 הכנסה ממוצעת למטופל: <strong style="color:#2d7a1a;">₪${fmt(avgPt)}</strong></div>
+        <div>📊 ROI על הוצאות: <strong style="color:${profit>=0?'#1a5c35':'#c0392b'};">${roiPct}%</strong></div>
+        <div>💎 כל ₪1 שהוצאת הכניס: <strong style="color:#2d7a1a;">₪${perNIS}</strong></div>
+        <div>🔢 סה"כ טיפולים החודש: <strong style="color:#2d7a1a;">${totalSessions}</strong></div>
+      </div>
+      <div style="border-bottom:1px solid rgba(0,0,0,0.08);padding-bottom:12px;margin-bottom:12px;">
+        ${profit >= 0
+          ? `✅ <strong style="color:#1a5c35;">נקודת איזון הושגה!</strong> כיסית את כל ההוצאות ב-${breakevenPt} מטופל${breakevenPt!==1?'ים':''}`
+          : `⚠️ דרושים עוד <strong style="color:#c0392b;">₪${fmt(Math.abs(profit))}</strong> להגיע לנקודת איזון`
+        }
+      </div>` : '';
+
+    // ── Minimum sessions conclusion — always shown when expenses > 0 ──
+    const avgRateDisplay = avgRatePerSess > 0 ? fmt(Math.round(avgRatePerSess)) : '?';
+    const conclusionHtml = `
+      <div style="background:rgba(13,92,50,0.1);border:2px solid rgba(13,92,50,0.3);border-radius:10px;padding:14px 16px;text-align:right;line-height:2;">
+        <div style="font-size:13px;font-weight:700;color:#0d3320;margin-bottom:6px;">📌 דוח מסקנות — ${S.month}</div>
+        <div>
+          לכיסוי הוצאות בלבד (₪${fmt(totalExp)}/חודש):
+          <strong style="color:#c0392b;font-size:16px;"> ${minSessionsBreakeven ? minSessionsBreakeven+' טיפולים' : '— הזן תעריף'}</strong>
+        </div>
+        <div>
+          לרווח סביר (+₪${fmt(targetProfit)}):
+          <strong style="color:#1a5c35;font-size:16px;"> ${minSessionsProfit ? minSessionsProfit+' טיפולים' : '— הזן תעריף'}</strong>
+          ${avgRatePerSess > 0 ? `<span style="color:rgba(20,40,20,0.55);font-size:11px;">@ ממוצע ₪${avgRateDisplay}/טיפול</span>` : ''}
+        </div>
+        ${avgRatePerSess === 0
+          ? '<div style="font-size:11px;color:rgba(20,40,20,0.55);margin-top:4px;">💡 הזן תעריפים בטבלת הכנסות לקבלת חישוב מדויק</div>'
+          : ''
+        }
+      </div>`;
+
+    ins.innerHTML = statsHtml + conclusionHtml;
+
+  } else {
+    ins.innerHTML = '<div style="color:rgba(20,40,20,0.55);">הזן הוצאות קבועות למעלה — ייחושב מינימום הטיפולים הנדרש לרווחיות</div>';
+  }
+}
+
+// ══ ROW MANAGEMENT ══
+function addPatient() {
+  S.patients.push({id:'p'+Date.now(),name:'',sessions:1,rate:0});
+  renderAll(); calcAll();
+}
+
+function rmPatient(i) {
+  if (S.patients.length <= 1) return;
+  S.patients.splice(i,1);
+  renderAll(); calcAll();
+}
+
+function rmExpense(i) {
+  S.expenses.splice(i,1);
+  renderAll(); calcAll();
+}
+
+// ══ UTILS ══
+function fmt(n) { return Number(n||0).toLocaleString('he-IL'); }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2200);
+}
+function printReport() { saveData(); window.print(); }
+</script>
+</body>
+</html>
