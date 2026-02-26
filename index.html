@@ -217,7 +217,7 @@
                         <button onclick="clearAllQueries()" class="px-6 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition">
                             נקה הכל
                         </button>
-                        <button onclick="performMultiQuery()" class="run-query-button flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black hover:from-blue-700 hover:to-indigo-700 transition text-xl shadow-lg">
+                        <button onclick="countQuery();performMultiQuery()" class="run-query-button flex-1 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-black hover:from-blue-700 hover:to-indigo-700 transition text-xl shadow-lg">
                             🔍 הרץ חיפוש
                         </button>
                         <button id="pauseButton" onclick="togglePause()" class="pause-button hidden px-6 py-4 rounded-xl transition">
@@ -2549,24 +2549,39 @@ async function loadCategories() {
   }
 }
 
+// ── Query Counter ─────────────────────────────────────
+// Counts every "הרץ חיפוש" click in this session
+// ROI-READY: stored in sessionStorage for closing page + future roi_sessions table
+window._meridianQueryCount = window._meridianQueryCount || 0;
+
+function countQuery() {
+  window._meridianQueryCount++;
+  sessionStorage.setItem('tcm_last_queries', window._meridianQueryCount);
+}
+
 // ── Exit → Session Close Page ──────────────────────────
 function exitToClose() {
   const params   = new URLSearchParams(window.location.search);
-  const patient  = params.get('patient') || sessionStorage.getItem('tcm_patient_name') || '';
+  // Support both ?patient= (old) and ?patient_name= (new)
+  const patient  = params.get('patient_name') || params.get('patient')
+                   || sessionStorage.getItem('tcm_patient_name') || '';
   const tokens   = document.getElementById('tokenCount')  ? document.getElementById('tokenCount').textContent  : '';
-  const cost     = document.getElementById('totalCost')   ? document.getElementById('totalCost').textContent.replace('$','')   : '';
+  const cost     = document.getElementById('totalCost')   ? document.getElementById('totalCost').textContent.replace('$','') : '';
   const timer    = document.getElementById('queryTimer')  ? document.getElementById('queryTimer').textContent  : '';
+  const queries  = window._meridianQueryCount || sessionStorage.getItem('tcm_last_queries') || '0';
 
-  // Save to sessionStorage for closing page
+  // Save to sessionStorage
   sessionStorage.setItem('tcm_last_tokens',   tokens);
   sessionStorage.setItem('tcm_last_cost',     cost);
   sessionStorage.setItem('tcm_last_duration', timer);
+  sessionStorage.setItem('tcm_last_queries',  queries);
 
   const url = CLOSE_URL
     + '?patient_name=' + encodeURIComponent(patient)
     + '&tokens='       + encodeURIComponent(tokens)
     + '&cost='         + encodeURIComponent(cost)
-    + '&duration='     + encodeURIComponent(timer);
+    + '&duration='     + encodeURIComponent(timer)
+    + '&queries='      + encodeURIComponent(queries);
 
   window.location.href = url;
 }
