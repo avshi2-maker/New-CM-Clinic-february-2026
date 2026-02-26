@@ -75,7 +75,7 @@ body::after {
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .logo-sub {
-  font-size:9px;letter-spacing:5px;color:var(--dim);margin-top:4px;font-weight:300;
+  font-size:9px;letter-spacing:5px;color:rgba(42,26,0,0.55);margin-top:4px;font-weight:500;
 }
 
 /* ── GOLD DIVIDER ── */
@@ -146,7 +146,7 @@ body::after {
   font-family:'Cinzel',serif;
   font-size:28px;font-weight:700;
   text-align:center;
-  background:linear-gradient(135deg,#8b6914,#c9a84c,#8b6914);
+  background:linear-gradient(135deg,#5a3d08,#8b6914,#5a3d08);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   animation: fadeUp 0.8s ease 0.6s both;
   margin-bottom:8px;
@@ -154,7 +154,7 @@ body::after {
 .complete-sub {
   font-family:'Cormorant Garamond',serif;
   font-size:16px;font-style:italic;
-  color:rgba(42,26,0,0.55);text-align:center;
+  color:rgba(42,26,0,0.7);text-align:center;
   animation: fadeUp 0.8s ease 0.7s both;
   margin-bottom:32px;
 }
@@ -176,12 +176,12 @@ body::after {
 .stat-val {
   font-family:'Cinzel',serif;
   font-size:22px;font-weight:700;
-  color:var(--gold2);
+  color:#8b6914;
   display:block;margin-bottom:4px;
 }
 .stat-lbl {
   font-size:10px;letter-spacing:2px;
-  color:var(--muted);font-weight:300;text-transform:uppercase;
+  color:rgba(42,26,0,0.65);font-weight:500;text-transform:uppercase;
 }
 .stat-divider {
   width:1px;background:rgba(201,168,76,0.15);
@@ -202,16 +202,16 @@ body::after {
 .patient-icon {font-size:22px;}
 .patient-info {}
 .patient-name {
-  font-size:15px;font-weight:700;color:var(--paper);
+  font-size:15px;font-weight:700;color:#2a1a00;
 }
 .patient-lbl {
-  font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;
+  font-size:10px;color:rgba(42,26,0,0.65);letter-spacing:1px;margin-top:2px;
 }
 
 /* ── PRIVACY SEAL ── */
 .privacy-box {
-  background:rgba(45,90,69,0.08);
-  border:1px solid rgba(45,90,69,0.35);
+  background:rgba(45,90,69,0.12);
+  border:1px solid rgba(45,90,69,0.5);
   border-radius:16px;
   padding:20px 24px;
   width:100%;max-width:520px;
@@ -233,7 +233,7 @@ body::after {
 .privacy-content {}
 .privacy-title {
   font-size:13px;font-weight:700;
-  color:#5dba8a;letter-spacing:1px;
+  color:#2d5a45;letter-spacing:1px;
   margin-bottom:8px;
   display:flex;align-items:center;gap:8px;
 }
@@ -241,11 +241,11 @@ body::after {
   background:rgba(45,90,69,0.5);
   border:1px solid rgba(93,186,138,0.3);
   border-radius:4px;padding:2px 8px;
-  font-size:9px;letter-spacing:2px;color:#5dba8a;
+  font-size:9px;letter-spacing:2px;color:#2d5a45;
 }
 .privacy-text {
   font-size:12px;line-height:1.8;
-  color:rgba(245,240,232,0.6);font-weight:300;
+  color:rgba(42,26,0,0.75);font-weight:400;
 }
 
 /* ── ACTION BUTTONS ── */
@@ -330,10 +330,10 @@ body::after {
 }
 .orn-line {
   width:60px;height:1px;
-  background:linear-gradient(90deg,transparent,var(--dim));
+  background:linear-gradient(90deg,transparent,rgba(196,154,44,0.5));
 }
-.orn-line.r {background:linear-gradient(90deg,var(--dim),transparent);}
-.orn-symbol {font-size:14px;color:var(--dim);}
+.orn-line.r {background:linear-gradient(90deg,rgba(196,154,44,0.5),transparent);}
+.orn-symbol {font-size:14px;color:rgba(196,154,44,0.7);}
 
 /* ── TOOLTIP ── */
 .tooltip-wrap {
@@ -341,8 +341,8 @@ body::after {
 }
 .tooltip-trigger {
   display:inline-flex;align-items:center;gap:4px;
-  font-size:10px;color:rgba(93,186,138,0.7);
-  cursor:help;border-bottom:1px dashed rgba(93,186,138,0.3);
+  font-size:10px;color:rgba(45,90,69,0.9);
+  cursor:help;border-bottom:1px dashed rgba(45,90,69,0.5);
   padding-bottom:1px;
 }
 .tooltip-box {
@@ -410,9 +410,9 @@ body::after {
 }
 .footer-title {
   font-size:11px;letter-spacing:2px;
-  color:rgba(42,26,0,0.5);
+  color:rgba(42,26,0,0.7);
   text-transform:uppercase;margin-bottom:10px;
-  font-weight:300;
+  font-weight:600;
 }
 .footer-mail {
   display:inline-flex;align-items:center;gap:8px;
@@ -427,7 +427,7 @@ body::after {
 }
 .footer-mail:hover{background:rgba(13,92,99,0.15);transform:translateY(-2px);}
 .footer-tagline {
-  font-size:10px;color:rgba(42,26,0,0.4);
+  font-size:10px;color:rgba(42,26,0,0.6);
   margin-top:10px;letter-spacing:1px;font-style:italic;
 }
 
@@ -510,7 +510,7 @@ body::after {
           <div class="tooltip-box" id="privacy-tooltip">כל המידע הרפואי הרגיש נשמר אך ורק על הדיסק הקשיח של המטפל. MERIDIAN אינה שומרת, מעבירה, או ניגשת לנתונים פרטיים של מטופלים.</div>
         </div>
       </div>
-      <div class="privacy-text" id="privacy-body">כל המידע הרפואי הרגיש — אנמנזה, אבחנות, וסיכום הטיפול — נשמר אך ורק על הדיסק הקשיח של המטפל. MERIDIAN אינה שומרת, מעבירה, או ניגשת לנתונים פרטיים של מטופלים.</div>
+      <div class="privacy-text" id="privacy-body" style="color:rgba(42,26,0,0.8);font-weight:500;">כל המידע הרפואי הרגיש — אנמנזה, אבחנות, וסיכום הטיפול — נשמר אך ורק על הדיסק הקשיח של המטפל. MERIDIAN אינה שומרת, מעבירה, או ניגשת לנתונים פרטיים של מטופלים.</div>
     </div>
   </div>
 
@@ -540,7 +540,7 @@ body::after {
   <!-- Farewell -->
   <div class="farewell" id="farewell-msg">
     תודה על השימוש ב-MERIDIAN<br>
-    <span style="font-size:12px;opacity:0.5;color:rgba(42,26,0,0.5);">Ancient Wisdom · Modern Precision</span>
+    <span style="font-size:12px;opacity:0.8;color:rgba(42,26,0,0.6);">Ancient Wisdom · Modern Precision</span>
   </div>
 
   <!-- Bottom ornament -->
