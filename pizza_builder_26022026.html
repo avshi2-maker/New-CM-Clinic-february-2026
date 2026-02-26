@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — בנה את ה-PLAN שלך 🍕</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Heebo:wght@300;400;600;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   MERIDIAN — CUSTOM TIER PIZZA BUILDER
+   pizza_builder_26022026.html
+   Dark luxury · Animated pizza · Live price card
+══════════════════════════════════════════════════════ */
+:root {
+  --bg:     #0a0e0a;
+  --bg2:    #111811;
+  --jade:   #0d5c45;
+  --jade2:  #1a8a65;
+  --jade3:  #2db882;
+  --gold:   #c9a84c;
+  --gold2:  #e8c96e;
+  --gold3:  #f5e4a0;
+  --cream:  #f5f0e8;
+  --tomato: #c0392b;
+  --tomato2:#e74c3c;
+  --cheese: #f0c040;
+  --herb:   #27ae60;
+  --muted:  rgba(245,240,232,0.45);
+  --border: rgba(201,168,76,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--cream);
+  font-family:'Heebo',sans-serif;min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* GRAIN TEXTURE */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.7;
+}
+
+/* ── TOP NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:14px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,14,10,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{font-family:'Cinzel',serif;font-size:13px;letter-spacing:4px;color:var(--gold);}
+.nav-back{
+  font-size:11px;color:var(--muted);letter-spacing:1px;cursor:pointer;
+  text-decoration:none;transition:color .2s;
+}
+.nav-back:hover{color:var(--gold);}
+
+/* ── HERO HEADER ── */
+.hero{
+  position:relative;z-index:1;
+  text-align:center;padding:110px 24px 40px;
+}
+.hero-eyebrow{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:6px;
+  color:var(--gold);opacity:0.7;margin-bottom:16px;
+  animation:fadeDown .6s ease both;
+}
+.hero-title{
+  font-family:'Abril Fatface',serif;font-size:clamp(42px,8vw,80px);
+  line-height:1;color:var(--cream);
+  animation:fadeDown .7s .1s ease both;
+}
+.hero-title span{
+  background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;
+  color:var(--muted);margin-top:12px;
+  animation:fadeDown .7s .2s ease both;
+}
+
+/* ── MAIN LAYOUT ── */
+.builder{
+  position:relative;z-index:1;
+  max-width:1100px;margin:0 auto;padding:20px 20px 80px;
+  display:grid;grid-template-columns:1fr 420px;gap:48px;align-items:start;
+}
+@media(max-width:860px){
+  .builder{grid-template-columns:1fr;gap:32px;}
+}
+
+/* ══ LEFT — PIZZA + TOPPINGS ══ */
+.left-col{}
+
+/* PIZZA STAGE */
+.pizza-stage{
+  display:flex;justify-content:center;align-items:center;
+  margin-bottom:40px;
+  animation:fadeUp .7s .3s ease both;
+}
+.pizza-wrap{position:relative;width:260px;height:260px;}
+
+/* SVG Pizza layers */
+.pizza-svg{width:260px;height:260px;filter:drop-shadow(0 0 40px rgba(201,168,76,0.3));}
+
+/* Glow ring */
+.pizza-wrap::before{
+  content:'';position:absolute;inset:-20px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.08),transparent 70%);
+  animation:pulse 3s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:0.6}50%{transform:scale(1.05);opacity:1}}
+
+/* Pizza layer classes */
+.p-crust{transition:all .5s ease;}
+.p-sauce{
+  opacity:0;transform-origin:center;transform:scale(0.8);
+  transition:opacity .6s ease, transform .6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.p-cheese{
+  opacity:0;transform-origin:center;transform:scale(0.8);
+  transition:opacity .6s .1s ease, transform .6s .1s cubic-bezier(0.34,1.56,0.64,1);
+}
+.p-herb{
+  opacity:0;transform-origin:center;transform:scale(0.8);
+  transition:opacity .5s .15s ease, transform .5s .15s cubic-bezier(0.34,1.56,0.64,1);
+}
+.p-dots{
+  opacity:0;transform-origin:center;
+  transition:opacity .4s .2s ease;
+}
+.layer-visible{opacity:1 !important;transform:scale(1) !important;}
+
+/* TOPPINGS LABEL */
+.toppings-label{
+  text-align:center;font-size:10px;letter-spacing:3px;
+  color:rgba(201,168,76,0.5);text-transform:uppercase;margin-bottom:24px;
+}
+
+/* ══ QA STEPS ══ */
+.steps{display:flex;flex-direction:column;gap:16px;}
+
+.step{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px;overflow:hidden;
+  transition:border-color .3s, box-shadow .3s;
+  animation:fadeUp .5s ease both;
+}
+.step:nth-child(1){animation-delay:.35s;}
+.step:nth-child(2){animation-delay:.45s;}
+.step:nth-child(3){animation-delay:.55s;}
+.step:nth-child(4){animation-delay:.65s;}
+
+.step.active{
+  border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(201,168,76,0.15), 0 8px 32px rgba(0,0,0,0.3);
+}
+.step.active .step-num{background:var(--gold);color:#0a0e0a;}
+
+/* Step header (always visible) */
+.step-header{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 20px;cursor:pointer;user-select:none;
+}
+.step-num{
+  width:32px;height:32px;border-radius:50%;
+  border:1.5px solid rgba(201,168,76,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:12px;font-weight:600;color:var(--gold);
+  flex-shrink:0;transition:all .3s;
+}
+.step-info{flex:1;}
+.step-name{font-size:14px;font-weight:700;color:var(--cream);}
+.step-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.step-price-tag{
+  font-family:'Cinzel',serif;font-size:13px;font-weight:600;
+  color:var(--gold2);white-space:nowrap;
+}
+.step-check{
+  width:22px;height:22px;border-radius:6px;flex-shrink:0;
+  border:2px solid rgba(201,168,76,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .25s;background:transparent;cursor:pointer;
+}
+.step-check.checked{
+  background:var(--jade2);border-color:var(--jade3);
+}
+
+/* Step body (expandable) */
+.step-body{
+  padding:0 20px;max-height:0;overflow:hidden;
+  transition:max-height .4s ease, padding .3s ease;
+}
+.step-body.open{max-height:300px;padding:0 20px 20px;}
+
+/* BASE step — locked on */
+.step.base-step .step-header{cursor:default;}
+.locked-badge{
+  font-size:9px;letter-spacing:2px;color:var(--jade3);
+  background:rgba(26,138,101,0.15);border:1px solid rgba(26,138,101,0.3);
+  border-radius:4px;padding:2px 8px;
+}
+
+/* TOKEN SELECTOR */
+.token-options{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.tok-opt{
+  border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;
+  padding:12px 8px;text-align:center;cursor:pointer;
+  transition:all .25s;background:rgba(255,255,255,0.03);
+}
+.tok-opt:hover{border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.05);}
+.tok-opt.selected{
+  border-color:var(--gold);background:rgba(201,168,76,0.1);
+  box-shadow:0 0 0 1px rgba(201,168,76,0.15);
+}
+.tok-sessions{font-family:'Abril Fatface',serif;font-size:22px;color:var(--gold2);}
+.tok-label{font-size:10px;color:var(--muted);margin:2px 0;}
+.tok-price{font-size:11px;font-weight:700;color:var(--jade3);}
+
+/* AUDIO OPTION */
+.audio-option{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:10px;cursor:pointer;
+  border:1.5px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);
+  transition:all .25s;
+}
+.audio-option:hover{border-color:rgba(201,168,76,0.3);}
+.audio-option.selected{
+  border-color:var(--gold);background:rgba(201,168,76,0.08);
+}
+.audio-icon{font-size:24px;}
+.audio-info{flex:1;}
+.audio-name{font-size:13px;font-weight:700;color:var(--cream);}
+.audio-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.audio-price{font-family:'Cinzel',serif;font-size:13px;color:var(--gold2);font-weight:600;}
+.audio-radio{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.15);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.audio-radio.on{border-color:var(--gold);background:var(--gold);}
+.audio-radio.on::after{content:'';width:8px;height:8px;border-radius:50%;background:#0a0e0a;}
+
+/* ══ RIGHT — LIVE PLAN CARD ══ */
+.right-col{
+  position:sticky;top:90px;
+  animation:fadeUp .7s .5s ease both;
+}
+
+.plan-card{
+  background:linear-gradient(145deg,#111811,#0d1a0d);
+  border:1px solid var(--border);border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.05);
+}
+
+/* Card top accent */
+.plan-card::before{
+  content:'';display:block;height:3px;
+  background:linear-gradient(90deg,var(--jade),var(--gold),var(--jade2));
+}
+
+.plan-top{
+  padding:28px 28px 20px;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+}
+.plan-eyebrow{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:4px;
+  color:var(--jade3);margin-bottom:8px;
+}
+.plan-name{
+  font-family:'Abril Fatface',serif;font-size:26px;
+  color:var(--gold2);line-height:1.1;margin-bottom:4px;
+  min-height:32px;transition:all .3s;
+}
+.plan-tagline{font-size:11px;color:var(--muted);font-style:italic;min-height:16px;}
+
+/* Price display */
+.price-row{
+  padding:24px 28px;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  display:flex;align-items:baseline;gap:4px;
+}
+.price-amount{
+  font-family:'Abril Fatface',serif;font-size:52px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;transition:all .4s;
+}
+.price-currency{font-size:22px;color:var(--gold);font-weight:700;align-self:flex-start;margin-top:8px;}
+.price-period{font-size:13px;color:var(--muted);margin-right:4px;}
+
+/* Feature list */
+.features-list{
+  padding:20px 28px;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  display:flex;flex-direction:column;gap:10px;
+}
+.feat-row{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:rgba(245,240,232,0.65);
+  transition:all .3s;
+}
+.feat-row.active{color:var(--cream);}
+.feat-icon{
+  width:22px;height:22px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);
+  transition:all .3s;
+}
+.feat-row.active .feat-icon{background:rgba(26,138,101,0.25);border-color:rgba(45,184,130,0.4);}
+.feat-check{color:rgba(255,255,255,0.15);font-size:10px;transition:all .3s;}
+.feat-row.active .feat-check{color:var(--jade3);}
+
+/* Price breakdown */
+.breakdown{
+  padding:16px 28px;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  font-size:11px;
+}
+.bd-row{
+  display:flex;justify-content:space-between;
+  padding:4px 0;color:var(--muted);
+}
+.bd-row.total{
+  color:var(--gold2);font-weight:700;font-size:13px;
+  border-top:1px solid rgba(201,168,76,0.15);margin-top:6px;padding-top:8px;
+}
+
+/* CTA */
+.plan-cta{padding:20px 28px;}
+.cta-btn{
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));
+  color:var(--gold2);border:none;border-radius:12px;
+  font-family:'Cinzel',serif;font-size:13px;font-weight:600;letter-spacing:2px;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 4px 20px rgba(13,92,69,0.4);
+}
+.cta-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(13,92,69,0.6);
+}
+.cta-btn:active{transform:translateY(0);}
+.cta-sub{
+  text-align:center;font-size:10px;color:rgba(245,240,232,0.3);
+  margin-top:10px;letter-spacing:.5px;
+}
+
+/* ══ REGISTER MODAL ══ */
+.modal-wrap{
+  position:fixed;inset:0;z-index:999;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+  padding:20px;
+}
+.modal-wrap.open{display:flex;}
+.modal{
+  background:linear-gradient(145deg,#131b13,#0f160f);
+  border:1px solid var(--border);border-radius:24px;
+  width:100%;max-width:480px;overflow:hidden;
+  animation:popIn .4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+.modal::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--jade),var(--gold),var(--jade2));}
+.modal-inner{padding:32px;}
+.modal-title{font-family:'Abril Fatface',serif;font-size:24px;color:var(--gold2);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+.modal-plan-summary{
+  background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);
+  border-radius:12px;padding:14px 16px;margin-bottom:24px;
+  font-size:12px;color:var(--muted);line-height:2;
+}
+.modal-plan-summary strong{color:var(--gold2);}
+.form-field{margin-bottom:14px;}
+.form-label{font-size:11px;color:rgba(245,240,232,0.5);letter-spacing:1px;display:block;margin-bottom:6px;}
+.form-input{
+  width:100%;padding:12px 16px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);border-radius:10px;
+  color:var(--cream);font-family:'Heebo',sans-serif;font-size:13px;
+  outline:none;direction:rtl;text-align:right;
+  transition:border-color .2s;
+}
+.form-input:focus{border-color:var(--gold);}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-submit{
+  flex:1;padding:14px;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));
+  color:var(--gold2);border:none;border-radius:10px;
+  font-family:'Cinzel',serif;font-size:12px;font-weight:600;letter-spacing:2px;
+  cursor:pointer;transition:all .25s;
+}
+.modal-submit:hover{box-shadow:0 6px 24px rgba(13,92,69,0.5);transform:translateY(-1px);}
+.modal-cancel{
+  padding:14px 20px;background:transparent;
+  border:1px solid rgba(255,255,255,0.1);border-radius:10px;
+  color:var(--muted);font-family:'Heebo',sans-serif;font-size:12px;
+  cursor:pointer;transition:all .2s;
+}
+.modal-cancel:hover{border-color:rgba(255,255,255,0.2);color:var(--cream);}
+
+/* SUCCESS */
+.success-screen{
+  display:none;text-align:center;padding:40px 32px;
+}
+.success-seal{font-size:64px;margin-bottom:16px;animation:bounceIn .6s ease both;}
+.success-title{font-family:'Abril Fatface',serif;font-size:28px;color:var(--gold2);margin-bottom:8px;}
+.success-sub{font-size:13px;color:var(--muted);line-height:1.8;}
+@keyframes bounceIn{0%{transform:scale(0.3);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+/* ANIMATIONS */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .token-options{grid-template-columns:1fr 1fr 1fr;}
+  .tok-sessions{font-size:18px;}
+  .plan-card{border-radius:16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">☯ MERIDIAN</div>
+  <a class="nav-back" href="meridian_landing_dynamic_25022026.html">← חזור לדף הבית</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">CUSTOM TIER BUILDER</div>
+  <div class="hero-title">בנה את ה<span>-MERIDIAN</span><br>שלך 🍕</div>
+  <div class="hero-sub">בחר את המרכיבים שלך — קבל את ה-plan המושלם</div>
+</div>
+
+<!-- BUILDER -->
+<div class="builder">
+
+  <!-- LEFT: Pizza + Steps -->
+  <div class="left-col">
+
+    <!-- PIZZA VISUAL -->
+    <div class="pizza-stage">
+      <div class="pizza-wrap">
+        <svg class="pizza-svg" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+          <!-- Shadow -->
+          <ellipse cx="130" cy="248" rx="90" ry="10" fill="rgba(0,0,0,0.4)"/>
+
+          <!-- CRUST (always visible) -->
+          <g class="p-crust">
+            <circle cx="130" cy="128" r="118" fill="#c9a84c" opacity="0.9"/>
+            <circle cx="130" cy="128" r="108" fill="#e8b84b"/>
+            <circle cx="130" cy="128" r="100" fill="#d4892a"/>
+            <!-- Crust texture dots -->
+            <circle cx="60" cy="70" r="4" fill="rgba(180,100,20,0.5)"/>
+            <circle cx="190" cy="65" r="3" fill="rgba(180,100,20,0.4)"/>
+            <circle cx="210" cy="140" r="5" fill="rgba(180,100,20,0.5)"/>
+            <circle cx="55" cy="175" r="3.5" fill="rgba(180,100,20,0.4)"/>
+            <circle cx="130" cy="230" r="4" fill="rgba(180,100,20,0.4)"/>
+            <!-- Shine -->
+            <ellipse cx="100" cy="95" rx="28" ry="16" fill="rgba(255,230,150,0.12)" transform="rotate(-20,100,95)"/>
+          </g>
+
+          <!-- SAUCE LAYER (tokens) -->
+          <g class="p-sauce">
+            <circle cx="130" cy="128" r="98" fill="#c0392b" opacity="0.88"/>
+            <circle cx="130" cy="128" r="86" fill="#e74c3c" opacity="0.9"/>
+            <!-- Sauce texture -->
+            <circle cx="100" cy="100" r="12" fill="#c0392b" opacity="0.6"/>
+            <circle cx="155" cy="110" r="9" fill="#c0392b" opacity="0.5"/>
+            <circle cx="120" cy="155" r="11" fill="#c0392b" opacity="0.55"/>
+            <circle cx="158" cy="152" r="8" fill="#c0392b" opacity="0.5"/>
+          </g>
+
+          <!-- CHEESE LAYER (audio) -->
+          <g class="p-cheese">
+            <circle cx="130" cy="128" r="84" fill="#f0c040" opacity="0.88"/>
+            <circle cx="130" cy="128" r="72" fill="#f5d060" opacity="0.85"/>
+            <!-- Cheese bubbles -->
+            <circle cx="108" cy="108" r="14" fill="#e8b830" opacity="0.6"/>
+            <circle cx="148" cy="118" r="10" fill="#e8b830" opacity="0.55"/>
+            <circle cx="118" cy="148" r="12" fill="#e8b830" opacity="0.6"/>
+            <circle cx="150" cy="150" r="9" fill="#e8b830" opacity="0.5"/>
+            <circle cx="130" cy="108" r="8" fill="#fce87a" opacity="0.7"/>
+          </g>
+
+          <!-- HERB/TOPPINGS LAYER (transcription) -->
+          <g class="p-herb">
+            <!-- Green herb spots -->
+            <ellipse cx="105" cy="108" rx="8" ry="5" fill="#27ae60" opacity="0.9" transform="rotate(-25,105,108)"/>
+            <ellipse cx="150" cy="118" rx="7" ry="4" fill="#2ecc71" opacity="0.85" transform="rotate(15,150,118)"/>
+            <ellipse cx="118" cy="148" rx="9" ry="5" fill="#27ae60" opacity="0.9" transform="rotate(-10,118,148)"/>
+            <ellipse cx="148" cy="148" rx="6" ry="4" fill="#2ecc71" opacity="0.8" transform="rotate(30,148,148)"/>
+            <ellipse cx="132" cy="102" rx="7" ry="4" fill="#1abc9c" opacity="0.85" transform="rotate(5,132,102)"/>
+            <ellipse cx="108" cy="140" rx="5" ry="3" fill="#27ae60" opacity="0.8" transform="rotate(-35,108,140)"/>
+          </g>
+
+          <!-- MERIDIAN POINTS (always on top — acupuncture dots) -->
+          <g class="p-dots">
+            <circle cx="130" cy="90" r="3" fill="var(--gold2)" opacity="0.9"/>
+            <circle cx="160" cy="115" r="2.5" fill="var(--gold2)" opacity="0.8"/>
+            <circle cx="148" cy="148" r="3" fill="var(--gold2)" opacity="0.9"/>
+            <circle cx="112" cy="148" r="2.5" fill="var(--gold2)" opacity="0.8"/>
+            <circle cx="105" cy="115" r="3" fill="var(--gold2)" opacity="0.9"/>
+            <!-- Center dot -->
+            <circle cx="130" cy="128" r="5" fill="rgba(201,168,76,0.9)"/>
+            <circle cx="130" cy="128" r="3" fill="#0a0e0a"/>
+          </g>
+
+          <!-- MERIDIAN TEXT on crust -->
+          <text x="130" y="247" text-anchor="middle" fill="rgba(180,120,20,0.6)"
+            font-family="Cinzel,serif" font-size="7" letter-spacing="3">MERIDIAN</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="toppings-label">הוסף תוספות — בנה את ה-plan שלך</div>
+
+    <!-- STEPS -->
+    <div class="steps">
+
+      <!-- STEP 1: BASE (locked on) -->
+      <div class="step base-step active" id="step1">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <div class="step-name">🫓 בסיס — MERIDIAN Core</div>
+            <div class="step-desc">411 שאלות + 589 שאלות קליניות + דיקור + ממשק AI + דוחות</div>
+          </div>
+          <span class="locked-badge">✓ כלול</span>
+          <div class="step-price-tag">$18.90</div>
+        </div>
+        <div class="step-body open" id="body1">
+          <div style="font-size:11px;color:var(--muted);line-height:2;padding:4px 0 8px;">
+            ✅ &nbsp;1,000 שאלות TCM + חיפוש AI<br>
+            ✅ &nbsp;זיהוי דפוסים יין/יאנג<br>
+            ✅ &nbsp;פרוטוקול SOS חירום<br>
+            ✅ &nbsp;דוח סיום מפגש + ייצוא<br>
+            ✅ &nbsp;תמיכה בנייד + דסקטופ
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: TOKENS -->
+      <div class="step" id="step2" onclick="toggleStep(2)">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <div class="step-name">🍅 טוקנים — Sessions יומיים</div>
+            <div class="step-desc">בחר כמה מפגשי AI ביום אתה צריך</div>
+          </div>
+          <div class="step-check" id="check2">◇</div>
+          <div class="step-price-tag" id="price2">+ $0</div>
+        </div>
+        <div class="step-body" id="body2">
+          <div class="token-options">
+            <div class="tok-opt selected" id="tok-starter" onclick="selectToken('starter',5,event)">
+              <div class="tok-sessions">5</div>
+              <div class="tok-label">מפגשים/יום</div>
+              <div class="tok-price">+$6</div>
+            </div>
+            <div class="tok-opt" id="tok-pro" onclick="selectToken('pro',15,event)">
+              <div class="tok-sessions">15</div>
+              <div class="tok-label">מפגשים/יום</div>
+              <div class="tok-price">+$14</div>
+            </div>
+            <div class="tok-opt" id="tok-unlimited" onclick="selectToken('unlimited','∞',event)">
+              <div class="tok-sessions">∞</div>
+              <div class="tok-label">ללא הגבלה</div>
+              <div class="tok-price">+$22</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: AUDIO -->
+      <div class="step" id="step3" onclick="toggleStep(3)">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <div class="step-name">🧀 הקלטת מפגש</div>
+            <div class="step-desc">הקלטת אודיו + שמירה בתיק המטופל</div>
+          </div>
+          <div class="step-check" id="check3">◇</div>
+          <div class="step-price-tag" id="price3">+ $0</div>
+        </div>
+        <div class="step-body" id="body3">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="audio-option selected" id="audio-record" onclick="selectAudio('record',event)">
+              <div class="audio-radio on" id="radio-record"></div>
+              <div class="audio-icon">🎙️</div>
+              <div class="audio-info">
+                <div class="audio-name">הקלטת אודיו בלבד</div>
+                <div class="audio-desc">שמירת קובץ MP3 בתיק המטופל</div>
+              </div>
+              <div class="audio-price">+$8/חודש</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: TRANSCRIPTION -->
+      <div class="step" id="step4" onclick="toggleStep(4)">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <div class="step-name">🌿 תמלול עברית AI</div>
+            <div class="step-desc">אודיו + תמלול אוטומטי בעברית לתיק המטופל</div>
+          </div>
+          <div class="step-check" id="check4">◇</div>
+          <div class="step-price-tag" id="price4">+ $0</div>
+        </div>
+        <div class="step-body" id="body4">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="audio-option selected" id="audio-transcribe" onclick="selectAudio('transcribe',event)">
+              <div class="audio-radio on" id="radio-transcribe"></div>
+              <div class="audio-icon">📝</div>
+              <div class="audio-info">
+                <div class="audio-name">אודיו + תמלול עברית</div>
+                <div class="audio-desc">תמלול AI בזמן אמת + שמירה בתיק</div>
+              </div>
+              <div class="audio-price">+$15/חודש</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /left-col -->
+
+
+  <!-- RIGHT: Live Plan Card -->
+  <div class="right-col">
+    <div class="plan-card" id="planCard">
+      <div class="plan-top">
+        <div class="plan-eyebrow">התוכנית שלך</div>
+        <div class="plan-name" id="planName">MERIDIAN Core</div>
+        <div class="plan-tagline" id="planTagline">הבסיס המושלם לקליניקה שלך</div>
+      </div>
+
+      <div class="price-row">
+        <div class="price-currency">$</div>
+        <div class="price-amount" id="priceDisplay">18.90</div>
+        <div class="price-period">/חודש</div>
+      </div>
+
+      <div class="features-list" id="featuresList">
+        <div class="feat-row active" id="feat-base">
+          <div class="feat-icon">🫓</div>
+          <span>MERIDIAN Core — 1,000 שאלות TCM</span>
+          <span class="feat-check" style="margin-right:auto;">✓</span>
+        </div>
+        <div class="feat-row" id="feat-tokens">
+          <div class="feat-icon">🍅</div>
+          <span id="feat-tokens-txt">טוקנים — Sessions יומיים</span>
+          <span class="feat-check" style="margin-right:auto;">○</span>
+        </div>
+        <div class="feat-row" id="feat-audio">
+          <div class="feat-icon">🧀</div>
+          <span id="feat-audio-txt">הקלטת מפגש</span>
+          <span class="feat-check" style="margin-right:auto;">○</span>
+        </div>
+        <div class="feat-row" id="feat-trans">
+          <div class="feat-icon">🌿</div>
+          <span id="feat-trans-txt">תמלול עברית AI</span>
+          <span class="feat-check" style="margin-right:auto;">○</span>
+        </div>
+      </div>
+
+      <div class="breakdown" id="breakdown">
+        <div class="bd-row"><span>בסיס MERIDIAN Core</span><span>$18.90</span></div>
+        <div class="bd-row" id="bd-tokens" style="display:none;"><span id="bd-tok-lbl">טוקנים</span><span id="bd-tok-val">+$0</span></div>
+        <div class="bd-row" id="bd-audio" style="display:none;"><span>הקלטת אודיו</span><span>+$8</span></div>
+        <div class="bd-row" id="bd-trans" style="display:none;"><span>תמלול עברית</span><span>+$15</span></div>
+        <div class="bd-row total"><span>💎 סה"כ לחודש</span><span id="bd-total">$18.90</span></div>
+      </div>
+
+      <div class="plan-cta">
+        <button class="cta-btn" onclick="openRegister()">
+          הצטרף עכשיו — ניסיון חינם 14 יום ←
+        </button>
+        <div class="cta-sub">ביטול בכל עת · ללא כרטיס אשראי</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /builder -->
+
+
+<!-- ══ REGISTER MODAL ══ -->
+<div class="modal-wrap" id="modalWrap" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-inner" id="formScreen">
+      <div class="modal-title">🎉 כמעט שם!</div>
+      <div class="modal-sub">14 יום ניסיון חינם — ביטול בכל עת</div>
+      <div class="modal-plan-summary" id="modalSummary"></div>
+      <div class="form-field">
+        <label class="form-label">שם מלא</label>
+        <input type="text" class="form-input" id="regName" placeholder="ד״ר / מטפל...">
+      </div>
+      <div class="form-field">
+        <label class="form-label">אימייל</label>
+        <input type="email" class="form-input" id="regEmail" placeholder="you@clinic.com" dir="ltr" style="text-align:left;">
+      </div>
+      <div class="form-field">
+        <label class="form-label">טלפון (אופציונלי)</label>
+        <input type="tel" class="form-input" id="regPhone" placeholder="05x-xxxxxxx" dir="ltr" style="text-align:left;">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-submit" onclick="submitRegister()">שלח ← התחל ניסיון</button>
+        <button class="modal-cancel" onclick="closeModal()">ביטול</button>
+      </div>
+    </div>
+    <div class="success-screen" id="successScreen">
+      <div class="success-seal">☯️</div>
+      <div class="success-title">ברוך הבא ל-MERIDIAN!</div>
+      <div class="success-sub" id="successMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  MERIDIAN — PIZZA TIER BUILDER
+//  pizza_builder_26022026.html
+// ══════════════════════════════════════════════════════
+
+// ── STATE ──
+const state = {
+  tokens: null,    // null | 'starter' | 'pro' | 'unlimited'
+  audio:  false,
+  trans:  false,
+};
+
+const TOKEN_PRICES   = { starter:6, pro:14, unlimited:22 };
+const TOKEN_LABELS   = { starter:'5 מפגשים/יום', pro:'15 מפגשים/יום', unlimited:'ללא הגבלה' };
+const AUDIO_PRICE    = 8;
+const TRANS_PRICE    = 15;
+const BASE_PRICE     = 18.90;
+
+const PLAN_NAMES = {
+  '0000': 'MERIDIAN Core',
+  '1000': 'MERIDIAN Starter',
+  '0100': 'MERIDIAN Pro',
+  '0010': 'MERIDIAN Audio',
+  '0001': 'MERIDIAN Scribe',
+  '1100': 'MERIDIAN Pro+',
+  '1010': 'MERIDIAN Audio+',
+  '1001': 'MERIDIAN Scribe+',
+  '0110': 'MERIDIAN Pro Audio',
+  '0101': 'MERIDIAN Pro Scribe',
+  '0011': 'MERIDIAN Studio',
+  '1110': 'MERIDIAN Elite',
+  '1101': 'MERIDIAN Elite Scribe',
+  '1011': 'MERIDIAN Elite Studio',
+  '0111': 'MERIDIAN Full Studio',
+  '1111': 'MERIDIAN Ultimate',
+};
+
+// ── STEP TOGGLE ──
+function toggleStep(n) {
+  const step   = document.getElementById('step'+n);
+  const check  = document.getElementById('check'+n);
+  const body   = document.getElementById('body'+n);
+  const wasOn  = step.classList.contains('active');
+
+  if (wasOn) {
+    // Turn OFF
+    step.classList.remove('active');
+    check.textContent = '◇';
+    check.classList.remove('checked');
+    body.classList.remove('open');
+    if (n === 2) { state.tokens = null; updatePizzaLayer('sauce', false); }
+    if (n === 3) { state.audio  = false; updatePizzaLayer('cheese', false); }
+    if (n === 4) { state.trans  = false; updatePizzaLayer('herb', false); updatePizzaLayer('dots', false); }
+  } else {
+    // Turn ON
+    step.classList.add('active');
+    check.textContent = '✓';
+    check.classList.add('checked');
+    body.classList.add('open');
+    if (n === 2) { state.tokens = 'starter'; updatePizzaLayer('sauce', true); }
+    if (n === 3) { state.audio  = true;  updatePizzaLayer('cheese', true); }
+    if (n === 4) { state.trans  = true;  updatePizzaLayer('herb', true); updatePizzaLayer('dots', true); }
+  }
+  updateCard();
+  event.stopPropagation();
+}
+
+// ── TOKEN SELECTION ──
+function selectToken(type, sessions, e) {
+  if (e) e.stopPropagation();
+  state.tokens = type;
+  ['starter','pro','unlimited'].forEach(t => {
+    document.getElementById('tok-'+t).classList.toggle('selected', t === type);
+  });
+  updateCard();
+}
+
+// ── AUDIO SELECTION ──
+function selectAudio(type, e) {
+  if (e) e.stopPropagation();
+  // These are per-step — just visual
+}
+
+// ── PIZZA LAYERS ──
+function updatePizzaLayer(layer, on) {
+  const map = { sauce:'p-sauce', cheese:'p-cheese', herb:'p-herb', dots:'p-dots' };
+  const el = document.querySelector('.'+map[layer]);
+  if (el) el.classList.toggle('layer-visible', on);
+}
+
+// ── LIVE CARD UPDATE ──
+function updateCard() {
+  // Calculate total
+  let total = BASE_PRICE;
+  let tokPrice = 0;
+  if (state.tokens) tokPrice = TOKEN_PRICES[state.tokens];
+  if (state.audio)  total += AUDIO_PRICE;
+  if (state.trans)  total += TRANS_PRICE;
+  total += tokPrice;
+
+  // Price
+  document.getElementById('priceDisplay').textContent = total.toFixed(2);
+  document.getElementById('bd-total').textContent = '$'+total.toFixed(2);
+
+  // Tokens breakdown
+  if (state.tokens) {
+    document.getElementById('bd-tokens').style.display = 'flex';
+    document.getElementById('bd-tok-lbl').textContent = TOKEN_LABELS[state.tokens];
+    document.getElementById('bd-tok-val').textContent = '+$'+TOKEN_PRICES[state.tokens];
+    document.getElementById('price2').textContent = '+$'+TOKEN_PRICES[state.tokens];
+    document.getElementById('feat-tokens-txt').textContent = TOKEN_LABELS[state.tokens];
+  } else {
+    document.getElementById('bd-tokens').style.display = 'none';
+    document.getElementById('price2').textContent = '+ $0';
+    document.getElementById('feat-tokens-txt').textContent = 'טוקנים — Sessions יומיים';
+  }
+
+  // Audio breakdown
+  document.getElementById('bd-audio').style.display = state.audio ? 'flex' : 'none';
+  document.getElementById('price3').textContent = state.audio ? '+$8' : '+ $0';
+
+  // Trans breakdown
+  document.getElementById('bd-trans').style.display = state.trans ? 'flex' : 'none';
+  document.getElementById('price4').textContent = state.trans ? '+$15' : '+ $0';
+
+  // Feature rows
+  const featTokens = document.getElementById('feat-tokens');
+  const featAudio  = document.getElementById('feat-audio');
+  const featTrans  = document.getElementById('feat-trans');
+  featTokens.classList.toggle('active', !!state.tokens);
+  featTokens.querySelector('.feat-check').textContent = state.tokens ? '✓' : '○';
+  featAudio.classList.toggle('active', state.audio);
+  featAudio.querySelector('.feat-check').textContent = state.audio ? '✓' : '○';
+  featTrans.classList.toggle('active', state.trans);
+  featTrans.querySelector('.feat-check').textContent = state.trans ? '✓' : '○';
+
+  // Plan name
+  const key = [
+    state.tokens ? '1' : '0',
+    '0', // placeholder for token tier (all use '1')
+    state.audio  ? '1' : '0',
+    state.trans  ? '1' : '0',
+  ].join('');
+
+  // Simplified key for name lookup
+  const nameKey = (state.tokens?'1':'0')+'0'+(state.audio?'1':'0')+(state.trans?'1':'0');
+  const planName = PLAN_NAMES[nameKey] || 'MERIDIAN Custom';
+  document.getElementById('planName').textContent = planName;
+
+  // Taglines
+  const tags = {
+    'MERIDIAN Core':       'הבסיס המושלם לקליניקה שלך',
+    'MERIDIAN Starter':    '5 מפגשי AI ביום — מושלם לקליניקה קטנה',
+    'MERIDIAN Pro':        '15 מפגשי AI ביום — לקליניקה עמוסה',
+    'MERIDIAN Audio':      'תיעוד קולי אוטומטי לכל מפגש',
+    'MERIDIAN Scribe':     'AI מתמלל עברית — חוסך שעות תיעוד',
+    'MERIDIAN Ultimate':   '⭐ החבילה המלאה — כל מה שאפשרי',
+  };
+  document.getElementById('planTagline').textContent = tags[planName] || 'תוכנית מותאמת אישית';
+}
+
+// ── REGISTER MODAL ──
+function openRegister() {
+  const total = document.getElementById('bd-total').textContent;
+  const name  = document.getElementById('planName').textContent;
+  let summary = `<strong>תוכנית:</strong> ${name}<br>`;
+  summary += `<strong>מחיר:</strong> ${total}/חודש<br>`;
+  if (state.tokens) summary += `✅ ${TOKEN_LABELS[state.tokens]}<br>`;
+  if (state.audio)  summary += `✅ הקלטת אודיו<br>`;
+  if (state.trans)  summary += `✅ תמלול עברית AI<br>`;
+  summary += `<strong style="color:var(--jade3);">14 יום ניסיון חינם · ביטול בכל עת</strong>`;
+  document.getElementById('modalSummary').innerHTML = summary;
+  document.getElementById('modalWrap').classList.add('open');
+  document.getElementById('formScreen').style.display = 'block';
+  document.getElementById('successScreen').style.display = 'none';
+}
+
+function closeModal() {
+  document.getElementById('modalWrap').classList.remove('open');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalWrap')) closeModal();
+}
+
+function submitRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  if (!name || !email) {
+    alert('נא למלא שם ואימייל');
+    return;
+  }
+  const plan  = document.getElementById('planName').textContent;
+  const total = document.getElementById('bd-total').textContent;
+
+  // Save to localStorage for CRM pickup
+  localStorage.setItem('meridian_new_signup', JSON.stringify({
+    name, email,
+    plan, total,
+    tokens: state.tokens,
+    audio: state.audio,
+    trans: state.trans,
+    ts: new Date().toISOString()
+  }));
+
+  // Show success
+  document.getElementById('formScreen').style.display  = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  document.getElementById('successMsg').innerHTML =
+    `שלום <strong style="color:var(--gold2);">${name}</strong> — ברוך הבא!<br><br>` +
+    `התוכנית שלך: <strong>${plan}</strong><br>` +
+    `${total}/חודש · 14 יום ראשונים חינם<br><br>` +
+    `נשלח אליך מייל לכתובת <strong style="color:var(--jade3);">${email}</strong><br>עם פרטי הגישה למערכת.`;
+}
+
+// ── KEYBOARD CLOSE ──
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
