@@ -23,18 +23,15 @@ body{font-family:'Heebo',sans-serif;background:var(--ink);color:var(--paper);min
 body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 55% at 15% 15%,rgba(201,168,76,0.18) 0%,transparent 55%),radial-gradient(ellipse 50% 70% at 88% 85%,rgba(13,92,99,0.08) 0%,transparent 50%);pointer-events:none;}
 .page{position:relative;z-index:1;display:none;}
 .page.active{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px 16px 24px;}
-/* LOGO */
 .logo{text-align:center;margin-bottom:18px;animation:fadeD .7s ease both;}
 .logo-icon{font-size:36px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 24px rgba(201,168,76,0.5));}
 .logo-name{font-family:'Cinzel',serif;font-size:26px;font-weight:700;letter-spacing:10px;background:linear-gradient(135deg,#7a5520 0%,#c9a84c 40%,#8b6914 70%,#7a5520 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .logo-sub{font-size:9px;color:var(--muted);letter-spacing:4px;margin-top:6px;font-weight:300;}
 .logo-tag{font-size:12px;color:rgba(42,31,14,0.55);margin-top:6px;font-weight:300;}
 .gold-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 16px;}
-/* PRICING HEAD */
 .phead{text-align:center;margin-bottom:18px;animation:fadeD .7s .15s ease both;}
 .phead h2{font-size:17px;font-weight:700;margin-bottom:4px;}
 .phead p{font-size:13px;color:var(--muted);font-weight:300;}
-/* CARDS */
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:960px;width:100%;animation:fadeU .7s .25s ease both;}
 @media(max-width:750px){.cards{grid-template-columns:1fr;max-width:420px;}}
 .card{position:relative;background:var(--card);border:1px solid var(--bord);border-radius:16px;padding:20px 18px 22px;cursor:pointer;transition:transform .3s,box-shadow .3s,border-color .3s;overflow:hidden;text-align:center;backdrop-filter:blur(10px);}
@@ -62,15 +59,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 .b2:hover{box-shadow:0 8px 24px rgba(13,92,99,0.5);transform:scale(1.02);}
 .b3{background:linear-gradient(135deg,#8b6914 0%,var(--gold) 50%,#8b6914 100%);color:var(--ink);font-weight:900;}
 .b3:hover{box-shadow:0 8px 24px rgba(201,168,76,0.4);transform:scale(1.02);}
-.demo-cred{
-  margin-top:8px;font-size:11px;color:#7a5520;
-  background:rgba(201,168,76,0.15);border:1px dashed rgba(201,168,76,0.4);
-  border-radius:8px;padding:5px 10px;letter-spacing:0.5px;font-weight:600;
-  cursor:pointer;transition:background 0.2s;
-}
+.demo-cred{margin-top:8px;font-size:11px;color:#7a5520;background:rgba(201,168,76,0.15);border:1px dashed rgba(201,168,76,0.4);border-radius:8px;padding:5px 10px;letter-spacing:0.5px;font-weight:600;cursor:pointer;transition:background 0.2s;}
 .demo-cred:hover{background:rgba(201,168,76,0.3);}
 .note{margin-top:16px;font-size:12px;color:var(--muted);text-align:center;animation:fadeU .7s .4s ease both;line-height:1.8;}
-/* LOGIN PAGE */
 .lwrap{width:100%;max-width:440px;animation:fadeU .6s ease both;}
 .lbox{background:rgba(255,255,255,0.65);border:1px solid var(--bord);border-radius:24px;padding:44px 40px 48px;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
 @media(max-width:480px){.lbox{padding:32px 24px 36px;}}
@@ -91,7 +82,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 .lsuccess.show{display:block;}
 .blink{display:block;text-align:center;margin-top:22px;font-size:13px;color:var(--muted);cursor:pointer;transition:color .2s;}
 .blink:hover{color:var(--gold);}
-/* ANIMS */
 @keyframes fadeD{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -115,7 +105,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
   </div>
 
   <div class="cards">
-
     <!-- FREE -->
     <div class="card" onclick="pick('free')">
       <span class="cicon">🌱</span>
@@ -171,7 +160,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
       <button class="cbtn b3">הרשמה POWER ←</button>
       <div class="demo-cred">demo@abc &nbsp;|&nbsp; demo1234</div>
     </div>
-
   </div>
 
   <div class="note">
@@ -218,10 +206,13 @@ const SB = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8'
 );
 
+// ══ DESTINATION — one place to change if URL ever changes ══
+const DASHBOARD_URL = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/dashboard_24022026.html';
+
 const TIERS = {
-  free:    {badge:'🌱 ניסיון חינם — 14 יום',    key:'free_trial'},
-  regular: {badge:'⚕️ Clinic — $20 לחודש',       key:'clinic'},
-  heavy:   {badge:'🔥 Power — $30 לחודש',         key:'power'}
+  free:    {badge:'🌱 ניסיון חינם — 14 יום', key:'free_trial'},
+  regular: {badge:'⚕️ Clinic — $20 לחודש',    key:'clinic'},
+  heavy:   {badge:'🔥 Power — $30 לחודש',      key:'power'}
 };
 let tier = 'free';
 
@@ -230,7 +221,6 @@ function pick(t) {
   document.getElementById('tbadge').textContent = TIERS[t].badge;
   document.getElementById('pg1').classList.remove('active');
   document.getElementById('pg2').classList.add('active');
-  // Auto-fill demo credentials
   document.getElementById('em').value = 'demo@abc';
   document.getElementById('pw').value = 'demo1234';
   setTimeout(() => document.getElementById('lbtn').focus(), 150);
@@ -257,7 +247,7 @@ async function doLogin() {
 
   if (!email || !pass) { showErr('יש למלא אימייל וסיסמה'); return; }
 
-  // ── DEMO SHORTCUT ─────────────────────────────────────────
+  // ── DEMO SHORTCUT ──────────────────────────────────────────
   if (email.toLowerCase() === 'demo@abc' && pass === 'demo1234') {
     suc.textContent = '✅ Demo Mode — ברוך הבא! מעביר לקליניקה...';
     suc.classList.add('show');
@@ -266,7 +256,7 @@ async function doLogin() {
     sessionStorage.setItem('meridian_tier', TIERS[tier].key);
     sessionStorage.setItem('meridian_tier_badge', TIERS[tier].badge);
     sessionStorage.setItem('meridian_demo', 'true');
-    setTimeout(() => { window.location.href = 'crm.html'; }, 1000);
+    setTimeout(() => { window.location.href = DASHBOARD_URL; }, 1000);
     return;
   }
 
@@ -276,11 +266,9 @@ async function doLogin() {
   btn.innerHTML = 'מתחבר...<span class="spin"></span>';
 
   try {
-    // Try login first
     const { data, error } = await SB.auth.signInWithPassword({ email, password: pass });
 
     if (error) {
-      // If user doesn't exist → auto-register in demo mode
       if (error.message.toLowerCase().includes('invalid')) {
         const { error: err2 } = await SB.auth.signUp({
           email, password: pass,
@@ -293,12 +281,11 @@ async function doLogin() {
       }
     }
 
-    // Success
     suc.textContent = '✅ מחובר! מעביר לקליניקה...';
     suc.classList.add('show');
     sessionStorage.setItem('meridian_tier', TIERS[tier].key);
     sessionStorage.setItem('meridian_tier_badge', TIERS[tier].badge);
-    setTimeout(() => { window.location.href = 'crm.html'; }, 1200);
+    setTimeout(() => { window.location.href = DASHBOARD_URL; }, 1200);
 
   } catch(e) {
     const map = {
@@ -324,11 +311,11 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('pg2').classList.contains('active')) doLogin();
 });
 
-// Already logged in? Skip gate
+// Already logged in? Skip gate → go straight to dashboard
 (async () => {
   const { data } = await SB.auth.getSession();
   if (data?.session) {
-    window.location.href = 'crm.html';
+    window.location.href = DASHBOARD_URL;
   }
 })();
 </script>
