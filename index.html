@@ -35,38 +35,8 @@
                 <!-- Category Filter -->
                 <div class="p-3">
                     <select id="categoryFilter" onchange="filterQuestions()" class="w-full p-2 border-2 border-gray-300 rounded-lg text-right text-sm">
-        <option value="all">כל הקטגוריות (411 שאלות)</option>
-        <option value="אבחון דופק ולשון">אבחון דופק ולשון (15)</option>
-        <option value="אריכות ימים ואיכות חיים">אריכות ימים ואיכות חיים (15)</option>
-        <option value="איזון וחיזוק (מבוגרים)">איזון וחיזוק (מבוגרים) (15)</option>
-        <option value="שיקום וטיפול בכאב">שיקום וטיפול בכאב (15)</option>
-        <option value="בהירות וחוסן מנטלי">בהירות וחוסן מנטלי (15)</option>
-        <option value="בקרת אקלים פנימית">בקרת אקלים פנימית (15)</option>
-        <option value="חיוניות ואריכות ימים">חיוניות ואריכות ימים (15)</option>
-        <option value="חוסן חיסוני והתאוששות">חוסן חיסוני והתאוששות (15)</option>
-        <option value="הזנת החיים (תזונה)">הזנת החיים (תזונה) (15)</option>
-        <option value="תסמונות זאנג-פו">תסמונות זאנג-פו (15)</option>
-        <option value="נקודות דיקור">נקודות דיקור (15)</option>
-        <option value="ארבע הבדיקות">ארבע הבדיקות (15)</option>
-        <option value="בריאות האישה">בריאות האישה (15)</option>
-        <option value="רפואה סינית לילדים">רפואה סינית לילדים (15)</option>
-        <option value="רפואה סינית לקשישים">רפואה סינית לקשישים (15)</option>
-        <option value="בריאות רגשית">בריאות רגשית (15)</option>
-        <option value="הפרעות שינה">הפרעות שינה (15)</option>
-        <option value="בריאות מערכת העיכול">בריאות מערכת העיכול (15)</option>
-        <option value="בריאות מערכת הנשימה">בריאות מערכת הנשימה (15)</option>
-        <option value="מערכת השלד והשרירים">מערכת השלד והשרירים (15)</option>
-        <option value="כאבי ראש ומיגרנות">כאבי ראש ומיגרנות (15)</option>
-        <option value="מחלות עור">מחלות עור (15)</option>
-        <option value="מערכת הלב וכלי הדם">מערכת הלב וכלי הדם (15)</option>
-        <option value="נוסחאות צמחים">נוסחאות צמחים (15)</option>
-        <option value="מוקסה וכוסות רוח">מוקסה וכוסות רוח (15)</option>
-        <option value="כלי הדם המיוחדים">כלי הדם המיוחדים (15)</option>
-        <option value="דיקור אוזן">דיקור אוזן (15)</option>
-        <option value="טיפול לפי עונות">טיפול לפי עונות (15)</option>
-        <option value="חמשת היסודות">חמשת היסודות (15)</option>
-        <option value="יין ויאנג">יין ויאנג (15)</option>
-                    </select>
+          <option value="all">⏳ טוען קטגוריות...</option>
+        </select>
                 </div>
                 
                 <div id="quickQuestions" class="p-3 space-y-2">
@@ -191,10 +161,13 @@
                     </button>
                 </div>
                 
-                <!-- RIGHT: Reset Button Only -->
-                <div class="flex items-center">
-                    <button onclick="resetSession()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition text-sm font-bold">
+                <!-- RIGHT: Reset + Exit Buttons -->
+                <div class="flex items-center gap-2">
+                    <button onclick="resetSession()" class="bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition text-sm font-bold">
                         🔄 התחל מחדש
+                    </button>
+                    <button onclick="exitToClose()" style="background:linear-gradient(135deg,#0d5c63,#1a8a94);color:white;border:none;border-radius:8px;padding:7px 14px;font-family:Heebo,sans-serif;font-size:12px;font-weight:900;cursor:pointer;letter-spacing:0.5px;">
+                        🔐 שמור וצא
                     </button>
                 </div>
             </div>
@@ -2537,6 +2510,69 @@ async function saveBridgeSOS() {
   const el = document.getElementById('sosOverlayPatient');
   if (el) el.textContent = '👤 ' + patient;
 })();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  MERIDIAN INDEX — SUPABASE LOADERS
+//  Categories + Exit wiring
+//  26-02-2026
+// ══════════════════════════════════════════════════════
+
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const CLOSE_URL = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/session_close_26022026.html';
+
+// ── Load 411 Categories from Supabase ──────────────────
+async function loadCategories() {
+  const sel = document.getElementById('categoryFilter');
+  if (!sel) return;
+  try {
+    const res = await fetch(
+      `${SUPA_URL}/rest/v1/question_categories?is_active=eq.true&order=sort_order`,
+      { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } }
+    );
+    if (!res.ok) throw new Error('fetch failed');
+    const rows = await res.json();
+    if (!rows || !rows.length) throw new Error('empty');
+
+    sel.innerHTML = '<option value="all">כל הקטגוריות (' + rows.reduce((s,r)=>s+(r.question_count||15),0) + ' שאלות)</option>';
+    rows.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name_he;
+      opt.textContent = r.name_he + ' (' + (r.question_count || 15) + ')';
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    // Fallback — keep "טוען" or restore defaults silently
+    console.warn('Categories load failed — keeping existing options', e.message);
+  }
+}
+
+// ── Exit → Session Close Page ──────────────────────────
+function exitToClose() {
+  const params   = new URLSearchParams(window.location.search);
+  const patient  = params.get('patient') || sessionStorage.getItem('tcm_patient_name') || '';
+  const tokens   = document.getElementById('tokenCount')  ? document.getElementById('tokenCount').textContent  : '';
+  const cost     = document.getElementById('totalCost')   ? document.getElementById('totalCost').textContent.replace('$','')   : '';
+  const timer    = document.getElementById('queryTimer')  ? document.getElementById('queryTimer').textContent  : '';
+
+  // Save to sessionStorage for closing page
+  sessionStorage.setItem('tcm_last_tokens',   tokens);
+  sessionStorage.setItem('tcm_last_cost',     cost);
+  sessionStorage.setItem('tcm_last_duration', timer);
+
+  const url = CLOSE_URL
+    + '?patient_name=' + encodeURIComponent(patient)
+    + '&tokens='       + encodeURIComponent(tokens)
+    + '&cost='         + encodeURIComponent(cost)
+    + '&duration='     + encodeURIComponent(timer);
+
+  window.location.href = url;
+}
+
+// ── Boot ──────────────────────────────────────────────
+loadCategories();
 </script>
 
 </body>
