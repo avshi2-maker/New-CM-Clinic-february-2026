@@ -146,7 +146,7 @@ body::after {
   font-family:'Cinzel',serif;
   font-size:28px;font-weight:700;
   text-align:center;
-  background:linear-gradient(135deg,#5a3d08,#8b6914,#5a3d08);
+  background:linear-gradient(135deg,#3d2500,#7a5520,#3d2500);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   animation: fadeUp 0.8s ease 0.6s both;
   margin-bottom:8px;
@@ -154,7 +154,7 @@ body::after {
 .complete-sub {
   font-family:'Cormorant Garamond',serif;
   font-size:16px;font-style:italic;
-  color:rgba(42,26,0,0.7);text-align:center;
+  color:rgba(42,26,0,0.8);text-align:center;
   animation: fadeUp 0.8s ease 0.7s both;
   margin-bottom:32px;
 }
@@ -316,8 +316,8 @@ body::after {
 .farewell {
   text-align:center;
   font-family:'Cormorant Garamond',serif;
-  font-size:14px;font-style:italic;
-  color:var(--muted);
+  font-size:16px;font-style:italic;
+  color:rgba(42,26,0,0.75);
   animation: fadeUp 0.8s ease 1.3s both;
   line-height:2;
 }
@@ -474,18 +474,27 @@ body::after {
   <div class="complete-sub" id="complete-sub">כל הנתונים נשמרו בהצלחה</div>
 
   <!-- Session Stats -->
-  <div class="stats-card">
+  <!-- ══ SESSION STATS ══
+       ROI-READY: stat-queries, stat-tokens, stat-cost, stat-time
+       Future: link these to ROI module from Supabase
+       Data flow: index.html → URL params → here → (future) Supabase roi_sessions table
+  ══ -->
+  <div class="stats-card" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+    <div class="stat-item">
+      <span class="stat-val" id="stat-queries">—</span>
+      <span class="stat-lbl">שאלות AI</span>
+    </div>
     <div class="stat-item">
       <span class="stat-val" id="stat-tokens">—</span>
-      <span class="stat-lbl">TOKENS</span>
+      <span class="stat-lbl">TOKENS סה״כ</span>
     </div>
     <div class="stat-item">
       <span class="stat-val" id="stat-cost">—</span>
-      <span class="stat-lbl">עלות</span>
+      <span class="stat-lbl">עלות מפגש</span>
     </div>
     <div class="stat-item">
       <span class="stat-val" id="stat-time">—</span>
-      <span class="stat-lbl">משך מפגש</span>
+      <span class="stat-lbl">זמן חיפוש AI</span>
     </div>
   </div>
 
@@ -579,10 +588,13 @@ const cost         = params.get('cost')           || sessionStorage.getItem('tcm
 const duration     = params.get('duration')       || sessionStorage.getItem('tcm_last_duration')|| '—';
 
 // ── Populate stats ──
+const queries = params.get('queries') || sessionStorage.getItem('tcm_last_queries') || '—';
+
 document.getElementById('patient-name').textContent = decodeURIComponent(patientName);
-document.getElementById('stat-tokens').textContent  = tokens !== '—' ? Number(tokens).toLocaleString() : '—';
-document.getElementById('stat-cost').textContent    = cost   !== '—' ? '$' + cost : '—';
-document.getElementById('stat-time').textContent    = duration;
+document.getElementById('stat-queries').textContent = queries !== '—' ? queries : '—';
+document.getElementById('stat-tokens').textContent  = tokens  !== '—' ? Number(tokens.replace(/,/g,'')).toLocaleString('he-IL') : '—';
+document.getElementById('stat-cost').textContent    = cost    !== '—' ? '$' + cost : '—';
+document.getElementById('stat-time').textContent    = duration !== '—' ? duration : '—';
 
 // ── Load content from Supabase ──
 async function loadContent() {
@@ -644,8 +656,8 @@ function doExit() {
   // Clear sensitive session data from browser memory
   const keysToRemove = [
     'tcm_patient_id','tcm_patient_name','tcm_last_tokens',
-    'tcm_last_cost','tcm_last_duration','meridian_demo',
-    'meridian_tier','meridian_tier_badge'
+    'tcm_last_cost','tcm_last_duration','tcm_last_queries',
+    'meridian_demo','meridian_tier','meridian_tier_badge'
   ];
   keysToRemove.forEach(k => sessionStorage.removeItem(k));
 
