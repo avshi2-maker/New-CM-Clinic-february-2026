@@ -1462,13 +1462,25 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             `;
 
             const results = document.getElementById('searchResults');
-            results.innerHTML = '<div class="text-center p-8"><div class="animate-spin text-6xl">🔄</div><p class="mt-4 text-lg">מחפש במאגר RAG...</p></div>';
+            results.innerHTML = `
+                <div class="text-center p-8" id="searchLoadingMsg">
+                    <div class="animate-spin text-6xl">🔄</div>
+                    <p class="mt-4 text-lg font-bold">מחפש במאגר RAG...</p>
+                    <p class="text-sm text-gray-500 mt-2">🛡️ סוכן הבטיחות רץ במקביל...</p>
+                </div>`;
+
+            // ── SHOW SAFETY PANEL PLACEHOLDER IMMEDIATELY ────────────
+            showSafetyPanelLoading();
 
             try {
                 searchAbortController = new AbortController();
-                
-                const allResults = await searchMultipleQueries(currentQueries);
-                
+
+                // ── TWO AGENTS IN PARALLEL ────────────────────────────
+                const [allResults] = await Promise.all([
+                    searchMultipleQueries(currentQueries),
+                    runSafetyAgent(currentQueries)   // fires & forgets into panel
+                ]);
+
                 if (isPaused) {
                     results.innerHTML = '<div class="text-center p-8 text-orange-600"><h3 class="text-2xl font-bold">⏸️ חיפוש מושהה</h3><p>לחץ "המשך" כדי להמשיך</p></div>';
                     return;
@@ -1759,8 +1771,307 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             `;
         }
 
+        // ============================================================
+        // P2 SAFETY AGENT — parallel agent, slides in from right
+        // Runs simultaneously with main search via Promise.all()
+        // Date: 27/02/2026
+        // ============================================================
+
+        /**
+         * Safety Agent — lightweight Claude call, runs in parallel
+         * Delivers safety report independently into side panel
+         */
+        async function runSafetyAgent(queries) {
+            try {
+                // No patient context and no safety rules triggered = nothing to show
+                const hasSafetyData = patientContext && (
+                    patientContext.is_pregnant ||
+                    patientContext.breastfeeding ||
+                    patientContext.trying_to_conceive ||
+                    patientContext.medications?.trim() ||
+                    patientContext.previous_conditions?.trim() ||
+                    patientContext.allergies?.trim()
+                );
+
+                if (!hasSafetyData) {
+                    // Still show green "all clear" panel
+                    setTimeout(() => showSafetyPanelResult({
+                        status: 'clear',
+                        html: buildSafetyClearHTML(queries)
+                    }), 800);
+                    return;
+                }
+
+                // Build focused safety prompt
+                const safetyPrompt = buildSafetyAgentPrompt(queries);
+
+                const response = await fetch(EDGE_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: safetyPrompt, max_tokens: 800 })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                const safetyReport = data.content || data.text || '';
+                const inputTokens  = data.usage?.input_tokens  || 200;
+                const outputTokens = data.usage?.output_tokens || Math.ceil(safetyReport.length / 4);
+                updateMetrics(inputTokens, outputTokens);
+
+                showSafetyPanelResult({ status: 'done', html: safetyReport, raw: true });
+
+            } catch (e) {
+                console.warn('⚠️ Safety agent error:', e.message);
+                showSafetyPanelResult({ status: 'error' });
+            }
+        }
+
+        /**
+         * Build the safety agent's Claude prompt
+         * Short, focused, fast — not the full clinical report
+         */
+        function buildSafetyAgentPrompt(queries) {
+            const ctx = patientContext || {};
+            const parts = [];
+
+            if (ctx.is_pregnant) {
+                parts.push(`המטופלת בהריון${ctx.trimester ? ` שליש ${ctx.trimester}` : ''}${ctx.pregnancy_weeks ? ` שבוע ${ctx.pregnancy_weeks}` : ''}`);
+            }
+            if (ctx.breastfeeding)      parts.push('המטופלת מניקה');
+            if (ctx.trying_to_conceive) parts.push('המטופלת מנסה להרות');
+            if (ctx.medications?.trim())         parts.push(`תרופות קבועות: ${ctx.medications}`);
+            if (ctx.allergies?.trim())           parts.push(`אלרגיות: ${ctx.allergies}`);
+            if (ctx.previous_conditions?.trim()) parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
+            if (ctx.surgeries?.trim())           parts.push(`ניתוחים בעבר: ${ctx.surgeries}`);
+
+            return `אתה יועץ בטיחות לרפואה סינית (TCM). 
+            
+פרופיל מטופל:
+${parts.join('\n')}
+
+שאלות הטיפול הנוכחי: ${queries.join(', ')}
+
+צור דוח בטיחות קצר ומדויק בעברית עם הפורמט הבא בדיוק:
+
+🛡️ סטטוס: [✅ בטוח / ⚠️ זהירות נדרשת / 🚫 סיכון]
+
+📍 נקודות אסורות:
+[רשום נקודות ספציפיות שיש להימנע מהן, או "אין" אם אין]
+
+💊 אינטראקציות תרופות-צמחים:
+[רשום צמחים שיש להימנע מהם, או "אין" אם אין]
+
+✅ מותר לטפל:
+[מה בטוח לעשות עם המטופל הזה]
+
+⚡ המלצה מיידית:
+[משפט אחד — מה הכי חשוב לדעת לפני הטיפול]
+
+ענה בעברית בלבד. קצר ומדויק. אל תוסיף הקדמות.`;
+        }
+
+        /**
+         * Show loading placeholder in safety panel immediately
+         */
+        function showSafetyPanelLoading() {
+            let panel = document.getElementById('safetyAgentPanel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'safetyAgentPanel';
+                document.body.appendChild(panel);
+            }
+
+            panel.dir = 'rtl';
+            panel.style.cssText = `
+                position: fixed;
+                top: 110px; right: -340px;
+                width: 320px;
+                max-height: calc(100vh - 130px);
+                overflow-y: auto;
+                z-index: 7500;
+                background: linear-gradient(160deg, #0f172a, #1e1b4b);
+                border: 2px solid #4f46e5;
+                border-radius: 16px 0 0 16px;
+                padding: 0;
+                font-family: Heebo, sans-serif;
+                box-shadow: -6px 0 40px rgba(79,70,229,0.4);
+                transition: right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            `;
+
+            panel.innerHTML = `
+                <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:12px 16px;border-radius:14px 0 0 0;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="color:white;font-weight:900;font-size:14px;">🛡️ סוכן בטיחות</span>
+                    <button onclick="toggleSafetyPanel()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;">◀</button>
+                </div>
+                <div style="padding:20px;text-align:center;">
+                    <div style="font-size:32px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div>
+                    <p style="color:#a5b4fc;margin-top:12px;font-size:13px;">סוכן הבטיחות מנתח<br>את פרופיל המטופל...</p>
+                    ${patientContext ? `<p style="color:#6366f1;font-size:11px;margin-top:8px;">👤 ${patientContext.full_name}</p>` : ''}
+                </div>
+            `;
+
+            // Inject spin animation once
+            if (!document.getElementById('safetySpinStyle')) {
+                const s = document.createElement('style');
+                s.id = 'safetySpinStyle';
+                s.textContent = `
+                    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                    @keyframes safetyPulse { 0%,100%{box-shadow:-6px 0 40px rgba(79,70,229,0.4)} 50%{box-shadow:-6px 0 60px rgba(124,58,237,0.8)} }
+                `;
+                document.head.appendChild(s);
+            }
+
+            // Slide in after tiny delay
+            setTimeout(() => { panel.style.right = '0px'; }, 100);
+        }
+
+        /**
+         * Fill safety panel with completed report
+         */
+        function showSafetyPanelResult({ status, html, raw }) {
+            const panel = document.getElementById('safetyAgentPanel');
+            if (!panel) return;
+
+            const statusColors = {
+                clear: { bg: '#064e3b', border: '#10b981', icon: '✅', label: 'הכל תקין' },
+                done:  { bg: '#1e1b4b', border: '#4f46e5', icon: '🛡️', label: 'דוח בטיחות' },
+                error: { bg: '#1f1515', border: '#dc2626', icon: '⚠️', label: 'שגיאה' }
+            };
+            const colors = statusColors[status] || statusColors.done;
+
+            // Format raw AI text into styled HTML
+            const formattedHTML = raw ? formatSafetyReport(html) : (html || 'לא נמצאו נתוני בטיחות');
+
+            panel.innerHTML = `
+                <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:12px 16px;border-radius:14px 0 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1;">
+                    <span style="color:white;font-weight:900;font-size:14px;">${colors.icon} ${colors.label}</span>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <button onclick="printSafetyReport()" title="הדפס" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px;">🖨️</button>
+                        <button onclick="toggleSafetyPanel()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px;" id="safetyToggleBtn">◀</button>
+                    </div>
+                </div>
+                ${patientContext ? `
+                <div style="background:rgba(99,102,241,0.15);padding:8px 16px;border-bottom:1px solid rgba(99,102,241,0.3);font-size:11px;color:#a5b4fc;">
+                    👤 ${patientContext.full_name}
+                    ${patientContext.age ? ` · גיל ${patientContext.age}` : ''}
+                    ${patientContext.is_pregnant ? ' · 🤰 הריון' : ''}
+                </div>` : ''}
+                <div style="padding:16px;font-size:12px;line-height:1.8;color:#e2e8f0;">
+                    ${formattedHTML}
+                </div>
+                <div style="padding:8px 16px;border-top:1px solid rgba(99,102,241,0.2);font-size:10px;color:#6366f1;text-align:center;">
+                    🤖 מופעל על ידי Claude AI · MERIDIAN Safety Agent
+                </div>
+            `;
+
+            // Pulse border to draw attention when report arrives
+            panel.style.animation = 'safetyPulse 1s ease 2';
+            setTimeout(() => { panel.style.animation = ''; }, 2000);
+        }
+
+        /**
+         * Format raw AI safety text into styled HTML sections
+         */
+        function formatSafetyReport(text) {
+            if (!text) return '<p style="color:#94a3b8;">לא התקבל דוח</p>';
+
+            return text
+                .split('\n')
+                .map(line => {
+                    line = line.trim();
+                    if (!line) return '<br>';
+                    if (line.startsWith('🛡️')) return `<div style="font-size:15px;font-weight:900;color:#a5b4fc;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(99,102,241,0.3);">${line}</div>`;
+                    if (line.startsWith('📍')) return `<div style="color:#fbbf24;font-weight:800;margin-top:12px;margin-bottom:4px;">${line}</div>`;
+                    if (line.startsWith('💊')) return `<div style="color:#f97316;font-weight:800;margin-top:12px;margin-bottom:4px;">${line}</div>`;
+                    if (line.startsWith('✅')) return `<div style="color:#34d399;font-weight:800;margin-top:12px;margin-bottom:4px;">${line}</div>`;
+                    if (line.startsWith('⚡')) return `<div style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);border-radius:8px;padding:8px 10px;margin-top:12px;color:#fef3c7;font-weight:700;">${line}</div>`;
+                    if (line.startsWith('🚫')) return `<div style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:4px 8px;color:#fca5a5;margin:2px 0;">${line}</div>`;
+                    if (line.startsWith('⚠️')) return `<div style="color:#fbbf24;margin:2px 0;">${line}</div>`;
+                    return `<div style="color:#cbd5e1;margin:2px 0;">${line}</div>`;
+                })
+                .join('');
+        }
+
+        /**
+         * Green "all clear" HTML when no patient risks found
+         */
+        function buildSafetyClearHTML(queries) {
+            return `
+                <div style="text-align:center;padding:20px 10px;">
+                    <div style="font-size:48px;margin-bottom:12px;">✅</div>
+                    <div style="color:#34d399;font-weight:900;font-size:16px;margin-bottom:8px;">אין סיכוני בטיחות</div>
+                    <div style="color:#6ee7b7;font-size:12px;line-height:1.6;">
+                        לא זוהו תרופות, הריון,<br>או מצבים קריטיים<br>למטופל זה.
+                    </div>
+                    <div style="margin-top:16px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:10px;color:#a7f3d0;font-size:11px;">
+                        ⚡ ניתן להמשיך לטיפול רגיל
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Toggle safety panel open/closed
+         */
+        function toggleSafetyPanel() {
+            const panel = document.getElementById('safetyAgentPanel');
+            const btn   = document.getElementById('safetyToggleBtn');
+            if (!panel) return;
+            const isOpen = panel.style.right === '0px';
+            panel.style.right = isOpen ? '-340px' : '0px';
+            if (btn) btn.textContent = isOpen ? '▶' : '◀';
+        }
+
+        /**
+         * Print safety report
+         */
+        function printSafetyReport() {
+            const panel = document.getElementById('safetyAgentPanel');
+            if (!panel) return;
+            const w = window.open('', '_blank');
+            w.document.write(`<html dir="rtl"><head><title>דוח בטיחות MERIDIAN</title>
+                <style>body{font-family:Heebo,sans-serif;padding:20px;direction:rtl;}</style></head>
+                <body><h2>🛡️ דוח בטיחות MERIDIAN</h2>
+                <p>מטופל: ${patientContext?.full_name || 'לא ידוע'} · ${new Date().toLocaleDateString('he-IL')}</p>
+                <hr>${panel.innerText}</body></html>`);
+            w.print();
+        }
+
+        // ── END SAFETY AGENT ─────────────────────────────────────────
+
         function buildAIContext(results, reportDetail) {
             const queries = currentQueries.join(', ');
+
+            // ── PATIENT CONTEXT BLOCK ────────────────────────────────
+            let patientBlock = '';
+            if (patientContext) {
+                const flags = [];
+                if (patientContext.is_pregnant) {
+                    flags.push(`⚠️ המטופלת בהריון${patientContext.trimester ? ` שליש ${patientContext.trimester}` : ''}${patientContext.pregnancy_weeks ? ` (שבוע ${patientContext.pregnancy_weeks})` : ''} — הימנע מנקודות אסורות`);
+                }
+                if (patientContext.breastfeeding)     flags.push('⚠️ המטופלת מניקה — זהירות עם צמחים');
+                if (patientContext.trying_to_conceive) flags.push('⚠️ מנסה להרות — הימנע מנקודות מגרות');
+                if (patientContext.medications?.trim())       flags.push(`💊 תרופות: ${patientContext.medications}`);
+                if (patientContext.allergies?.trim())         flags.push(`🚫 אלרגיות: ${patientContext.allergies}`);
+                if (patientContext.previous_conditions?.trim()) flags.push(`📋 מצבים קודמים: ${patientContext.previous_conditions}`);
+                if (patientContext.surgeries?.trim())         flags.push(`🔪 ניתוחים: ${patientContext.surgeries}`);
+
+                if (flags.length > 0) {
+                    patientBlock = `
+════════════════════════════════════════════════════════
+👤 פרופיל בטיחות מטופל — קרא לפני כל המלצה!
+════════════════════════════════════════════════════════
+שם: ${patientContext.full_name}${patientContext.age ? ` | גיל: ${patientContext.age}` : ''}
+${flags.join('\n')}
+════════════════════════════════════════════════════════
+חובה: התאם כל המלצת טיפול לפרופיל זה. 
+אם תרופה ברשימה מתנגשת עם צמח מרפא — ציין זאת במפורש.
+אם המטופלת בהריון — הסר נקודות אסורות מהפרוטוקול.
+════════════════════════════════════════════════════════`;
+                }
+            }
+            // ── END PATIENT CONTEXT BLOCK ────────────────────────────
             
             if (results.allResults && results.allResults.length > 0) {
                 const categories = categorizeResults(results.allResults);
@@ -1817,6 +2128,8 @@ ${conflictText}
                     : 'ספק סיכום תמציתי בעברית עם נקודות מפתח בלבד.';
                 
                 return `אתה עוזר קליני מומחה ברפואה סינית. חובה לעקוב אחר חוקים אלה בקפדנות:
+
+${patientBlock}
 
 🚨 חוקי בטיחות קריטיים (לא ניתן להתעלם!):
 ═══════════════════════════════════════════════════════════════════
