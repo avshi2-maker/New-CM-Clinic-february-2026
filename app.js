@@ -179,32 +179,55 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     }
                 }
 
-                // ── KEYWORD SCAN (query + patient profile) ───────────
-                for (const rule of rules) {
+                // ── PASS 1: BLOCK rules first — always highest priority ──
+                const blockRules = rules.filter(r => r.severity === 'block');
+                for (const rule of blockRules) {
                     const triggered = rule.trigger_keywords.some(kw =>
                         fullScanText.includes(kw.toLowerCase())
                     );
                     if (triggered) {
-                        const triggerSource = queryText.includes(rule.trigger_keywords.find(kw => queryText.includes(kw.toLowerCase())) || '')
-                            ? 'query_text' : 'patient_profile';
+                        console.log(`🚫 Safety BLOCK triggered: ${rule.title_he}`);
+                        addToAuditLog({ type: 'safety_rule_triggered', source: 'keyword_block',
+                            rule_id: rule.id, rule_category: rule.category, rule_severity: 'block',
+                            rule_title: rule.title_he, patient_id: patientContext?.patient_id || null, queries });
+                        return { blocked: true, warned: false, rule, source: 'keyword_block' };
+                    }
+                }
 
-                        console.log(`🔒 Safety rule triggered via ${triggerSource}: [${rule.severity}] ${rule.title_he}`);
-                        addToAuditLog({
-                            type: 'safety_rule_triggered',
-                            source: triggerSource,
-                            rule_id: rule.id,
-                            rule_category: rule.category,
-                            rule_severity: rule.severity,
-                            rule_title: rule.title_he,
-                            patient_id: patientContext?.patient_id || null,
-                            queries
-                        });
+                // ── PASS 2: Patient pregnancy direct check (warn) ────────
+                // Only reaches here if no BLOCK rule was triggered
+                if (patientContext?.is_pregnant) {
+                    const severity = patientContext.trimester === 1 ? 'block' : 'warn';
+                    const pregnancyRule = rules.find(r => r.category === 'pregnancy' && r.severity === severity)
+                                       || rules.find(r => r.category === 'pregnancy');
+                    if (pregnancyRule) {
+                        console.log(`🔒 Safety: Patient pregnant (trimester ${patientContext.trimester})`);
+                        addToAuditLog({ type: 'safety_rule_triggered', source: 'patient_context_pregnant',
+                            rule_category: 'pregnancy', rule_severity: pregnancyRule.severity,
+                            patient_id: patientContext.patient_id, queries });
                         return {
-                            blocked: rule.severity === 'block',
-                            warned:  rule.severity === 'warn',
-                            rule:    rule,
-                            source:  triggerSource
+                            blocked: pregnancyRule.severity === 'block',
+                            warned:  pregnancyRule.severity === 'warn',
+                            rule: pregnancyRule, source: 'patient_context_pregnant'
                         };
+                    }
+                }
+
+                // ── PASS 3: WARN rules — query + profile scan ────────────
+                const warnRules = rules.filter(r => r.severity === 'warn');
+                for (const rule of warnRules) {
+                    const triggered = rule.trigger_keywords.some(kw =>
+                        fullScanText.includes(kw.toLowerCase())
+                    );
+                    if (triggered) {
+                        const source = queryText.includes(
+                            rule.trigger_keywords.find(kw => queryText.includes(kw.toLowerCase())) || ''
+                        ) ? 'query_text' : 'patient_profile';
+                        console.log(`⚠️ Safety WARN triggered via ${source}: ${rule.title_he}`);
+                        addToAuditLog({ type: 'safety_rule_triggered', source,
+                            rule_id: rule.id, rule_category: rule.category, rule_severity: 'warn',
+                            rule_title: rule.title_he, patient_id: patientContext?.patient_id || null, queries });
+                        return { blocked: false, warned: true, rule, source };
                     }
                 }
 
