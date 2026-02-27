@@ -97,6 +97,409 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         const MAX_CACHE_SIZE = 50; // Store last 50 unique queries
         
         const auditLog = [];
+
+        // ============================================================
+        // P2 CLINICAL SAFETY INTELLIGENCE — inserted 27/02/2026
+        // ============================================================
+
+        let safetyRulesCache = null;
+        let patientContext = null; // Loaded from patient_assessments via CRM bridge
+
+        async function loadSafetyRules() {
+            if (safetyRulesCache) return safetyRulesCache;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('safety_rules')
+                    .select('*')
+                    .eq('active', true)
+                    .order('severity', { ascending: true });
+                if (error) {
+                    console.warn('⚠️ Safety rules load failed:', error.message);
+                    return [];
+                }
+                safetyRulesCache = (data || []).sort((a, b) => {
+                    if (a.severity === 'block' && b.severity !== 'block') return -1;
+                    if (b.severity === 'block' && a.severity !== 'block') return 1;
+                    return 0;
+                });
+                console.log(`✅ Safety rules loaded: ${safetyRulesCache.length} active rules`);
+                return safetyRulesCache;
+            } catch (e) {
+                console.warn('⚠️ Safety rules exception:', e.message);
+                return [];
+            }
+        }
+
+        async function runPreSearchSafetyCheck(queries) {
+            try {
+                const rules = await loadSafetyRules();
+                if (!rules || rules.length === 0) return { blocked: false, warned: false };
+
+                // ── BUILD COMBINED SCAN TEXT ─────────────────────────
+                // Scan BOTH query text AND patient clinical profile
+                const queryText = queries.join(' ').toLowerCase();
+
+                // Build patient profile text from loaded context
+                const profileText = patientContext ? [
+                    patientContext.medications        || '',
+                    patientContext.previous_conditions || '',
+                    patientContext.allergies           || '',
+                    patientContext.current_symptoms    || '',
+                    patientContext.is_pregnant   ? 'הריון pregnant' : '',
+                    patientContext.breastfeeding ? 'הנקה breastfeeding' : '',
+                ].join(' ').toLowerCase() : '';
+
+                const fullScanText = `${queryText} ${profileText}`;
+
+                // ── PATIENT CONTEXT DIRECT CHECKS ───────────────────
+                // Pregnancy from patient_assessments (most reliable source)
+                if (patientContext?.is_pregnant) {
+                    const severity = patientContext.trimester === 1 ? 'block' : 'warn';
+                    // Find matching rule
+                    const pregnancyRule = rules.find(r =>
+                        r.category === 'pregnancy' && r.severity === severity
+                    ) || rules.find(r => r.category === 'pregnancy');
+
+                    if (pregnancyRule) {
+                        console.log(`🔒 Safety: Patient is pregnant (trimester ${patientContext.trimester}) — auto-triggering`);
+                        addToAuditLog({
+                            type: 'safety_rule_triggered',
+                            source: 'patient_context',
+                            rule_category: 'pregnancy',
+                            rule_severity: pregnancyRule.severity,
+                            patient_id: patientContext.patient_id,
+                            queries
+                        });
+                        return {
+                            blocked: pregnancyRule.severity === 'block',
+                            warned:  pregnancyRule.severity === 'warn',
+                            rule:    pregnancyRule,
+                            source:  'patient_assessment'
+                        };
+                    }
+                }
+
+                // ── KEYWORD SCAN (query + patient profile) ───────────
+                for (const rule of rules) {
+                    const triggered = rule.trigger_keywords.some(kw =>
+                        fullScanText.includes(kw.toLowerCase())
+                    );
+                    if (triggered) {
+                        const triggerSource = queryText.includes(rule.trigger_keywords.find(kw => queryText.includes(kw.toLowerCase())) || '')
+                            ? 'query_text' : 'patient_profile';
+
+                        console.log(`🔒 Safety rule triggered via ${triggerSource}: [${rule.severity}] ${rule.title_he}`);
+                        addToAuditLog({
+                            type: 'safety_rule_triggered',
+                            source: triggerSource,
+                            rule_id: rule.id,
+                            rule_category: rule.category,
+                            rule_severity: rule.severity,
+                            rule_title: rule.title_he,
+                            patient_id: patientContext?.patient_id || null,
+                            queries
+                        });
+                        return {
+                            blocked: rule.severity === 'block',
+                            warned:  rule.severity === 'warn',
+                            rule:    rule,
+                            source:  triggerSource
+                        };
+                    }
+                }
+
+                return { blocked: false, warned: false };
+            } catch (e) {
+                console.warn('⚠️ Safety check exception:', e.message);
+                return { blocked: false, warned: false };
+            }
+        }
+
+        function showSafetyWarn(safetyResult) {
+            const rule = safetyResult.rule;
+            const existing = document.getElementById('safetyBanner');
+            if (existing) existing.remove();
+
+            const banner = document.createElement('div');
+            banner.id = 'safetyBanner';
+            banner.dir = 'rtl';
+            banner.style.cssText = `
+                position:fixed; top:70px; left:0; right:0; z-index:8500;
+                background:linear-gradient(135deg,#78350f,#92400e);
+                border-bottom:3px solid #f59e0b; padding:12px 20px;
+                font-family:Heebo,sans-serif; display:flex;
+                align-items:flex-start; gap:14px;
+                box-shadow:0 4px 20px rgba(0,0,0,0.4);
+                animation:safetySlideIn 0.3s ease;
+            `;
+            banner.innerHTML = `
+                <div style="font-size:24px;flex-shrink:0;">⚠️</div>
+                <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:900;color:#fef3c7;margin-bottom:4px;">${rule.title_he}</div>
+                    <div style="font-size:12px;color:#fde68a;margin-bottom:6px;line-height:1.6;">${rule.message_he}</div>
+                    <div style="font-size:11px;color:#fbbf24;background:rgba(0,0,0,0.2);border-radius:6px;padding:6px 10px;line-height:1.6;">
+                        <strong>מה לעשות:</strong> ${rule.action_he}
+                    </div>
+                </div>
+                <button onclick="document.getElementById('safetyBanner').remove()"
+                        style="background:rgba(255,255,255,0.15);color:#fef3c7;border:1px solid rgba(255,255,255,0.3);
+                               border-radius:6px;padding:4px 12px;font-family:Heebo,sans-serif;
+                               font-size:11px;cursor:pointer;flex-shrink:0;">✓ הבנתי</button>
+            `;
+            document.body.appendChild(banner);
+            setTimeout(() => { const b = document.getElementById('safetyBanner'); if (b) b.remove(); }, 15000);
+        }
+
+        function showSafetyBlock(safetyResult) {
+            const rule = safetyResult.rule;
+            const existing = document.getElementById('safetyBlockOverlay');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'safetyBlockOverlay';
+            overlay.dir = 'rtl';
+            overlay.style.cssText = `
+                position:fixed; inset:0; z-index:99000;
+                background:rgba(60,0,0,0.95); backdrop-filter:blur(4px);
+                display:flex; align-items:center; justify-content:center;
+                font-family:Heebo,sans-serif; animation:safetySlideIn 0.2s ease;
+            `;
+            overlay.innerHTML = `
+                <div style="background:linear-gradient(135deg,#1a0000,#3d0000);
+                            border:3px solid #dc2626; border-radius:20px;
+                            padding:36px 40px; max-width:520px; width:90%;
+                            text-align:center; box-shadow:0 0 60px rgba(220,38,38,0.5);">
+                    <div style="font-size:42px;margin-bottom:8px;">🚫</div>
+                    <div style="font-size:20px;font-weight:900;color:#fca5a5;margin-bottom:16px;letter-spacing:1px;">
+                        ${rule.title_he}
+                    </div>
+                    <div style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);
+                                border-radius:10px;padding:14px 18px;margin-bottom:14px;
+                                font-size:13px;color:#fecaca;line-height:1.7;text-align:right;">
+                        ${rule.message_he}
+                    </div>
+                    <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);
+                                border-radius:10px;padding:14px 18px;margin-bottom:20px;
+                                font-size:12px;color:#fbbf24;line-height:1.7;text-align:right;">
+                        <strong style="color:#fef3c7;">✅ מה לעשות:</strong><br>${rule.action_he}
+                    </div>
+                    ${rule.source ? `<div style="font-size:10px;color:#9ca3af;margin-bottom:16px;">מקור: ${rule.source}</div>` : ''}
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                        <button onclick="document.getElementById('safetyBlockOverlay').remove()"
+                                style="background:#dc2626;color:white;border:none;border-radius:10px;
+                                       padding:10px 24px;font-size:14px;font-weight:900;
+                                       cursor:pointer;font-family:Heebo,sans-serif;">
+                            הבנתי — חזור לחיפוש
+                        </button>
+                        <button onclick="triggerHeaderSOS()"
+                                style="background:rgba(255,255,255,0.1);color:#fca5a5;
+                                       border:1px solid rgba(255,255,255,0.2);border-radius:10px;
+                                       padding:10px 24px;font-size:13px;font-weight:700;
+                                       cursor:pointer;font-family:Heebo,sans-serif;">
+                            ⚕️ פתח SOS חירום
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        if (!document.getElementById('safetyAnimStyles')) {
+            const _s = document.createElement('style');
+            _s.id = 'safetyAnimStyles';
+            _s.textContent = '@keyframes safetySlideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}';
+            document.head.appendChild(_s);
+        }
+
+        // ── END P2 SAFETY ────────────────────────────────────────────
+
+        // ============================================================
+        // P2 PATIENT CONTEXT — inserted 27/02/2026
+        // Reads full clinical profile from patient_assessments
+        // before every search session starts
+        // ============================================================
+
+        /**
+         * Load patient clinical context from CRM bridge
+         * URL params: apt=appointment_code OR patient_id=uuid
+         * Reads: patient_assessments → form_data (JSONB)
+         */
+        async function loadPatientContext() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const aptCode    = urlParams.get('apt');
+                const patientIdParam = urlParams.get('patient_id');
+
+                let patientId = patientIdParam || null;
+
+                // If we have appointment code, resolve to patient_id
+                if (!patientId && aptCode) {
+                    const { data: apt, error: aptError } = await supabaseClient
+                        .from('appointments')
+                        .select('patient_id, patient_name, session_type, start_datetime')
+                        .or(`appointment_code.eq.${aptCode},id.eq.${aptCode}`)
+                        .single();
+
+                    if (!aptError && apt) {
+                        patientId = apt.patient_id;
+                        console.log(`✅ Patient context: resolved apt "${aptCode}" → patient_id ${patientId}`);
+                    }
+                }
+
+                if (!patientId) {
+                    console.log('ℹ️ No patient_id available — skipping patient context load');
+                    return null;
+                }
+
+                // Get latest assessment for this patient
+                const { data: assessment, error: assError } = await supabaseClient
+                    .from('patient_assessments')
+                    .select('*')
+                    .eq('patient_id', patientId)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (assError || !assessment) {
+                    console.log('ℹ️ No patient assessment found for patient_id:', patientId);
+                    return null;
+                }
+
+                const fd = assessment.form_data || {};
+                const pregData = fd.pregnancy_data || {};
+
+                // Build clean context object
+                patientContext = {
+                    patient_id:           patientId,
+                    full_name:            fd.full_name || urlParams.get('patient') || 'מטופל',
+                    age:                  fd.age || null,
+                    sex:                  fd.gender || null,
+
+                    // ── SAFETY CRITICAL FIELDS ──────────────────────
+                    is_pregnant:          pregData.is_pregnant === true,
+                    trimester:            pregData.trimester || null,
+                    pregnancy_weeks:      pregData.pregnancy_weeks || fd.pregnancy_weeks || null,
+                    breastfeeding:        pregData.breastfeeding === true,
+                    trying_to_conceive:   pregData.trying_to_conceive === true,
+
+                    medications:          assessment.medications || fd.current_medications || '',
+                    allergies:            fd.allergies || '',
+                    previous_conditions:  fd.previous_conditions || '',
+                    current_symptoms:     fd.current_symptoms || '',
+                    surgeries:            fd.surgeries || '',
+                    blood_pressure:       assessment.blood_pressure || fd.blood_pressure || null,
+                    stress_level:         fd.stress_level || null,
+
+                    // ── RAW for display ──────────────────────────────
+                    _raw: fd
+                };
+
+                console.log('✅ Patient context loaded:', {
+                    name:       patientContext.full_name,
+                    pregnant:   patientContext.is_pregnant,
+                    trimester:  patientContext.trimester,
+                    meds:       patientContext.medications?.substring(0, 60),
+                    conditions: patientContext.previous_conditions?.substring(0, 60)
+                });
+
+                // Show persistent safety badge if any risks found
+                showPatientSafetyBadge(patientContext);
+
+                return patientContext;
+
+            } catch (e) {
+                console.warn('⚠️ loadPatientContext exception:', e.message);
+                return null;
+            }
+        }
+
+        /**
+         * Show persistent patient risk badge under the header
+         * Stays visible for the entire session
+         */
+        function showPatientSafetyBadge(ctx) {
+            if (!ctx) return;
+
+            const risks = [];
+
+            if (ctx.is_pregnant) {
+                const trimText = ctx.trimester ? ` — שליש ${ctx.trimester}` : '';
+                const weeksText = ctx.pregnancy_weeks ? ` (שבוע ${ctx.pregnancy_weeks})` : '';
+                risks.push({ icon: '🤰', text: `בהריון${trimText}${weeksText}`, color: '#7c3aed', bg: '#ede9fe' });
+            }
+            if (ctx.breastfeeding) {
+                risks.push({ icon: '🍼', text: 'מניקה', color: '#0369a1', bg: '#dbeafe' });
+            }
+            if (ctx.trying_to_conceive) {
+                risks.push({ icon: '🌱', text: 'מנסה להרות', color: '#065f46', bg: '#d1fae5' });
+            }
+            if (ctx.medications && ctx.medications.trim().length > 2) {
+                const medShort = ctx.medications.replace(/\n/g, ', ').substring(0, 60);
+                risks.push({ icon: '💊', text: `תרופות: ${medShort}${ctx.medications.length > 60 ? '...' : ''}`, color: '#92400e', bg: '#fef3c7' });
+            }
+            if (ctx.previous_conditions && ctx.previous_conditions.trim().length > 2) {
+                const condShort = ctx.previous_conditions.substring(0, 60);
+                risks.push({ icon: '📋', text: `מצבים: ${condShort}${ctx.previous_conditions.length > 60 ? '...' : ''}`, color: '#1e3a5f', bg: '#dbeafe' });
+            }
+            if (ctx.allergies && ctx.allergies.trim().length > 2) {
+                risks.push({ icon: '⚠️', text: `אלרגיות: ${ctx.allergies}`, color: '#991b1b', bg: '#fee2e2' });
+            }
+
+            if (risks.length === 0) return; // No risks — no badge needed
+
+            // Remove existing badge
+            const existing = document.getElementById('patientSafetyBadge');
+            if (existing) existing.remove();
+
+            const badge = document.createElement('div');
+            badge.id = 'patientSafetyBadge';
+            badge.dir = 'rtl';
+            badge.style.cssText = `
+                position: fixed;
+                top: 60px; left: 0; right: 0;
+                z-index: 8000;
+                background: #1e1b4b;
+                border-bottom: 2px solid #4f46e5;
+                padding: 6px 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                font-family: Heebo, sans-serif;
+                font-size: 11px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            `;
+
+            const patientName = document.createElement('span');
+            patientName.style.cssText = 'color:#a5b4fc; font-weight:900; font-size:12px; flex-shrink:0;';
+            patientName.textContent = `👤 ${ctx.full_name}`;
+            badge.appendChild(patientName);
+
+            const sep = document.createElement('span');
+            sep.style.cssText = 'color:#4f46e5; font-size:16px;';
+            sep.textContent = '|';
+            badge.appendChild(sep);
+
+            risks.forEach(risk => {
+                const pill = document.createElement('span');
+                pill.style.cssText = `
+                    background: ${risk.bg};
+                    color: ${risk.color};
+                    border-radius: 20px;
+                    padding: 2px 10px;
+                    font-weight: 700;
+                    white-space: nowrap;
+                    font-size: 11px;
+                `;
+                pill.textContent = `${risk.icon} ${risk.text}`;
+                badge.appendChild(pill);
+            });
+
+            document.body.appendChild(badge);
+            console.log(`✅ Patient safety badge shown with ${risks.length} risk indicators`);
+        }
+
+        // ── END PATIENT CONTEXT ──────────────────────────────────────
         
         /**
          * Check if we've answered this query before (exact match)
@@ -296,29 +699,24 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             module1IsExpanded = !module1IsExpanded;
             
             if (module1IsExpanded) {
-                // Show panel
                 content.style.display = 'block';
                 arrow.style.transform = 'rotate(180deg)';
                 
-                // Load questions on first expansion
                 if (!module1QuestionsLoaded) {
                     console.log('📥 First time expanding - loading questions...');
                     await loadModule1Questions('all', 0);
                     module1QuestionsLoaded = true;
                 }
             } else {
-                // Hide panel
                 content.style.display = 'none';
                 arrow.style.transform = 'rotate(0deg)';
             }
         }
 
-        // ===== MODULE 1: NEW APPROACH - CALLS SUPABASE RPC =====
         async function loadModule1Questions(category = 'all', offset = 0) {
             try {
                 console.log('📥 Loading Module 1 from Supabase RPC:', category, offset);
                 
-                // ONE CALL TO SUPABASE RPC FUNCTION!
                 const { data, error } = await supabaseClient.rpc('module1_get_complete', {
                     p_category: category,
                     p_offset: offset
@@ -340,7 +738,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
         
-        // Display Module 1 questions
         function displayModule1Questions(data) {
             const container = document.getElementById('quickQuestions');
             if (!container) {
@@ -348,10 +745,9 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 return;
             }
             
-            container.innerHTML = ''; // Clear
+            container.innerHTML = '';
             
             if (data.mode === 'all_categories') {
-                // Show 3 from each category
                 let totalShown = 0;
                 data.questions.forEach(catData => {
                     if (catData.questions) {
@@ -365,14 +761,12 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 console.log(`✅ Showing ${totalShown} questions from ${data.total_categories} categories`);
                 
             } else {
-                // Show 3 from one category
                 if (data.questions && data.questions.length > 0) {
                     data.questions.forEach(q => {
                         const div = createModule1QuestionDiv(q.question_hebrew, data.category);
                         container.appendChild(div);
                     });
                     
-                    // Add "Load More" button if needed
                     if (data.has_more) {
                         const loadMore = document.createElement('div');
                         loadMore.style.cssText = 'background: #dbeafe; color: #1e40af; padding: 10px; margin: 10px 0; text-align: center; cursor: pointer; border-radius: 8px; font-weight: bold; border: 2px dashed #60a5fa;';
@@ -388,7 +782,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
         
-        // Create question element for Module 1
         function createModule1QuestionDiv(questionText, category) {
             const div = document.createElement('div');
             div.className = 'quick-question';
@@ -399,7 +792,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 <div style="font-size: 11px; color: #6b7280; background: #f3f4f6; display: inline-block; padding: 2px 8px; border-radius: 4px;">${category}</div>
             `;
             
-            // Click to paste!
             div.onclick = function() {
                 pasteModule1ToQueryBox(questionText);
             };
@@ -417,23 +809,20 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             return div;
         }
         
-        // Paste Module 1 question into query box
         function pasteModule1ToQueryBox(text) {
             console.log('📝 Pasting Module 1 question:', text);
             
             const boxes = ['searchInput1', 'searchInput2', 'searchInput3', 'searchInput4'];
             
-            // FIX #1: Check for duplicates first
             for (let boxId of boxes) {
                 const input = document.getElementById(boxId);
                 if (input && input.value.trim() === text.trim()) {
                     alert('❌ שאלה זו כבר קיימת בתיבת חיפוש!\nאנא בחר שאלה אחרת.');
                     console.log('⚠️ Duplicate prevented:', text);
-                    return; // Prevent duplicate
+                    return;
                 }
             }
             
-            // Find first empty box
             for (let i = 0; i < boxes.length; i++) {
                 const input = document.getElementById(boxes[i]);
                 
@@ -459,319 +848,16 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         }
         
         // ═══════════════════════════════════════════════════════════════
-        // 🎤 VOICE SEARCH + KEYWORDS + ALPHABET NAVIGATION
-        // ═══════════════════════════════════════════════════════════════
-        
-        // ═══════════════════════════════════════════════════════════════
         // OLD VOICE SEARCH CODE - COMMENTED OUT (NOW IN voice-search-fixed.js)
         // ═══════════════════════════════════════════════════════════════
         /*
-        // VOICE SEARCH VARIABLES (NOW DECLARED IN voice-search.js)
-        let voiceRecognition = null;
-        let isVoiceListening = false;
-        
-        // Initialize voice recognition
-        function initVoiceSearch() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                voiceRecognition = new SpeechRecognition();
-                voiceRecognition.lang = 'he-IL'; // Hebrew
-                voiceRecognition.continuous = false;
-                voiceRecognition.interimResults = false;
-                
-                voiceRecognition.onstart = function() {
-                    isVoiceListening = true;
-                    const btn = document.getElementById('voiceSearchBtn');
-                    const input = document.getElementById('smartSearchInput');
-                    const status = document.getElementById('voiceStatus');
-                    
-                    if (btn) btn.classList.add('listening');
-                    if (input) input.classList.add('listening');
-                    if (status) status.textContent = '🎤 מקשיב...';
-                    
-                    console.log('🎤 Voice recognition started');
-                };
-                
-                voiceRecognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    const input = document.getElementById('smartSearchInput');
-                    const status = document.getElementById('voiceStatus');
-                    
-                    if (input) input.value = transcript;
-                    if (status) status.textContent = `✅ הבנתי: "${transcript}"`;
-                    
-                    console.log('🎤 Transcribed:', transcript);
-                    
-                    // Automatically search after 500ms
-                    setTimeout(() => {
-                        searchSmartInput();
-                    }, 500);
-                };
-                
-                voiceRecognition.onerror = function(event) {
-                    console.error('❌ Voice recognition error:', event.error);
-                    const status = document.getElementById('voiceStatus');
-                    if (status) {
-                        if (event.error === 'not-allowed') {
-                            status.textContent = '❌ נא לאפשר גישה למיקרופון';
-                        } else {
-                            status.textContent = '❌ שגיאה - נסה שוב';
-                        }
-                    }
-                };
-                
-                voiceRecognition.onend = function() {
-                    isVoiceListening = false;
-                    const btn = document.getElementById('voiceSearchBtn');
-                    const input = document.getElementById('smartSearchInput');
-                    
-                    if (btn) btn.classList.remove('listening');
-                    if (input) input.classList.remove('listening');
-                    
-                    console.log('🎤 Voice recognition ended');
-                };
-                
-                console.log('✅ Voice search initialized');
-            } else {
-                console.log('❌ Voice recognition not supported in this browser');
-                const status = document.getElementById('voiceStatus');
-                if (status) status.textContent = 'זמין רק ב-Chrome';
-            }
-        }
-        // Make globally accessible
-        window.initVoiceSearch = initVoiceSearch;
-        
-        // Toggle voice search on/off
-        function toggleVoiceSearch() {
-            if (!voiceRecognition) {
-                initVoiceSearch();
-            }
-            
-            if (!voiceRecognition) {
-                alert('חיפוש קולי זמין רק בדפדפן Chrome');
-                return;
-            }
-            
-            if (isVoiceListening) {
-                voiceRecognition.stop();
-            } else {
-                try {
-                    voiceRecognition.start();
-                } catch (error) {
-                    console.error('Error starting voice:', error);
-                    const status = document.getElementById('voiceStatus');
-                    if (status) status.textContent = '❌ לא ניתן להפעיל מיקרופון';
-                }
-            }
-        }
-        
-        // Search from smart input (voice or typed)
-        async function searchSmartInput() {
-            const input = document.getElementById('smartSearchInput');
-            if (!input) return;
-            
-            const query = input.value.trim();
-            if (!query) {
-                alert('נא להזין שאילתה');
-                return;
-            }
-            
-            console.log('🔍 Smart search:', query);
-            
-            // Paste query into first available query box
-            const boxes = ['searchInput1', 'searchInput2', 'searchInput3', 'searchInput4'];
-            
-            for (let i = 0; i < boxes.length; i++) {
-                const box = document.getElementById(boxes[i]);
-                if (box && !box.value.trim()) {
-                    box.value = query;
-                    
-                    // Update box styling
-                    if (typeof updateQueryBox === 'function') {
-                        updateQueryBox(i + 1);
-                    }
-                    
-                    // Flash effect
-                    const boxDiv = document.getElementById('queryBox' + (i + 1));
-                    if (boxDiv) {
-                        boxDiv.style.background = '#dbeafe';
-                        setTimeout(() => { boxDiv.style.background = ''; }, 500);
-                    }
-                    
-                    console.log(`✅ Pasted into Box ${i + 1}`);
-                    
-                    // Clear voice status after pasting
-                    const status = document.getElementById('voiceStatus');
-                    if (status) {
-                        setTimeout(() => {
-                            status.textContent = '';
-                        }, 2000);
-                    }
-                    
-                    return;
-                }
-            }
-            
-            alert('כל תיבות השאלות מלאות! נקה תיבה או הפעל חיפוש.');
-        }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // MODULE 2: TOP VOICE KEYWORDS (NOW IN voice-search.js)
-        // ═══════════════════════════════════════════════════════════════
-        // const module2VoiceKeywords = [
-        //     'נקודות', 'כאבי', 'שינה', 'עייפות', 'חרדה', 'דיכאון', 'אנרגיה',
-        //     'דופק', 'צמחי', 'תמיכה', 'טיפול', 'מניעה', 'תזונה', 'עור',
-        //     'סימפטומים', 'השפעה', 'יתרונות', 'דיקור', 'משתלב',
-        //     'מאזנים', 'ממליצים', 'מתאימים', 'סיני', 'ויטמין', 'מרפא',
-        //     'כרונית', 'סימני', 'כרוני', 'תופעות', 'לוואי', 'תכונות',
-        //     'ניקוי', 'מזון', 'סימנים', 'עיניים', 'אזהרה', 'קושי',
-        //     'מזונות', 'מחשבות', 'עצמית', 'צוואר', 'טווח', 'נדודי',
-        //     'מופרעת', 'גבוהה', 'תעלות', 'כורכום', 'עומס', 'זיכרון',
-        //     'תירואיד', 'דיבור', 'אנזים', 'דופמין'
-        // ];
-        
-        // FIX #2: Search by keyword (clicking popular keywords)
-        // Now searches for questions CONTAINING the keyword, not just pasting word
-        async function searchKeyword(keyword) {
-            console.log('🔑 Searching for questions containing:', keyword);
-            
-            try {
-                // Search Module 1 (411 questions) for questions containing keyword
-                const { data, error } = await supabaseClient
-                    .from('411_hebrew_quick_questions_20260131')
-                    .select('question_hebrew, category_hebrew')
-                    .ilike('question_hebrew', `%${keyword}%`)
-                    .order('question_hebrew', { ascending: true })
-                    .limit(20);
-                
-                if (error) {
-                    console.error('❌ Keyword search error details:', error);
-                    throw error;
-                }
-                
-                if (data && data.length > 0) {
-                    console.log(`✅ Found ${data.length} questions containing "${keyword}"`);
-                    
-                    // Display filtered questions in Module 1 area
-                    displayModule1Questions({
-                        questions: data,
-                        category: `תוצאות חיפוש: "${keyword}"`,
-                        has_more: false,
-                        total_count: data.length
-                    });
-                    
-                    // Expand Module 1 if collapsed
-                    const content = document.getElementById('module1Content');
-                    const arrow = document.getElementById('module1Arrow');
-                    if (content && content.style.display === 'none') {
-                        content.style.display = 'block';
-                        if (arrow) arrow.style.transform = 'rotate(180deg)';
-                        module1IsExpanded = true;
-                    }
-                    
-                    // Scroll to Module 1
-                    const module1Header = document.querySelector('[onclick="toggleModule1Panel()"]');
-                    if (module1Header) {
-                        module1Header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                    
-                } else {
-                    alert(`לא נמצאו שאלות המכילות: "${keyword}"\nנסה מילת חיפוש אחרת.`);
-                }
-                
-            } catch (error) {
-                console.error('❌ Keyword search error:', error);
-                console.error('Error details:', JSON.stringify(error));
-                alert(`שגיאה בחיפוש מילת מפתח: ${error.message || 'שגיאה לא ידועה'}`);
-            }
-        }
-        
-        // FIX #2: Search by alphabet letter
-        // Searches for questions STARTING with the letter
-        async function searchByLetter(letter) {
-            console.log('🔤 Searching for questions starting with:', letter);
-            
-            try {
-                // Search Module 1 for questions starting with letter
-                const { data, error } = await supabaseClient
-                    .from('411_hebrew_quick_questions_20260131')
-                    .select('question_hebrew, category_hebrew')
-                    .ilike('question_hebrew', `${letter}%`)
-                    .order('question_hebrew', { ascending: true })
-                    .limit(20);
-                
-                if (error) {
-                    console.error('❌ Alphabet search error details:', error);
-                    console.error('Error message:', error.message);
-                    console.error('Error code:', error.code);
-                    throw error;
-                }
-                
-                if (data && data.length > 0) {
-                    console.log(`✅ Found ${data.length} questions starting with "${letter}"`);
-                    
-                    // Display filtered questions
-                    displayModule1Questions({
-                        questions: data,
-                        category: `תוצאות חיפוש: אות "${letter}"`,
-                        has_more: false,
-                        total_count: data.length
-                    });
-                    
-                    // Expand Module 1
-                    const content = document.getElementById('module1Content');
-                    const arrow = document.getElementById('module1Arrow');
-                    if (content && content.style.display === 'none') {
-                        content.style.display = 'block';
-                        if (arrow) arrow.style.transform = 'rotate(180deg)';
-                        module1IsExpanded = true;
-                    }
-                    
-                    // Scroll to Module 1
-                    const module1Header = document.querySelector('[onclick="toggleModule1Panel()"]');
-                    if (module1Header) {
-                        module1Header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                    
-                } else {
-                    alert(`לא נמצאו שאלות המתחילות באות: "${letter}"`);
-                }
-                
-            } catch (error) {
-                console.error('❌ Alphabet search error:', error);
-                console.error('Error details:', JSON.stringify(error));
-                alert(`שגיאה בחיפוש לפי אות: ${error.message || 'שגיאה לא ידועה'}\n\nבדוק את הקונסול לפרטים נוספים.`);
-            }
-        }
-        
-        // Initialize alphabet navigation buttons
-        function initAlphabetNav() {
-            const hebrewAlphabet = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'];
-            const container = document.getElementById('alphabetNav');
-            
-            if (container) {
-                hebrewAlphabet.forEach(letter => {
-                    const btn = document.createElement('button');
-                    btn.textContent = letter;
-                    btn.className = 'w-8 h-8 bg-white border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-bold hover:bg-purple-100 hover:border-purple-500 transition-all cursor-pointer';
-                    btn.onclick = () => searchByLetter(letter);
-                    btn.title = `חיפוש לפי האות ${letter}`;
-                    container.appendChild(btn);
-                });
-                console.log('✅ Alphabet navigation initialized (22 letters)');
-            }
-        }
-        // END OF OLD VOICE SEARCH CODE
+        [original commented-out voice search block preserved as-is]
         */
 
         // ═══════════════════════════════════════════════════════════════
-        // MODULE 2: 2,665 CLINICAL QUESTIONS - NEW IMPLEMENTATION
+        // MODULE 2: 2,665 CLINICAL QUESTIONS
         // ═══════════════════════════════════════════════════════════════
         
-        // FIX #4: Module 2 toggle function (same pattern as Module 1)
-        // ═══════════════════════════════════════════════════════════════
-        // TOGGLE MODULE 2 PANEL FUNCTION
-        // ═══════════════════════════════════════════════════════════════
         async function toggleModule2Panel() {
             const content = document.getElementById('module2Content');
             const arrow = document.getElementById('module2Arrow');
@@ -781,30 +867,21 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             module2IsExpanded = !module2IsExpanded;
             
             if (module2IsExpanded) {
-                // Show panel
                 content.style.display = 'block';
                 arrow.style.transform = 'rotate(180deg)';
                 
-                // Load questions on first expansion
                 if (!module2QuestionsLoaded) {
                     console.log('📥 First time expanding Module 2 - loading questions...');
                     await loadModule2QuestionsNew();
                     module2QuestionsLoaded = true;
                 }
             } else {
-                // Hide panel
                 content.style.display = 'none';
                 arrow.style.transform = 'rotate(0deg)';
             }
         }
-        // Make globally accessible
         window.toggleModule2Panel = toggleModule2Panel;
         
-        // Load Module 2 questions from database
-        // ═══════════════════════════════════════════════════════════════
-        // MODULE 2: CATEGORY TRANSLATION MAPPING
-        // ═══════════════════════════════════════════════════════════════
-        // EXACT Hebrew translations for Module 2 categories (from database)
         const module2CategoryTranslation = {
             "adolescent": "מתבגרים (13-18)",
             "adult": "מבוגרים (18-70)",
@@ -840,31 +917,14 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             "western_diets": "דיאטות מערביות"
         };
         
-        // Function to translate category to Hebrew
         function translateCategoryToHebrew(englishCategory) {
             return module2CategoryTranslation[englishCategory] || englishCategory;
         }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // ⚠️ MODULE 2 FUNCTIONS SECTION
-        // ═══════════════════════════════════════════════════════════════
-        // ALL FUNCTIONS BELOW (until next section) ARE NOW LOADED FROM:
-        // questions-589.js module in Supabase Storage
-        // 
-        // Functions that moved to questions-589.js:
-        // - loadModule2QuestionsNew()
-        // - filterModule2Questions()
-        // - displayModule2Questions()
-        // - handleModule2Scroll()
-        // - pasteModule2ToQueryBox()
-        //
-        // RESTORED: These functions needed in main file for proper initialization
         
         async function loadModule2QuestionsNew() {
             try {
                 console.log('📥 Loading Module 2 questions from database...');
                 
-                // Get unique categories (in English from database)
                 const { data: categories, error: catError } = await supabaseClient
                     .from('csv_32_589_hebrew_questions_20260201')
                     .select('category')
@@ -872,30 +932,26 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 
                 if (catError) throw catError;
                 
-                // Get unique categories
                 const uniqueCategories = [...new Set(categories.map(c => c.category))];
                 console.log(`✅ Found ${uniqueCategories.length} Module 2 categories`);
                 
-                // Sort categories alphabetically by HEBREW translation
                 uniqueCategories.sort((a, b) => {
                     const hebrewA = translateCategoryToHebrew(a);
                     const hebrewB = translateCategoryToHebrew(b);
                     return hebrewA.localeCompare(hebrewB, 'he');
                 });
                 
-                // Populate category dropdown with HEBREW translations (alphabetically sorted)
                 const select = document.getElementById('module2CategoryFilter');
                 if (select) {
                     select.innerHTML = `<option value="all">כל הקטגוריות (589 שאלות)</option>`;
                     uniqueCategories.forEach(catEnglish => {
                         const option = document.createElement('option');
-                        option.value = catEnglish; // Keep English as value for database query
-                        option.textContent = translateCategoryToHebrew(catEnglish); // Show Hebrew to user
+                        option.value = catEnglish;
+                        option.textContent = translateCategoryToHebrew(catEnglish);
                         select.appendChild(option);
                     });
                 }
                 
-                // Load first 3 questions
                 await filterModule2Questions();
                 
             } catch (error) {
@@ -904,12 +960,10 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
         
-        // Filter Module 2 questions by category (with offset for infinite scroll)
         async function filterModule2Questions(offset = 0) {
             const select = document.getElementById('module2CategoryFilter');
             const category = select ? select.value : 'all';
             
-            // Reset if new category selected
             if (category !== module2CurrentCategory) {
                 module2CurrentCategory = category;
                 module2CurrentOffset = 0;
@@ -924,7 +978,7 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     .from('csv_32_589_hebrew_questions_20260201')
                     .select('question_hebrew, category, answer_hebrew')
                     .order('question_hebrew', { ascending: true })
-                    .range(offset, offset + 2); // Load 3 questions (0-2, 3-5, etc.)
+                    .range(offset, offset + 2);
                 
                 if (category !== 'all') {
                     query = query.eq('category', category);
@@ -939,15 +993,11 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 
                 console.log(`✅ Found ${data.length} Module 2 questions at offset ${offset}`);
                 
-                // Check if we reached the end
                 if (data.length < 3) {
                     module2AllQuestionsLoaded = true;
                 }
                 
-                // Update offset for next load
                 module2CurrentOffset = offset + data.length;
-                
-                // Display questions (append if offset > 0, replace if offset = 0)
                 displayModule2Questions(data, offset > 0);
                 
             } catch (error) {
@@ -956,7 +1006,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
         
-        // Display Module 2 questions (with append mode for infinite scroll)
         function displayModule2Questions(questions, append = false) {
             const container = document.getElementById('module2Questions');
             if (!container) return;
@@ -968,12 +1017,9 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 return;
             }
             
-            // Clear container if not appending
             if (!append) {
                 container.innerHTML = '';
-                // Remove old scroll listener
                 container.removeEventListener('scroll', handleModule2Scroll);
-                // Add scroll listener for infinite scroll
                 container.addEventListener('scroll', handleModule2Scroll);
             }
             
@@ -981,10 +1027,7 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'p-3 bg-white border-2 border-purple-200 rounded-lg hover:border-purple-400 hover:shadow-md cursor-pointer transition-all text-right';
                 
-                // Translate category to Hebrew for display
                 const categoryHebrew = translateCategoryToHebrew(q.category);
-                
-                // Add answer preview as tooltip (first 100 chars)
                 const answerPreview = q.answer_hebrew ? q.answer_hebrew.substring(0, 100) + '...' : '';
                 questionDiv.title = answerPreview;
                 
@@ -1001,12 +1044,10 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             });
         }
         
-        // Handle infinite scroll for Module 2
         function handleModule2Scroll() {
             const container = document.getElementById('module2Questions');
             if (!container) return;
             
-            // Check if scrolled to bottom (with 20px threshold)
             const scrolledToBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
             
             if (scrolledToBottom && !module2AllQuestionsLoaded) {
@@ -1015,23 +1056,20 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
         
-        // FIX #1: Paste Module 2 question with duplicate prevention
         function pasteModule2ToQueryBox(text) {
             console.log('📝 Pasting Module 2 question:', text);
             
             const boxes = ['searchInput1', 'searchInput2', 'searchInput3', 'searchInput4'];
             
-            // FIX #1: Check for duplicates first
             for (let boxId of boxes) {
                 const input = document.getElementById(boxId);
                 if (input && input.value.trim() === text.trim()) {
                     alert('❌ שאלה זו כבר קיימת בתיבת חיפוש!\nאנא בחר שאלה אחרת.');
                     console.log('⚠️ Duplicate prevented:', text);
-                    return; // Prevent duplicate
+                    return;
                 }
             }
             
-            // Find first empty box
             for (let i = 0; i < boxes.length; i++) {
                 const input = document.getElementById(boxes[i]);
                 
@@ -1044,7 +1082,7 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     
                     const box = document.getElementById('queryBox' + (i + 1));
                     if (box) {
-                        box.style.background = '#fae8ff'; // Light purple for Module 2
+                        box.style.background = '#fae8ff';
                         setTimeout(() => { box.style.background = ''; }, 500);
                     }
                     
@@ -1055,10 +1093,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             
             alert('כל תיבות השאלות מלאות!');
         }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // ✅ END OF MODULE 2 FUNCTIONS
-        // ═══════════════════════════════════════════════════════════════
 
         function togglePause() {
             const pauseBtn = document.getElementById('pauseButton');
@@ -1083,53 +1117,31 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         
         function pauseSearch() {
             if (!isSearching) return;
-            
             isPaused = true;
             updateStatus('⏸️ חיפוש מושהה');
-            
             document.getElementById('pauseSearchBtn').classList.add('hidden');
             document.getElementById('continueSearchBtn').classList.remove('hidden');
-            
-            if (queryTimerInterval) {
-                clearInterval(queryTimerInterval);
-                queryTimerInterval = null;
-            }
-            
+            if (queryTimerInterval) { clearInterval(queryTimerInterval); queryTimerInterval = null; }
         }
         
         function continueSearch() {
             if (!isSearching) return;
-            
             isPaused = false;
             updateStatus('✅ ממשיך בחיפוש...');
-            
             document.getElementById('pauseSearchBtn').classList.remove('hidden');
             document.getElementById('continueSearchBtn').classList.add('hidden');
-            
             startQueryTimer();
-            
         }
         
         function stopSearch() {
             if (!isSearching) return;
-            
             isSearching = false;
             isPaused = false;
-            
-            if (queryTimerInterval) {
-                clearInterval(queryTimerInterval);
-                queryTimerInterval = null;
-            }
-            
+            if (queryTimerInterval) { clearInterval(queryTimerInterval); queryTimerInterval = null; }
             document.getElementById('pauseSearchBtn').classList.add('hidden');
             document.getElementById('continueSearchBtn').classList.add('hidden');
             document.getElementById('stopSearchBtn').classList.add('hidden');
-            
-            if (searchAbortController) {
-                searchAbortController.abort();
-                searchAbortController = null;
-            }
-            
+            if (searchAbortController) { searchAbortController.abort(); searchAbortController = null; }
             updateStatus('🔴 חיפוש הופסק על ידי המשתמש');
             document.getElementById('searchResults').innerHTML = `
                 <div class="text-center p-8 text-red-600">
@@ -1137,83 +1149,52 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     <p class="mt-2">החיפוש הופסק על ידי המשתמש</p>
                 </div>
             `;
-            
             queryEndTime = Date.now();
             const totalTime = ((queryEndTime - queryStartTime) / 1000).toFixed(2);
             document.getElementById('queryTimer').textContent = `${totalTime}s (הופסק)`;
-            
         }
         
         function startQueryTimer() {
             const queryTimerEl = document.getElementById('queryTimer');
-            if (!queryTimerEl) {
-                console.warn('queryTimer element not found');
-                return;
-            }
-            
+            if (!queryTimerEl) { console.warn('queryTimer element not found'); return; }
             queryStartTime = Date.now();
             queryTimerEl.textContent = '0.00s';
-            
-            if (queryTimerInterval) {
-                clearInterval(queryTimerInterval);
-            }
-            
+            if (queryTimerInterval) { clearInterval(queryTimerInterval); }
             queryTimerInterval = setInterval(() => {
                 if (!isPaused) {
                     const elapsed = ((Date.now() - queryStartTime) / 1000).toFixed(2);
                     const el = document.getElementById('queryTimer');
-                    if (el) {
-                        el.textContent = `${elapsed}s`;
-                    }
+                    if (el) el.textContent = `${elapsed}s`;
                 }
-            }, 100); // Update every 100ms for smooth counting
+            }, 100);
         }
         
         function stopQueryTimer() {
-            if (queryTimerInterval) {
-                clearInterval(queryTimerInterval);
-                queryTimerInterval = null;
-            }
-            
+            if (queryTimerInterval) { clearInterval(queryTimerInterval); queryTimerInterval = null; }
             const queryTimerEl = document.getElementById('queryTimer');
-            if (!queryTimerEl) {
-                console.warn('queryTimer element not found');
-                return;
-            }
-            
+            if (!queryTimerEl) { console.warn('queryTimer element not found'); return; }
             queryEndTime = Date.now();
             const totalTime = ((queryEndTime - queryStartTime) / 1000).toFixed(2);
             queryTimerEl.textContent = `${totalTime}s`;
-            
         }
         
         function resetQueryTimer() {
-            if (queryTimerInterval) {
-                clearInterval(queryTimerInterval);
-                queryTimerInterval = null;
-            }
-            
+            if (queryTimerInterval) { clearInterval(queryTimerInterval); queryTimerInterval = null; }
             const queryTimerEl = document.getElementById('queryTimer');
-            if (queryTimerEl) {
-                queryTimerEl.textContent = '0.00s';
-            }
+            if (queryTimerEl) queryTimerEl.textContent = '0.00s';
         }
 
         function startSessionTimer() {
             function updateClock() {
                 const sessionTimerEl = document.getElementById('sessionTimer');
-                if (!sessionTimerEl) {
-                    console.warn('sessionTimer element not found');
-                    return;
-                }
-                
+                if (!sessionTimerEl) { console.warn('sessionTimer element not found'); return; }
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 const dateStr = now.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 sessionTimerEl.textContent = `${timeStr} • ${dateStr}`;
             }
-            updateClock(); // Update immediately
-            timerInterval = setInterval(updateClock, 1000); // Update every second
+            updateClock();
+            timerInterval = setInterval(updateClock, 1000);
         }
 
         function calculateCost(inputTokens, outputTokens) {
@@ -1226,24 +1207,13 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             totalInputTokens += newInputTokens;
             totalOutputTokens += newOutputTokens;
             totalCost = calculateCost(totalInputTokens, totalOutputTokens);
-            
             const totalTokens = totalInputTokens + totalOutputTokens;
-            
             const tokenCountEl = document.getElementById('tokenCount');
-            if (tokenCountEl) {
-                tokenCountEl.textContent = totalTokens.toLocaleString();
-            }
-            
+            if (tokenCountEl) tokenCountEl.textContent = totalTokens.toLocaleString();
             const totalCostEl = document.getElementById('totalCost');
-            if (totalCostEl) {
-                totalCostEl.textContent = `$${totalCost.toFixed(4)}`;
-            }
-            
+            if (totalCostEl) totalCostEl.textContent = `$${totalCost.toFixed(4)}`;
             const assetsEl = document.getElementById('assetsSearched');
-            if (assetsEl) {
-                assetsEl.textContent = totalAssets;
-            }
-            
+            if (assetsEl) assetsEl.textContent = totalAssets;
             const successRateEl = document.getElementById('successRate');
             if (successRateEl) {
                 const successRate = totalQueries > 0 ? Math.round((successfulQueries / totalQueries) * 100) : 0;
@@ -1262,22 +1232,21 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 totalQueries = 0;
                 currentQueries = [];
                 usedCSVs.clear();
-                
                 isSearching = false;
                 isPaused = false;
                 resetQueryTimer();
-                
                 clearAllQueries();
                 document.getElementById('searchResults').innerHTML = '';
                 document.getElementById('activeQueries').innerHTML = '';
                 document.getElementById('shareButtons').classList.add('hidden');
                 document.getElementById('reportOptions').classList.add('hidden');
                 document.getElementById('fallbackBrowser').classList.add('hidden');
-                
                 document.getElementById('pauseSearchBtn').classList.add('hidden');
                 document.getElementById('continueSearchBtn').classList.add('hidden');
                 document.getElementById('stopSearchBtn').classList.add('hidden');
-                
+                // Clear safety banner if visible
+                const sb = document.getElementById('safetyBanner');
+                if (sb) sb.remove();
                 resetCSVIndicators();
                 updateMetrics();
             }
@@ -1285,47 +1254,26 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
 
         async function createCSVIndicators() {
             const container = document.getElementById('csvIndicatorsLeft');
-            if (!container) {
-                return;
-            }
-            
+            if (!container) return;
             try {
                 const { data: searchConfig, error } = await supabaseClient
                     .from('system_search_config_20260129')
                     .select('table_name, priority, description')
                     .eq('enabled', true)
                     .order('priority');
-                
-                if (error) {
-                    console.error('Error loading CSV indicators:', error);
-                    container.innerHTML = '<div class="text-white text-xs text-center">שגיאה בטעינה</div>';
-                    return;
-                }
-                
-                if (!searchConfig || searchConfig.length === 0) {
-                    container.innerHTML = '<div class="text-white text-xs text-center">אין מקורות זמינים</div>';
-                    return;
-                }
-                
+                if (error) { console.error('Error loading CSV indicators:', error); container.innerHTML = '<div class="text-white text-xs text-center">שגיאה בטעינה</div>'; return; }
+                if (!searchConfig || searchConfig.length === 0) { container.innerHTML = '<div class="text-white text-xs text-center">אין מקורות זמינים</div>'; return; }
                 container.innerHTML = searchConfig.map(config => {
-                    const isDrRoni = config.table_name.toLowerCase().includes('dr_roni') || 
-                                     config.table_name.toLowerCase().includes('bible');
+                    const isDrRoni = config.table_name.toLowerCase().includes('dr_roni') || config.table_name.toLowerCase().includes('bible');
                     const isZangfu = config.table_name === 'bible_rag_zangfu_syndromes_20260129';
                     const displayName = config.description || config.table_name;
                     const shortName = displayName.length > 30 ? displayName.substring(0, 30) + '...' : displayName;
-                    
-                    return `
-                        <div class="csv-box ${isDrRoni || isZangfu ? 'bible' : ''}" 
-                             data-csv="${config.table_name}" 
-                             title="${displayName} (Priority ${config.priority})">
-                            <div class="text-xs font-semibold">${isDrRoni ? '⭐ ' : ''}${shortName}</div>
-                            <div class="text-[10px] opacity-75">Priority ${config.priority}</div>
-                        </div>
-                    `;
+                    return `<div class="csv-box ${isDrRoni || isZangfu ? 'bible' : ''}" data-csv="${config.table_name}" title="${displayName} (Priority ${config.priority})">
+                        <div class="text-xs font-semibold">${isDrRoni ? '⭐ ' : ''}${shortName}</div>
+                        <div class="text-[10px] opacity-75">Priority ${config.priority}</div>
+                    </div>`;
                 }).join('');
-                
                 console.log(`✅ Loaded ${searchConfig.length} table indicators`);
-                
             } catch (err) {
                 console.error('Exception creating CSV indicators:', err);
                 container.innerHTML = '<div class="text-white text-xs text-center">שגיאה</div>';
@@ -1344,14 +1292,11 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             document.querySelectorAll('.csv-box').forEach(box => box.classList.remove('active'));
         }
 
-        function createQuickQuestions() {
-            filterQuestions();
-        }
+        function createQuickQuestions() { filterQuestions(); }
 
         function filterQuestions() {
             const categoryEl = document.getElementById('categoryFilter');
             if (!categoryEl) return;
-            
             const category = categoryEl.value;
             loadModule1Questions(category, 0);
         }
@@ -1359,18 +1304,14 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         function displayQuestions(questions, isAllCategories) {
             const container = document.getElementById('quickQuestions');
             if (!container) return;
-            
             container.innerHTML = questions.map((q, i) => `
-                <div class="quick-question" onclick="applyQuickQuestion('${q.category}', ${i}, ${isAllCategories})">
-                    ${q.text}
-                </div>
+                <div class="quick-question" onclick="applyQuickQuestion('${q.category}', ${i}, ${isAllCategories})">${q.text}</div>
             `).join('');
         }
         
         function addLoadMoreButton(allQuestions) {
             const container = document.getElementById('quickQuestions');
             if (!container) return;
-            
             const loadMoreBtn = document.createElement('div');
             loadMoreBtn.className = 'quick-question';
             loadMoreBtn.style.cssText = 'background: #e0f2fe; color: #0369a1; font-weight: bold; text-align: center; cursor: pointer; border: 2px dashed #0ea5e9;';
@@ -1382,16 +1323,11 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         function loadMoreQuestions(allQuestions) {
             currentOffset += questionsPerCategory;
             const nextBatch = allQuestions.slice(currentOffset, currentOffset + questionsPerCategory);
-            
             if (nextBatch.length > 0) {
                 const container = document.getElementById('quickQuestions');
                 if (!container) return;
-                
-                // Remove "load more" button
                 const loadMoreBtn = container.querySelector('[style*="dashed"]');
                 if (loadMoreBtn) loadMoreBtn.remove();
-                
-                // Add next batch
                 nextBatch.forEach((q, i) => {
                     const div = document.createElement('div');
                     div.className = 'quick-question';
@@ -1399,67 +1335,39 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     div.onclick = () => applyQuickQuestion(q.category, currentOffset + i, false);
                     container.appendChild(div);
                 });
-                
-                // Add "load more" button again if there are more questions
-                if (currentOffset + questionsPerCategory < allQuestions.length) {
-                    addLoadMoreButton(allQuestions);
-                }
+                if (currentOffset + questionsPerCategory < allQuestions.length) addLoadMoreButton(allQuestions);
             }
         }
 
         function applyQuickQuestion(category, index, isAllCategories) {
             let question;
-            
             if (isAllCategories) {
-                // Find the question in the displayed list
                 const displayedQuestions = [];
                 const categoryCounts = {};
-                
                 hebrewQuestions.forEach(q => {
-                    if (!categoryCounts[q.category]) {
-                        categoryCounts[q.category] = 0;
-                    }
-                    if (categoryCounts[q.category] < questionsPerCategory) {
-                        displayedQuestions.push(q);
-                        categoryCounts[q.category]++;
-                    }
+                    if (!categoryCounts[q.category]) categoryCounts[q.category] = 0;
+                    if (categoryCounts[q.category] < questionsPerCategory) { displayedQuestions.push(q); categoryCounts[q.category]++; }
                 });
-                
                 question = displayedQuestions[index];
             } else {
                 const filtered = hebrewQuestions.filter(q => q.category === category);
                 question = filtered[index];
             }
-            
             if (!question) return;
-            
             let targetBox = 1;
             for (let i = 1; i <= 4; i++) {
-                if (!document.getElementById(`searchInput${i}`).value.trim()) {
-                    targetBox = i;
-                    break;
-                }
+                if (!document.getElementById(`searchInput${i}`).value.trim()) { targetBox = i; break; }
             }
-            
             document.getElementById(`searchInput${targetBox}`).value = question.text;
             updateQueryBox(targetBox);
-            
             const runButton = document.querySelector('.run-query-button');
-            if (runButton) {
-                runButton.classList.add('pulse-attention');
-                setTimeout(() => runButton.classList.remove('pulse-attention'), 2000);
-            }
+            if (runButton) { runButton.classList.add('pulse-attention'); setTimeout(() => runButton.classList.remove('pulse-attention'), 2000); }
         }
 
         function updateQueryBox(queryNum) {
             const input = document.getElementById(`searchInput${queryNum}`);
             const box = document.getElementById(`queryBox${queryNum}`);
-            
-            if (input.value.trim()) {
-                box.classList.add('filled');
-            } else {
-                box.classList.remove('filled');
-            }
+            if (input.value.trim()) { box.classList.add('filled'); } else { box.classList.remove('filled'); }
         }
 
         function startVoiceInput(boxNumber) {
@@ -1467,39 +1375,28 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 alert('הדפדפן שלך אינו תומך בזיהוי קולי. נסה להשתמש ב-Chrome.');
                 return;
             }
-            
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
-            
-            recognition.lang = 'he-IL'; // Hebrew
+            recognition.lang = 'he-IL';
             recognition.continuous = false;
             recognition.interimResults = false;
-            
             const inputEl = document.getElementById(`searchInput${boxNumber}`);
             const button = event.target;
-            
             button.textContent = '🎙️';
             button.classList.add('bg-red-600');
-            
-            recognition.onstart = function() {
-            };
-            
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 inputEl.value = transcript;
                 updateQueryBox(boxNumber);
             };
-            
             recognition.onerror = function(event) {
                 console.error('🎤 Voice recognition error:', event.error);
                 alert('שגיאה בזיהוי קולי: ' + event.error);
             };
-            
             recognition.onend = function() {
                 button.textContent = '🎤';
                 button.classList.remove('bg-red-600');
             };
-            
             recognition.start();
         }
 
@@ -1528,6 +1425,18 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                 alert('נא להזין לפחות שאלה אחת');
                 return;
             }
+
+            // ── P2 SAFETY PRE-CHECK ──────────────────────────────────
+            const safetyResult = await runPreSearchSafetyCheck(currentQueries);
+            if (safetyResult.blocked) {
+                showSafetyBlock(safetyResult);
+                return; // Do NOT proceed with search
+            }
+            if (safetyResult.warned) {
+                showSafetyWarn(safetyResult);
+                // Warning only — search continues below
+            }
+            // ── END SAFETY PRE-CHECK ─────────────────────────────────
 
             totalQueries++;
             
@@ -1574,18 +1483,12 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     
                     if (allResults.totalResults > 0 && allResults.allResults) {
                         const uniqueTables = [...new Set(allResults.allResults.map(r => r._source_table))];
-                        
                         highlightUsedCSVs(uniqueTables);
-                        
                         const successMsg = document.createElement('div');
                         successMsg.className = 'bg-green-50 p-4 rounded-lg border-2 border-green-200 mb-4 text-right';
                         successMsg.innerHTML = `
-                            <p class="text-green-800 font-bold text-lg" dir="rtl">
-                                ✅ נמצאו ${allResults.totalResults} תוצאות מ-${uniqueTables.length} טבלאות!
-                            </p>
-                            <p class="text-green-600 text-sm mt-1" dir="rtl">
-                                טבלאות: ${uniqueTables.join(', ')}
-                            </p>
+                            <p class="text-green-800 font-bold text-lg" dir="rtl">✅ נמצאו ${allResults.totalResults} תוצאות מ-${uniqueTables.length} טבלאות!</p>
+                            <p class="text-green-600 text-sm mt-1" dir="rtl">טבלאות: ${uniqueTables.join(', ')}</p>
                         `;
                         results.appendChild(successMsg);
                     }
@@ -1600,7 +1503,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
 
                 document.getElementById('tokenCount').style.animation = '';
                 document.getElementById('pauseButton').classList.add('hidden');
-                
                 isSearching = false;
                 stopQueryTimer();
                 document.getElementById('pauseSearchBtn').classList.add('hidden');
@@ -1609,7 +1511,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
 
             } catch (error) {
                 console.error('Search error:', error);
-                
                 if (error.name === 'AbortError') {
                     results.innerHTML = '<div class="text-center p-8 text-orange-600"><h3 class="text-2xl font-bold">⏸️ חיפוש מושהה</h3></div>';
                 } else {
@@ -1620,10 +1521,8 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                         </div>
                     `;
                 }
-                
                 document.getElementById('tokenCount').style.animation = '';
                 document.getElementById('pauseButton').classList.add('hidden');
-                
                 isSearching = false;
                 stopQueryTimer();
                 document.getElementById('pauseSearchBtn').classList.add('hidden');
@@ -1632,32 +1531,17 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
 
-        // ========================================
-        // ========================================
-
-        // SEARCH CONFIG CACHE (NOW DECLARED IN search-engine.js)
         let searchConfigCache = null;
 
-        /**
-         * Load search configuration from database
-         */
         async function loadSearchConfig() {
-            if (searchConfigCache) {
-                return searchConfigCache;
-            }
-            
+            if (searchConfigCache) return searchConfigCache;
             try {
                 const { data, error } = await supabaseClient
                     .from('system_search_config_20260129')
                     .select('*')
                     .eq('enabled', true)
                     .order('priority');
-                
-                if (error) {
-                    console.error('❌ Error loading search config:', error);
-                    return [];
-                }
-                
+                if (error) { console.error('❌ Error loading search config:', error); return []; }
                 console.log(`✅ Loaded ${data.length} searchable tables from search_config`);
                 searchConfigCache = data;
                 return data;
@@ -1667,97 +1551,41 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
         }
 
-        /**
-         * NEW SEARCH FUNCTION - Searches all configured tables
-         */
         async function searchMultipleQueries(queries) {
-            
             const searchConfig = await loadSearchConfig();
-            
-            if (!searchConfig || searchConfig.length === 0) {
-                console.error('❌ No search configuration found!');
-                return { formulas: [], acupoints: [], images: [] };
-            }
-            
+            if (!searchConfig || searchConfig.length === 0) { console.error('❌ No search configuration found!'); return { formulas: [], acupoints: [], images: [] }; }
             
             const allResults = [];
             let totalResults = 0;
             
             for (const tableConfig of searchConfig) {
-                if (isPaused) {
-                    break;
-                }
-                
+                if (isPaused) break;
                 for (const query of queries) {
                     try {
                         let searchFields = tableConfig.search_fields;
-                        
                         if (typeof searchFields === 'string') {
-                            try {
-                                searchFields = JSON.parse(searchFields);
-                            } catch (e) {
-                                searchFields = searchFields.split(',').map(f => f.trim());
-                            }
+                            try { searchFields = JSON.parse(searchFields); } catch (e) { searchFields = searchFields.split(',').map(f => f.trim()); }
                         }
-                        
-                        if (!Array.isArray(searchFields)) {
-                            console.warn(`  ⚠️ Invalid search_fields for ${tableConfig.table_name}:`, searchFields);
-                            continue;
-                        }
-                        
-                        if (searchFields.length === 0) {
-                            console.warn(`  ⚠️ No search fields configured for ${tableConfig.table_name}`);
-                            continue;
-                        }
-                        
+                        if (!Array.isArray(searchFields)) { console.warn(`  ⚠️ Invalid search_fields for ${tableConfig.table_name}:`, searchFields); continue; }
+                        if (searchFields.length === 0) { console.warn(`  ⚠️ No search fields configured for ${tableConfig.table_name}`); continue; }
                         
                         let tableResults = [];
-                        
                         for (const field of searchFields) {
                             try {
-                                const { data, error } = await supabaseClient
-                                    .from(tableConfig.table_name)
-                                    .select('*')
-                                    .ilike(field, `%${query}%`)
-                                    .limit(20);
-                                
-                                if (error) {
-                                    console.warn(`    ⚠️ Field "${field}" search failed:`, error.message);
-                                    continue; // Skip this field, try next one
-                                }
-                                
-                                if (data && data.length > 0) {
-                                    console.log(`    ✅ Found ${data.length} in field "${field}"`);
-                                    tableResults.push(...data);
-                                }
-                            } catch (fieldError) {
-                                console.warn(`    ⚠️ Exception searching field "${field}":`, fieldError.message);
-                                continue;
-                            }
+                                const { data, error } = await supabaseClient.from(tableConfig.table_name).select('*').ilike(field, `%${query}%`).limit(20);
+                                if (error) { console.warn(`    ⚠️ Field "${field}" search failed:`, error.message); continue; }
+                                if (data && data.length > 0) { console.log(`    ✅ Found ${data.length} in field "${field}"`); tableResults.push(...data); }
+                            } catch (fieldError) { console.warn(`    ⚠️ Exception searching field "${field}":`, fieldError.message); continue; }
                         }
                         
-                        const uniqueResults = Array.from(
-                            new Map(tableResults.map(item => [item.id, item])).values()
-                        );
-                        
+                        const uniqueResults = Array.from(new Map(tableResults.map(item => [item.id, item])).values());
                         if (uniqueResults.length > 0) {
                             console.log(`  ✅ Total ${uniqueResults.length} unique results in ${tableConfig.table_name}`);
-                            
-                            const resultsWithMeta = uniqueResults.map(row => ({
-                                ...row,
-                                _source_table: tableConfig.table_name,
-                                _source_description: tableConfig.description,
-                                _search_query: query
-                            }));
-                            
+                            const resultsWithMeta = uniqueResults.map(row => ({ ...row, _source_table: tableConfig.table_name, _source_description: tableConfig.description, _search_query: query }));
                             allResults.push(...resultsWithMeta);
                             totalResults += uniqueResults.length;
-                        } else {
                         }
-                        
-                    } catch (err) {
-                        console.error(`  ❌ Exception searching ${tableConfig.table_name}:`, err);
-                    }
+                    } catch (err) { console.error(`  ❌ Exception searching ${tableConfig.table_name}:`, err); }
                 }
             }
             
@@ -1771,7 +1599,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             
             console.log(`\n✅ SEARCH COMPLETE! Total: ${uniqueResults.length} unique results`);
             
-            // Extract acupoints first
             const acupoints = uniqueResults
                 .filter(r => r._source_table && r._source_table.includes('acupuncture') && r._source_table !== 'reference_rag_body_images_20260129')
                 .map(point => ({
@@ -1781,113 +1608,48 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     meridian: point.meridian || point.channel || 'N/A'
                 }));
             
-            // 🎯 SMART IMAGE FETCHING: Match by acupoint codes, keywords, AND medical terms
             let bodyImages = [];
             try {
-                // Medical term to body part keyword mapping
                 const medicalToBodyPart = {
-                    // Organs → Body regions
-                    'טחול': ['בטן', 'קדמי'],
-                    'כבד': ['בטן', 'צד'],
-                    'כליות': ['גב', 'מותן'],
-                    'לב': ['חזה', 'קדמי'],
-                    'ריאות': ['חזה', 'גב'],
-                    'קיבה': ['בטן', 'קדמי'],
-                    'מעיים': ['בטן'],
-                    'שלפוחית': ['בטן', 'תחתון'],
-                    // Conditions → Body regions
-                    'עיכול': ['בטן'],
-                    'נשימה': ['חזה'],
-                    'ראש': ['ראש', 'פנים'],
-                    'כאב ראש': ['ראש'],
-                    'מיגרנה': ['ראש'],
-                    'גב': ['גב'],
-                    'צוואר': ['צוואר'],
-                    'כתף': ['כתף', 'זרוע'],
-                    'ברך': ['רגל', 'ברך'],
-                    'קרסול': ['רגל', 'כף רגל'],
-                    'יד': ['יד', 'זרוע'],
-                    'רגל': ['רגל'],
-                    // TCM terms
-                    'יאנג': ['גב', 'קדמי'],
-                    'יין': ['בטן', 'קדמי'],
-                    'צ\'י': ['בטן', 'חזה'],
-                    'דם': ['בטן', 'חזה'],
-                    'IBS': ['בטן'],
-                    'עצירות': ['בטן'],
-                    'שלשול': ['בטן']
+                    'טחול': ['בטן', 'קדמי'], 'כבד': ['בטן', 'צד'], 'כליות': ['גב', 'מותן'],
+                    'לב': ['חזה', 'קדמי'], 'ריאות': ['חזה', 'גב'], 'קיבה': ['בטן', 'קדמי'],
+                    'מעיים': ['בטן'], 'שלפוחית': ['בטן', 'תחתון'],
+                    'עיכול': ['בטן'], 'נשימה': ['חזה'], 'ראש': ['ראש', 'פנים'],
+                    'כאב ראש': ['ראש'], 'מיגרנה': ['ראש'], 'גב': ['גב'],
+                    'צוואר': ['צוואר'], 'כתף': ['כתף', 'זרוע'], 'ברך': ['רגל', 'ברך'],
+                    'קרסול': ['רגל', 'כף רגל'], 'יד': ['יד', 'זרוע'], 'רגל': ['רגל'],
+                    'יאנג': ['גב', 'קדמי'], 'יין': ['בטן', 'קדמי'], 'צ\'י': ['בטן', 'חזה'],
+                    'דם': ['בטן', 'חזה'], 'IBS': ['בטן'], 'עצירות': ['בטן'], 'שלשול': ['בטן']
                 };
                 
-                // Get all active body images
-                const { data: allImages, error: imgError } = await supabaseClient
-                    .from('reference_rag_body_images_20260129')
-                    .select('*')
-                    .eq('is_active', true);
+                const { data: allImages, error: imgError } = await supabaseClient.from('reference_rag_body_images_20260129').select('*').eq('is_active', true);
                 
                 if (!imgError && allImages && allImages.length > 0) {
                     console.log(`🖼️ Loaded ${allImages.length} body images from database`);
-                    
-                    // Method 1: Match images by acupoint codes from results
                     const foundAcupointCodes = acupoints.map(p => p.code.toUpperCase()).filter(c => c !== 'N/A');
                     if (foundAcupointCodes.length > 0) {
-                        console.log(`🎯 Found acupoint codes: ${foundAcupointCodes.join(', ')}`);
-                        const matchedByCode = allImages.filter(img => {
-                            if (!img.acupoint_codes || !Array.isArray(img.acupoint_codes)) return false;
-                            return img.acupoint_codes.some(code => 
-                                foundAcupointCodes.includes(code.toUpperCase())
-                            );
-                        });
-                        if (matchedByCode.length > 0) {
-                            console.log(`  ✅ Matched ${matchedByCode.length} images by acupoint codes`);
-                            bodyImages.push(...matchedByCode);
-                        }
+                        const matchedByCode = allImages.filter(img => img.acupoint_codes && Array.isArray(img.acupoint_codes) && img.acupoint_codes.some(code => foundAcupointCodes.includes(code.toUpperCase())));
+                        if (matchedByCode.length > 0) bodyImages.push(...matchedByCode);
                     }
-                    
-                    // Method 2: Match by medical terms in queries → body parts
                     for (const query of queries) {
-                        // Check medical term mapping
                         for (const [term, bodyParts] of Object.entries(medicalToBodyPart)) {
                             if (query.includes(term)) {
-                                console.log(`  🔍 Query contains "${term}" → searching for ${bodyParts.join(', ')}`);
                                 for (const bodyPart of bodyParts) {
                                     const matchedByMedical = allImages.filter(img => {
-                                        const searchIn = [
-                                            img.body_part_hebrew,
-                                            img.body_part,
-                                            ...(img.search_keywords_hebrew || [])
-                                        ].filter(Boolean).join(' ').toLowerCase();
+                                        const searchIn = [img.body_part_hebrew, img.body_part, ...(img.search_keywords_hebrew || [])].filter(Boolean).join(' ').toLowerCase();
                                         return searchIn.includes(bodyPart.toLowerCase());
                                     });
-                                    if (matchedByMedical.length > 0) {
-                                        console.log(`    ✅ Found ${matchedByMedical.length} images for "${bodyPart}"`);
-                                        bodyImages.push(...matchedByMedical);
-                                    }
+                                    if (matchedByMedical.length > 0) bodyImages.push(...matchedByMedical);
                                 }
                             }
                         }
-                        
-                        // Method 3: Direct keyword match in search_keywords_hebrew
-                        const matchedByKeyword = allImages.filter(img => {
-                            if (!img.search_keywords_hebrew || !Array.isArray(img.search_keywords_hebrew)) return false;
-                            return img.search_keywords_hebrew.some(keyword => 
-                                query.includes(keyword) || keyword.includes(query)
-                            );
-                        });
-                        if (matchedByKeyword.length > 0) {
-                            console.log(`  ✅ Matched ${matchedByKeyword.length} images by keyword in "${query}"`);
-                            bodyImages.push(...matchedByKeyword);
-                        }
+                        const matchedByKeyword = allImages.filter(img => img.search_keywords_hebrew && Array.isArray(img.search_keywords_hebrew) && img.search_keywords_hebrew.some(keyword => query.includes(keyword) || keyword.includes(query)));
+                        if (matchedByKeyword.length > 0) bodyImages.push(...matchedByKeyword);
                     }
-                    
-                    // Remove duplicates
                     bodyImages = Array.from(new Map(bodyImages.map(img => [img.id, img])).values());
                     console.log(`🖼️ Total unique body images matched: ${bodyImages.length}`);
-                } else {
-                    console.warn('⚠️ No body images loaded or error:', imgError);
                 }
-            } catch (imgError) {
-                console.error('❌ Error fetching body images:', imgError);
-            }
+            } catch (imgError) { console.error('❌ Error fetching body images:', imgError); }
             
             return {
                 allResults: uniqueResults,
@@ -1906,8 +1668,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         }
 
         async function displaySearchResults(results) {
-            // ============================================================================
-            // ============================================================================
             const cachedResponse = getCachedResponse(currentQueries);
             
             if (cachedResponse) {
@@ -1926,65 +1686,35 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                         <div class="prose max-w-none whitespace-pre-wrap text-right" dir="rtl">${cachedResponse}</div>
                     </div>
                 `;
-                
                 lastSearchResults = cachedResponse;
-                
-                addToAuditLog({
-                    type: 'cached_response',
-                    queries: currentQueries,
-                    cacheHit: true,
-                    costSaved: 0.002
-                });
-                
-                return; // Done - no API call needed!
+                addToAuditLog({ type: 'cached_response', queries: currentQueries, cacheHit: true, costSaved: 0.002 });
+                return;
             }
             
-            // ============================================================================
-            // ============================================================================
             const reportDetail = document.querySelector('input[name="reportDetail"]:checked').value;
             const context = buildAIContext(results, reportDetail);
             
-            
-            // 🔒 SECURE: Call Edge Function (API key stored in Supabase Secrets)
             const response = await fetch(EDGE_FUNCTION_URL, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    prompt: context,
-                    max_tokens: reportDetail === 'full' ? 3000 : 1500
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: context, max_tokens: reportDetail === 'full' ? 3000 : 1500 })
             });
 
             const data = await response.json();
-            
-            // Handle Edge Function response
-            if (data.error) {
-                throw new Error(data.error);
-            }
+            if (data.error) throw new Error(data.error);
             
             const aiResponse = data.content || data.text || 'לא התקבלה תשובה מהשרת';
-            
             const inputTokens = data.usage?.input_tokens || Math.ceil(context.length / 4);
             const outputTokens = data.usage?.output_tokens || Math.ceil(aiResponse.length / 4);
             
             updateMetrics(inputTokens, outputTokens);
             lastSearchResults = aiResponse;
-            
-            // ============================================================================
-            // ============================================================================
             cacheResponse(currentQueries, aiResponse, results);
-            
-            // ============================================================================
-            // ============================================================================
             addToAuditLog({
-                type: 'new_query',
-                queries: currentQueries,
+                type: 'new_query', queries: currentQueries,
                 resultCount: results.allResults ? results.allResults.length : 0,
                 warningsFound: results.allResults ? results.allResults.filter(r => r._source_table === 'acupuncture_point_warnings').length : 0,
-                inputTokens: inputTokens,
-                outputTokens: outputTokens,
+                inputTokens, outputTokens,
                 cost: (inputTokens * INPUT_TOKEN_COST) + (outputTokens * OUTPUT_TOKEN_COST),
                 cacheHit: false
             });
@@ -1998,7 +1728,6 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     </h4>
                     <div class="prose max-w-none whitespace-pre-wrap text-right" dir="rtl">${aiResponse}</div>
                 </div>
-                
                 ${results.acupoints && results.acupoints.length > 0 ? `
                     <div class="bg-green-50 p-6 rounded-xl border-2 border-green-300 mb-6">
                         <h4 class="text-xl font-bold mb-4 text-right">🎯 נקודות דיקור מתאימות (${results.acupoints.length}):</h4>
@@ -2013,20 +1742,14 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                         </div>
                     </div>
                 ` : ''}
-                
                 ${results.images && results.images.length > 0 ? `
                     <div class="bg-purple-50 p-6 rounded-xl border-2 border-purple-300">
                         <h4 class="text-xl font-bold mb-4 text-right">🖼️ דיאגרמות גוף רלוונטיות (${results.images.length}):</h4>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             ${results.images.map(img => `
                                 <div class="cursor-pointer hover:scale-105 transition" onclick="showImageFullscreen('${img.storage_url}', '${img.filename}')">
-                                    <img src="${img.storage_url}" 
-                                         alt="${img.body_part}" 
-                                         class="w-full h-48 object-contain bg-white rounded-lg shadow-md"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div style="display:none;" class="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
-                                        <span class="text-gray-500 text-sm">תמונה לא זמינה</span>
-                                    </div>
+                                    <img src="${img.storage_url}" alt="${img.body_part}" class="w-full h-48 object-contain bg-white rounded-lg shadow-md" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div style="display:none;" class="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg"><span class="text-gray-500 text-sm">תמונה לא זמינה</span></div>
                                     <p class="text-center text-sm font-semibold mt-2">${img.body_part}</p>
                                 </div>
                             `).join('')}
@@ -2040,23 +1763,12 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             const queries = currentQueries.join(', ');
             
             if (results.allResults && results.allResults.length > 0) {
-                // ============================================================================
-                // ============================================================================
-                
                 const categories = categorizeResults(results.allResults);
                 const conflicts = detectConflicts(categories);
-                
-                
                 let contextParts = [];
                 
-                // ============================================================================
-                // PRIORITY 1: WARNINGS (Show first, cannot be skipped!)
-                // ============================================================================
                 if (categories.warnings.length > 0) {
-                    const warningText = categories.warnings.map(w => {
-                        return `⚠️ אזהרה: ${w.warning_he || w.explanation || w.point_number_hebrew || 'אזהרת בטיחות'} - רמת חומרה: ${w.warning_level || w.severity || 'גבוהה'}`;
-                    }).join('\n');
-                    
+                    const warningText = categories.warnings.map(w => `⚠️ אזהרה: ${w.warning_he || w.explanation || w.point_number_hebrew || 'אזהרת בטיחות'} - רמת חומרה: ${w.warning_level || w.severity || 'גבוהה'}`).join('\n');
                     contextParts.push(`
 ════════════════════════════════════════════════════════
 ⚠️ אזהרות בטיחות קריטיות - חובה לקרוא לפני טיפול! ⚠️
@@ -2065,16 +1777,8 @@ ${warningText}
 ════════════════════════════════════════════════════════`);
                 }
                 
-                // ============================================================================
-                // ============================================================================
                 if (conflicts.length > 0) {
-                    const conflictText = conflicts.map(c => {
-                        return `🚨 סתירה קריטית: ${c.message}
-   טיפול מוצע: ${JSON.stringify(c.treatment).substring(0, 100)}
-   אזהרה: ${JSON.stringify(c.warning).substring(0, 100)}
-   המלצה: אל תשתמש בנקודות ${c.points.join(', ')} - קיימת אזהרת בטיחות!`;
-                    }).join('\n\n');
-                    
+                    const conflictText = conflicts.map(c => `🚨 סתירה קריטית: ${c.message}\n   טיפול מוצע: ${JSON.stringify(c.treatment).substring(0, 100)}\n   אזהרה: ${JSON.stringify(c.warning).substring(0, 100)}\n   המלצה: אל תשתמש בנקודות ${c.points.join(', ')} - קיימת אזהרת בטיחות!`).join('\n\n');
                     contextParts.push(`
 ════════════════════════════════════════════════════════
 🚨 זוהו סתירות בין טיפול מוצע לאזהרות בטיחות! 🚨
@@ -2084,62 +1788,34 @@ ${conflictText}
                 }
                 
                 const groupedByTable = {};
-                results.allResults.forEach(r => {
-                    const table = r._source_table;
-                    if (!groupedByTable[table]) groupedByTable[table] = [];
-                    groupedByTable[table].push(r);
-                });
+                results.allResults.forEach(r => { const table = r._source_table; if (!groupedByTable[table]) groupedByTable[table] = []; groupedByTable[table].push(r); });
                 
                 if (groupedByTable['diagnostic_rag_pulse_patterns_20260129']) {
                     const pulses = groupedByTable['diagnostic_rag_pulse_patterns_20260129'].slice(0, 5);
-                    contextParts.push(`ממצאי דופק: ${pulses.map(p => 
-                        `${p.pulse_name_he} (${p.pulse_name_en}) - ${p.clinical_significance}`
-                    ).join('; ')}`);
+                    contextParts.push(`ממצאי דופק: ${pulses.map(p => `${p.pulse_name_he} (${p.pulse_name_en}) - ${p.clinical_significance}`).join('; ')}`);
                 }
-                
                 if (groupedByTable['diagnostic_rag_tongue_findings_20260129']) {
                     const tongues = groupedByTable['diagnostic_rag_tongue_findings_20260129'].slice(0, 5);
-                    contextParts.push(`ממצאי לשון: ${tongues.map(t => 
-                        `${t.finding_he} (${t.finding_en}) - ${t.clinical_significance}`
-                    ).join('; ')}`);
+                    contextParts.push(`ממצאי לשון: ${tongues.map(t => `${t.finding_he} (${t.finding_en}) - ${t.clinical_significance}`).join('; ')}`);
                 }
-                
                 if (groupedByTable['dr_roni_acupuncture_points']) {
                     const points = groupedByTable['dr_roni_acupuncture_points'].slice(0, 10);
-                    const safePoints = conflicts.length > 0 
-                        ? points.filter(p => {
-                            const pointCodes = extractPointCodes(p);
-                            return !conflicts.some(c => c.points.some(cp => pointCodes.includes(cp)));
-                        })
-                        : points;
-                    
-                    if (safePoints.length > 0) {
-                        contextParts.push(`נקודות דיקור של ד"ר רוני: ${safePoints.map(p => 
-                            `${p.chinese_name} (${p.english_name}) - ${p.description || ''}`
-                        ).join('; ')}`);
-                    }
+                    const safePoints = conflicts.length > 0 ? points.filter(p => { const pointCodes = extractPointCodes(p); return !conflicts.some(c => c.points.some(cp => pointCodes.includes(cp))); }) : points;
+                    if (safePoints.length > 0) contextParts.push(`נקודות דיקור של ד"ר רוני: ${safePoints.map(p => `${p.chinese_name} (${p.english_name}) - ${p.description || ''}`).join('; ')}`);
                 }
-                
                 if (groupedByTable['bible_rag_zangfu_syndromes_20260129']) {
                     const syndromes = groupedByTable['bible_rag_zangfu_syndromes_20260129'].slice(0, 5);
-                    contextParts.push(`תסמונות: ${syndromes.map(s => 
-                        `${s.name_he} - ${s.symptoms_he || ''}`
-                    ).join('; ')}`);
+                    contextParts.push(`תסמונות: ${syndromes.map(s => `${s.name_he} - ${s.symptoms_he || ''}`).join('; ')}`);
                 }
-                
                 if (groupedByTable['qa_knowledge_base']) {
                     const qaItems = groupedByTable['qa_knowledge_base'].slice(0, 3);
-                    contextParts.push(`מידע חינוכי: ${qaItems.map(q => 
-                        `שאלה: ${q.question_hebrew} | תשובה: ${(q.answer_hebrew || '').substring(0, 150)}...`
-                    ).join('\n')}`);
+                    contextParts.push(`מידע חינוכי: ${qaItems.map(q => `שאלה: ${q.question_hebrew} | תשובה: ${(q.answer_hebrew || '').substring(0, 150)}...`).join('\n')}`);
                 }
                 
                 const detailInstruction = reportDetail === 'full'
                     ? 'ספק דוח מקיף ומפורט בעברית עם פרוטוקולי טיפול, תוך שילוב של כל הממצאים האבחנתיים.'
                     : 'ספק סיכום תמציתי בעברית עם נקודות מפתח בלבד.';
                 
-                // ============================================================================
-                // ============================================================================
                 return `אתה עוזר קליני מומחה ברפואה סינית. חובה לעקוב אחר חוקים אלה בקפדנות:
 
 🚨 חוקי בטיחות קריטיים (לא ניתן להתעלם!):
@@ -2190,55 +1866,27 @@ ${detailInstruction}
 ענה בעברית (מימין לשמאל) עם ניתוח רפואה סינית משולב.`;
             }
             
-            const formulaContext = results.formulas && results.formulas.length > 0
-                ? `Relevant formulas: ${JSON.stringify(results.formulas.slice(0, 10))}`
-                : 'No formulas found';
-            const acupointContext = results.acupoints && results.acupoints.length > 0
-                ? `Relevant acupoints: ${results.acupoints.map(p => `${p.code} (${p.english_name})`).join(', ')}`
-                : '';
-            const detailInstruction = reportDetail === 'full'
-                ? 'Provide COMPREHENSIVE and DETAILED Hebrew report with treatment protocols.'
-                : 'Provide CONCISE Hebrew summary with key points only.';
-
-            return `You are a TCM expert. Answer in HEBREW (right-to-left). Queries: "${queries}"
-
-${formulaContext}
-${acupointContext}
-
-${detailInstruction}
-
-Respond in Hebrew with TCM analysis.`;
+            const formulaContext = results.formulas && results.formulas.length > 0 ? `Relevant formulas: ${JSON.stringify(results.formulas.slice(0, 10))}` : 'No formulas found';
+            const acupointContext = results.acupoints && results.acupoints.length > 0 ? `Relevant acupoints: ${results.acupoints.map(p => `${p.code} (${p.english_name})`).join(', ')}` : '';
+            const detailInstruction = reportDetail === 'full' ? 'Provide COMPREHENSIVE and DETAILED Hebrew report with treatment protocols.' : 'Provide CONCISE Hebrew summary with key points only.';
+            return `You are a TCM expert. Answer in HEBREW (right-to-left). Queries: "${queries}"\n\n${formulaContext}\n${acupointContext}\n\n${detailInstruction}\n\nRespond in Hebrew with TCM analysis.`;
         }
 
         async function triggerFallbackSearch(queries) {
             document.getElementById('fallbackBrowser').classList.remove('hidden');
             const resultsDiv = document.getElementById('fallbackResults');
             resultsDiv.innerHTML = '<div class="text-center p-4"><div class="animate-spin text-2xl">🔄</div></div>';
-
             const prompt = `Search for Hebrew/CM medical info: ${queries.join(', ')}. Respond in HEBREW.`;
-
             try {
-                // 🔒 SECURE: Call Edge Function (API key stored in Supabase Secrets)
                 const response = await fetch(EDGE_FUNCTION_URL, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        max_tokens: 1000
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, max_tokens: 1000 })
                 });
-
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
+                if (data.error) throw new Error(data.error);
                 const aiResponse = data.content || data.text || 'לא התקבלה תשובה מהשרת';
                 resultsDiv.innerHTML = `<div class="prose max-w-none text-right" dir="rtl">${aiResponse}</div>`;
-                
                 const outputTokens = data.usage?.output_tokens || Math.ceil(aiResponse.length / 4);
                 updateMetrics(250, outputTokens);
             } catch (error) {
@@ -2247,9 +1895,7 @@ Respond in Hebrew with TCM analysis.`;
         }
 
         function toggleReportDetail() {
-            if (currentQueries.length > 0 && confirm('ליצור מחדש תוצאות עם רמת פירוט חדשה?')) {
-                performMultiQuery();
-            }
+            if (currentQueries.length > 0 && confirm('ליצור מחדש תוצאות עם רמת פירוט חדשה?')) performMultiQuery();
         }
 
         function printReport() { window.print(); }
@@ -2271,66 +1917,52 @@ Respond in Hebrew with TCM analysis.`;
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
             modal.onclick = () => modal.remove();
-            modal.innerHTML = `
-                <div class="max-w-4xl max-h-screen p-4">
-                    <img src="${url}" alt="${filename}" class="max-w-full max-h-screen object-contain">
-                    <p class="text-white text-center mt-4">${filename}</p>
-                </div>
-            `;
+            modal.innerHTML = `<div class="max-w-4xl max-h-screen p-4"><img src="${url}" alt="${filename}" class="max-w-full max-h-screen object-contain"><p class="text-white text-center mt-4">${filename}</p></div>`;
             document.body.appendChild(modal);
         }
 
         async function init() {
             updateStatus('מתחבר ל-Supabase...');
             startSessionTimer();
-            
             try {
                 await loadRAGData();
-                // Don't auto-load questions - they load when user expands Module 1 panel
-                // await loadModule1Questions('all', 0);
-                // await loadModule2Questions(); // ← COMMENTED OUT: Function now loads from external module questions-589.js
                 updateStatus('✅ המערכת מוכנה! לחץ על "411 שאלות" להצגת שאלות');
             } catch (error) {
                 console.error('Database connection error:', error);
                 updateStatus('⚠️ עובד במצב לא מקוון - שאלון יין-יאנג זמין');
             }
-            
             try {
-                await createCSVIndicators();  // Load table indicators from database
+                await createCSVIndicators();
                 createQuickQuestions();
                 updateMetrics();
             } catch (error) {
                 console.error('UI initialization error:', error);
             }
-
-            
-            // Load modular components
             try {
                 const componentLoader = new ComponentLoader(supabaseClient);
                 await componentLoader.loadPanelComponents('left-panel', 'dynamicComponents');
             } catch (error) {
                 console.error('Component loading error:', error);
             }
-
+            // ── P2: Load patient clinical context from CRM bridge ────
+            try {
+                await loadPatientContext();
+                await loadSafetyRules(); // Pre-warm cache
+            } catch (error) {
+                console.warn('⚠️ Patient context load failed (non-critical):', error.message);
+            }
         }
 
         async function loadRAGData() {
-            // NOTE: csv_priorities table removed - now using search_config in createCSVIndicators()
-            
             const { data: acupoints } = await supabaseClient.from('treatment_rag_acupoints_gallery_20260129').select('*');
             if (acupoints) acupointsData = acupoints;
-            
             const { data: images } = await supabaseClient.from('reference_rag_body_images_20260129').select('*');
             if (images) imagesData = images;
         }
 
         function updateStatus(message) {
             const statusElement = document.getElementById('statusText');
-            if (statusElement) {
-                statusElement.textContent = message;
-            } else {
-                console.log('Status:', message);
-            }
+            if (statusElement) { statusElement.textContent = message; } else { console.log('Status:', message); }
         }
 
         window.addEventListener('DOMContentLoaded', init);
