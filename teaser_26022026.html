@@ -135,9 +135,9 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .tc-cus{background:rgba(201,168,76,0.1);color:var(--jade);border:1.5px solid rgba(13,92,69,0.2)!important;border:none;}
 
 /* ── S3 PIZZA ── */
-#s3{background:var(--bg);padding:11px;}
-.s3-in{max-width:980px;margin:0 auto;height:100%;
-  display:grid;grid-template-columns:280px 1fr;gap:12px;}
+#s3{background:var(--bg);padding:11px;overflow-y:auto;}
+.s3-in{max-width:980px;margin:0 auto;min-height:100%;
+  display:grid;grid-template-columns:280px 1fr;gap:12px;padding-bottom:16px;}
 @media(max-width:700px){.s3-in{grid-template-columns:1fr;overflow:auto;}}
 .pizza-steps{display:flex;flex-direction:column;gap:7px;}
 .sc{background:var(--card);border-radius:11px;padding:11px 14px;
@@ -733,9 +733,15 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         </div>
         <div class="trial-box">🎁 <strong>14 יום ניסיון חינם</strong> — ללא חיוב עד לאחר הניסיון</div>
         <input class="linp" id="loginEmail" placeholder="your@email.com" type="email">
-        <input class="linp" id="loginPass" placeholder="סיסמה (8+ תווים)" type="password" oninput="checkPass()">
+        <div style="position:relative;">
+          <input class="linp" id="loginPass" placeholder="סיסמה (8+ תווים)" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
         <div class="pw-strength" id="pwStrength"></div>
-        <input class="linp" id="loginPass2" placeholder="אמת סיסמה" type="password" oninput="checkPass()">
+        <div style="position:relative;">
+          <input class="linp" id="loginPass2" placeholder="אמת סיסמה" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass2',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
         <div class="pw-strength" id="pwMatch"></div>
         <div class="login-note">לאחר תשלום — פרטים אלו ישמשו לכניסה ל-CRM</div>
         <button class="login-btn" onclick="demoLogin()">☯ צור חשבון וכנס ←</button>
@@ -1001,6 +1007,12 @@ function waGroup(){
 function demoPayment(){
   alert('✅ DEMO\nבשלב P3 כאן יהיה חיבור אמיתי ל-Stripe.\nבינתיים — צור חשבון + שלח WhatsApp לאישור ידני.');
 }
+function togglePass(id, icon){
+  const el = document.getElementById(id);
+  if(el.type === 'password'){ el.type = 'text'; icon.textContent = '🙈'; }
+  else { el.type = 'password'; icon.textContent = '👁️'; }
+}
+
 function demoLogin(){
   const e=document.getElementById('loginEmail').value;
   const p=document.getElementById('loginPass').value;
