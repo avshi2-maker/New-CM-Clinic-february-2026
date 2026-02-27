@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>☯ MERIDIAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Heebo:wght@300;400;600;700;900&family=Abril+Fatface&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --jade:#0d5c45;--jade2:#1a8a65;--gold:#c9a84c;--gold2:#e8c96e;
+  --bg:#e8f5e9;--cream:#f0ece0;--dark:#0a1a0a;
+  --red:#e74c3c;--green:#27ae60;
+  --card:rgba(255,255,255,0.94);--shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:var(--bg);}
+
+/* NAVBAR */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:46px;
+  background:rgba(13,92,69,0.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(201,168,76,0.2);
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
+.nav-brand{font-family:'Cinzel',serif;font-size:14px;letter-spacing:3px;color:var(--gold2);}
+.nav-r{display:flex;align-items:center;gap:12px;}
+.nav-step{font-size:10px;letter-spacing:1px;color:rgba(201,168,76,0.55);}
+.nav-clock{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--gold2);
+  background:rgba(0,0,0,0.25);padding:3px 10px;border-radius:6px;letter-spacing:2px;}
+
+/* SCREENS */
+.screen{display:none;position:fixed;top:46px;left:0;right:0;bottom:0;overflow:hidden;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ── S0 TEASER ── */
+#s0{
+  background-image:url('https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/sign/images/clinickey.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYzMwY2Y5MC1kYTY5LTRhNzgtYTAyYi1kNmZkNTA2NDc3NjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvY2xpbmlja2V5LnBuZyIsImlhdCI6MTc3MjExMzU3NSwiZXhwIjozMzQ4OTEzNTc1fQ.ljErkcsh4NNeDiFnuWmaLa_IeWxKY0KGy0qYE-zo10o'),
+    linear-gradient(135deg,#0a2e1a,#0d5c45 50%,#0a1a0a);
+  background-size:cover;background-position:center;}
+#s0::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(10,14,10,0.45),rgba(10,14,10,0.78));z-index:0;}
+.s0-body{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;height:100%;padding:20px;text-align:center;}
+.s0-eye{font-family:'Cinzel',serif;font-size:10px;letter-spacing:5px;color:var(--gold2);margin-bottom:10px;}
+.s0-ttl{font-family:'Abril Fatface',serif;font-size:clamp(30px,6vw,56px);
+  color:var(--cream);line-height:1.1;margin-bottom:8px;text-shadow:0 3px 16px rgba(0,0,0,0.5);}
+.s0-sub{font-size:clamp(12px,2vw,15px);color:rgba(240,236,224,0.82);
+  margin-bottom:18px;line-height:1.65;max-width:520px;}
+.s0-badges{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:22px;}
+.s0-badge{background:rgba(201,168,76,0.14);border:1px solid rgba(201,168,76,0.3);
+  border-radius:50px;padding:4px 13px;font-size:11px;color:var(--gold2);font-weight:600;}
+.s0-btn{padding:14px 38px;border-radius:50px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);
+  font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:2px;
+  box-shadow:0 6px 24px rgba(13,92,69,0.5);transition:all .3s;}
+.s0-btn:hover{transform:translateY(-2px);}
+
+/* ── S1 REGISTER + WA ── */
+#s1{background:var(--bg);padding:14px;}
+.s1-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  height:100%;max-width:860px;margin:0 auto;}
+@media(max-width:620px){.s1-grid{grid-template-columns:1fr;overflow:auto;}}
+
+.card{background:var(--card);border-radius:14px;padding:16px 18px;
+  box-shadow:var(--shadow);border:1px solid rgba(13,92,69,0.09);
+  display:flex;flex-direction:column;overflow:hidden;}
+.c-ttl{font-family:'Cinzel',serif;font-size:13px;letter-spacing:1.5px;color:var(--jade);margin-bottom:3px;}
+.c-sub{font-size:11px;color:#777;margin-bottom:10px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;}
+.field{display:flex;flex-direction:column;gap:3px;}
+.field.full{grid-column:1/-1;}
+.flbl{font-size:9px;font-weight:700;letter-spacing:1px;color:#555;text-transform:uppercase;}
+.finp,.fsel{padding:8px 10px;border-radius:7px;font-size:13px;font-family:'Heebo',sans-serif;
+  border:1.5px solid rgba(0,0,0,0.1);background:white;color:#1a2e1a;outline:none;transition:border-color .2s;}
+.finp:focus,.fsel:focus{border-color:var(--jade2);}
+.ferr{font-size:10px;color:var(--red);display:none;}
+.ferr.show{display:block;}
+
+.wa-card{background:var(--card);border-radius:14px;padding:16px 18px;
+  box-shadow:var(--shadow);border:1px solid rgba(13,92,69,0.09);
+  display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+.wa-icon{font-size:44px;}
+.wa-ttl{font-family:'Cinzel',serif;font-size:14px;color:var(--jade);}
+.wa-desc{font-size:11px;color:#666;line-height:1.65;max-width:240px;}
+.wa-prev{background:#f0faf0;border:1px solid rgba(37,211,102,0.25);
+  border-radius:10px;padding:10px 13px;font-size:11px;color:#333;
+  line-height:1.85;text-align:right;width:100%;white-space:pre-wrap;min-height:90px;flex:1;}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:12px;border-radius:10px;border:none;cursor:pointer;
+  background:#25d366;color:white;font-family:'Cinzel',serif;
+  font-size:12px;font-weight:700;letter-spacing:1px;
+  box-shadow:0 4px 14px rgba(37,211,102,0.35);transition:all .2s;}
+.wa-btn:hover{transform:translateY(-1px);}
+.wa-btn:disabled{background:#bbb;box-shadow:none;cursor:not-allowed;transform:none;}
+.cont-btn{width:100%;padding:12px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);
+  font-family:'Cinzel',serif;font-size:12px;font-weight:700;letter-spacing:1.5px;
+  box-shadow:0 4px 14px rgba(13,92,69,0.3);display:none;transition:all .2s;}
+.cont-btn.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+.wa-hint{font-size:10px;color:#bbb;}
+
+/* ── S2 TIER ── */
+#s2{background:var(--bg);padding:12px;overflow-y:auto;}
+.s2-in{max-width:1100px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:10px;padding-bottom:16px;}
+.s2-hdr{text-align:center;}
+.s2-ttl{font-family:'Cinzel',serif;font-size:15px;color:var(--jade);letter-spacing:2px;}
+.s2-sub{font-size:11px;color:#666;margin-top:2px;}
+.tier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:800px){.tier-grid{grid-template-columns:1fr;overflow:auto;}}
+.tc.group{border-color:rgba(88,44,180,0.35);background:linear-gradient(135deg,rgba(255,255,255,0.96),rgba(245,240,255,0.96));}
+.tc-group-img{width:110px;height:110px;object-fit:cover;object-position:center;border-radius:50%;margin:0 auto 10px;display:block;border:3px solid rgba(88,44,180,0.3);}
+.tc-call{background:linear-gradient(135deg,#5c2ca8,#7b4fc4);color:white;
+  border:none;border-radius:9px;padding:10px;width:100%;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:1px;
+  box-shadow:0 3px 12px rgba(88,44,180,0.35);transition:all .2s;margin-top:auto;}
+.tc-call:hover{transform:translateY(-2px);}
+.wa-group-btn{background:#25d366;color:white;border:none;border-radius:9px;
+  padding:8px;width:100%;cursor:pointer;font-family:'Heebo',sans-serif;
+  font-size:11px;font-weight:700;margin-top:5px;transition:all .2s;}
+.tc{background:var(--card);border-radius:14px;padding:16px;border:2px solid rgba(0,0,0,0.07);
+  cursor:pointer;transition:all .2s;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.tc:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,0.1);}
+.tc.feat{border-color:rgba(201,168,76,0.38);background:linear-gradient(135deg,rgba(255,255,255,0.96),rgba(253,248,218,0.96));}
+.tc-fbadge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--dark);font-size:9px;font-weight:800;letter-spacing:2px;
+  padding:2px 11px;border-radius:50px;margin-bottom:6px;}
+.tc-ic{font-size:26px;margin-bottom:5px;}
+.tc-nm{font-family:'Cinzel',serif;font-size:14px;color:var(--jade);}
+.tc-pr{font-family:'Abril Fatface',serif;font-size:30px;color:#0a1a0a;line-height:1.1;margin:3px 0;}
+.tc-pr span{font-family:'Heebo',sans-serif;font-size:11px;color:#555;font-weight:400;}
+.tc-feats{flex:1;font-size:12px;color:#222;line-height:2.2;margin:7px 0;font-weight:500;}
+.tc-feats div::before{content:'✓ ';color:var(--jade);font-weight:700;}
+.tc-btn{width:100%;padding:10px;border-radius:9px;border:none;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;transition:all .2s;}
+.tc-std{background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);box-shadow:0 3px 10px rgba(13,92,69,0.28);}
+.tc-cus{background:rgba(201,168,76,0.1);color:var(--jade);border:1.5px solid rgba(13,92,69,0.2)!important;border:none;}
+
+/* ── S3 PIZZA ── */
+#s3{background:var(--bg);padding:11px;overflow-y:auto;}
+.s3-in{max-width:980px;margin:0 auto;min-height:100%;
+  display:grid;grid-template-columns:280px 1fr;gap:12px;padding-bottom:16px;}
+@media(max-width:700px){.s3-in{grid-template-columns:1fr;overflow:auto;}}
+.pizza-steps{display:flex;flex-direction:column;gap:7px;}
+.sc{background:var(--card);border-radius:11px;padding:11px 14px;
+  border:1.5px solid rgba(0,0,0,0.07);}
+.sh{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.sn{width:18px;height:18px;border-radius:50%;background:var(--jade);
+  color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.st{font-family:'Cinzel',serif;font-size:10px;color:var(--jade);}
+.tok-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.to{padding:8px 3px;border-radius:7px;border:2px solid rgba(0,0,0,0.07);
+  text-align:center;cursor:pointer;transition:all .2s;background:white;}
+.to:hover{border-color:rgba(13,92,69,0.3);}
+.to.sel{border-color:var(--jade);background:rgba(13,92,69,0.07);}
+.to .tn{font-size:11px;font-weight:800;color:#333;}
+.to .tp{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--jade);font-weight:700;}
+.to .ts{font-size:10px;color:#777;}
+.add-row{display:flex;flex-direction:column;gap:5px;}
+.at{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;background:white;border-radius:8px;
+  border:2px solid rgba(0,0,0,0.07);cursor:pointer;transition:all .2s;}
+.at:hover{border-color:rgba(13,92,69,0.25);}
+.at.on{border-color:var(--jade2);background:rgba(13,92,69,0.05);}
+.at-l{display:flex;align-items:center;gap:7px;}
+.at-ic{font-size:18px;}
+.at-nm{font-size:12px;font-weight:700;color:#333;}
+.at-pr{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--jade);font-weight:700;}
+.sw{width:32px;height:17px;border-radius:9px;background:#ddd;position:relative;transition:background .2s;flex-shrink:0;}
+.sw.on{background:var(--jade2);}
+.sw::after{content:'';position:absolute;left:2px;top:2px;width:13px;height:13px;
+  border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.sw.on::after{transform:translateX(15px);}
+
+/* ── VALUE TABLE (right side) ── */
+.val-col{display:flex;flex-direction:column;gap:0;overflow:hidden;}
+.val-box{background:var(--card);border-radius:14px;padding:14px 16px;
+  box-shadow:var(--shadow);border:2px solid rgba(13,92,69,0.1);
+  display:flex;flex-direction:column;height:100%;}
+.val-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.val-title{font-family:'Cinzel',serif;font-size:12px;color:var(--jade);letter-spacing:1px;}
+.val-plan-badge{font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+  background:rgba(13,92,69,0.1);color:var(--jade);border:1px solid rgba(13,92,69,0.2);
+  border-radius:50px;padding:3px 12px;transition:all .3s;}
+
+/* Table */
+.val-table{width:100%;border-collapse:collapse;flex:1;}
+.val-table thead tr{background:rgba(13,92,69,0.07);}
+.val-table th{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;
+  color:var(--jade);padding:7px 8px;text-align:right;border-bottom:2px solid rgba(13,92,69,0.1);}
+.val-table th:last-child{text-align:left;color:#b7770d;}
+.val-row{border-bottom:1px solid rgba(0,0,0,0.05);transition:all .3s;}
+.val-row.active{background:rgba(13,92,69,0.04);}
+.val-row.inactive{opacity:0.35;}
+.val-row td{padding:9px 8px;vertical-align:middle;}
+.val-feat{display:flex;align-items:center;gap:7px;}
+.val-icon{font-size:18px;flex-shrink:0;}
+.val-fname{font-size:12px;font-weight:700;color:#0a1a0a;}
+.val-fdesc{font-size:10px;color:#555;margin-top:1px;}
+.val-num{font-family:'Abril Fatface',serif;font-size:20px;color:var(--jade);line-height:1;}
+.val-unit{font-size:10px;color:#444;margin-top:1px;}
+.val-num2{font-family:'Abril Fatface',serif;font-size:20px;color:#0a1a0a;line-height:1;}
+.val-price-cell{text-align:left;}
+.val-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--jade);}
+.val-price.inactive{color:#aaa;}
+.val-add-badge{font-size:9px;background:rgba(13,92,69,0.08);color:var(--jade);
+  border:1px solid rgba(13,92,69,0.2);border-radius:50px;padding:2px 8px;white-space:nowrap;}
+.val-add-badge.off{background:rgba(0,0,0,0.04);color:#aaa;border-color:rgba(0,0,0,0.1);}
+
+/* Total row */
+.val-total-row{background:linear-gradient(135deg,rgba(13,92,69,0.08),rgba(13,92,69,0.04));
+  border-top:2px solid rgba(13,92,69,0.15)!important;}
+.val-total-row td{padding:11px 8px;}
+.val-patients-row{background:linear-gradient(135deg,rgba(201,168,76,0.07),rgba(201,168,76,0.03));
+  border-top:1px solid rgba(201,168,76,0.2)!important;}
+.val-patients-row td{padding:9px 8px;}
+.calc-chip{display:inline-flex;align-items:center;gap:4px;
+  background:rgba(13,92,69,0.09);border:1px solid rgba(13,92,69,0.2);
+  border-radius:50px;padding:2px 10px;font-size:10px;color:var(--jade);font-weight:700;}
+.val-total-label{font-family:'Cinzel',serif;font-size:11px;color:var(--jade);font-weight:700;}
+.val-total-val{font-family:'Abril Fatface',serif;font-size:28px;color:var(--jade);}
+
+/* CTA row */
+.val-cta-row{display:flex;gap:8px;margin-top:12px;align-items:center;}
+.val-cta{flex:1;padding:11px;border-radius:9px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;
+  box-shadow:0 4px 12px rgba(13,92,69,0.3);transition:all .2s;}
+.val-cta:hover{transform:translateY(-1px);}
+.val-back{padding:11px 16px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.1);
+  background:transparent;cursor:pointer;font-size:11px;color:#777;font-family:'Heebo',sans-serif;}
+
+/* Trans warning */
+.trans-warn{font-size:11px;color:#7a3c00;background:rgba(231,76,60,0.06);
+  border:1.5px solid rgba(231,76,60,0.25);border-radius:8px;
+  padding:8px 12px;margin-top:6px;display:none;line-height:1.6;}
+.trans-warn.show{display:block;animation:fadeUp .3s ease both;}
+.warn-pulse{display:inline-block;animation:pulse 1.5s ease-in-out infinite;font-size:14px;margin-left:4px;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.7}}
+
+/* ── S4 PAYMENT + LOGIN ── */
+#s4{background:var(--bg);padding:12px;}
+.s4-in{max-width:800px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:10px;}
+.s4-hdr{text-align:center;}
+.s4-ttl{font-family:'Cinzel',serif;font-size:15px;color:var(--jade);letter-spacing:2px;}
+.s4-sub{font-size:11px;color:#555;margin-top:2px;}
+.s4-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;}
+@media(max-width:540px){.s4-grid{grid-template-columns:1fr;overflow:auto;}}
+#s4 .s4-in{overflow-y:auto;padding-bottom:16px;}
+
+.pay-card{background:var(--card);border-radius:14px;padding:16px;
+  box-shadow:var(--shadow);border:1.5px solid rgba(13,92,69,0.09);
+  display:flex;flex-direction:column;gap:9px;}
+.pay-ttl{font-family:'Cinzel',serif;font-size:12px;color:var(--jade);
+  display:flex;align-items:center;gap:8px;}
+.demo-badge{background:rgba(243,156,18,0.14);border:1px solid rgba(243,156,18,0.35);
+  border-radius:50px;padding:2px 9px;font-size:9px;color:#b7770d;font-weight:700;letter-spacing:1px;}
+.plan-box{background:rgba(13,92,69,0.06);border:1px solid rgba(13,92,69,0.13);
+  border-radius:9px;padding:9px 12px;}
+.plan-nm{font-family:'Cinzel',serif;font-size:11px;color:var(--jade);}
+.plan-pr{font-family:'Abril Fatface',serif;font-size:24px;color:#1a2e1a;}
+.plan-pr span{font-family:'Heebo',sans-serif;font-size:11px;color:#777;font-weight:400;}
+.pinp{padding:8px 10px;border-radius:7px;font-size:13px;
+  border:1.5px solid rgba(0,0,0,0.1);background:white;color:#1a2e1a;
+  font-family:'Heebo',sans-serif;outline:none;direction:ltr;text-align:left;width:100%;}
+.pinp:focus{border-color:var(--jade2);}
+.p2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.demo-note{font-size:10px;color:#b7770d;text-align:center;
+  background:rgba(243,156,18,0.07);border-radius:6px;padding:5px;}
+.pay-btn{width:100%;padding:11px;border-radius:9px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#2d8a3e,#27ae60);color:white;
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;
+  box-shadow:0 4px 12px rgba(39,174,96,0.35);transition:all .2s;}
+.pay-btn:hover{transform:translateY(-1px);}
+.secure{display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;color:#999;}
+
+.login-card{background:var(--card);border-radius:14px;padding:16px;
+  box-shadow:var(--shadow);border:1.5px solid rgba(13,92,69,0.09);
+  display:flex;flex-direction:column;gap:9px;}
+.login-ttl{font-family:'Cinzel',serif;font-size:12px;color:var(--jade);}
+.login-wel{background:linear-gradient(135deg,rgba(13,92,69,0.08),rgba(13,92,69,0.04));
+  border-radius:9px;padding:11px;text-align:center;}
+.login-av{font-size:32px;margin-bottom:3px;}
+.login-nm{font-family:'Cinzel',serif;font-size:13px;color:var(--jade);}
+.login-pl{font-size:10px;color:#777;margin-top:1px;}
+.trial-box{background:linear-gradient(135deg,rgba(201,168,76,0.1),rgba(201,168,76,0.05));
+  border:1px solid rgba(201,168,76,0.28);border-radius:8px;
+  padding:7px 11px;font-size:11px;color:#7a5520;text-align:center;}
+.linp{padding:8px 10px;border-radius:7px;font-size:13px;
+  border:1.5px solid rgba(0,0,0,0.1);background:white;color:#1a2e1a;
+  font-family:'Heebo',sans-serif;outline:none;direction:ltr;text-align:left;width:100%;}
+.linp:focus{border-color:var(--jade2);}
+.linp.valid{border-color:#27ae60!important;background:rgba(39,174,96,0.07)!important;}
+.linp.error{border-color:var(--red)!important;background:rgba(231,76,60,0.05)!important;}
+.pw-strength{font-size:10px;margin-top:2px;display:none;}
+.pw-strength.show{display:flex;align-items:center;gap:5px;}
+.pw-ok{color:#27ae60;} .pw-err{color:var(--red);}
+.login-note{font-size:10px;color:#999;text-align:center;
+  background:rgba(13,92,69,0.04);border-radius:6px;padding:5px;}
+.login-btn{width:100%;padding:11px;border-radius:9px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);
+  font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;
+  box-shadow:0 4px 12px rgba(13,92,69,0.3);transition:all .2s;}
+.login-btn:hover{transform:translateY(-1px);}
+
+.back-btn{background:transparent;border:1.5px solid rgba(0,0,0,0.1);
+  border-radius:7px;padding:6px 14px;cursor:pointer;
+  font-size:11px;color:#777;font-family:'Heebo',sans-serif;transition:all .2s;}
+.back-btn:hover{border-color:rgba(0,0,0,0.22);color:#333;}
+
+@keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="nav">
+  <div class="nav-brand">☯ MERIDIAN</div>
+  <div class="nav-r">
+    <div class="nav-step" id="navStep">כניסה ראשונה</div>
+    <div class="nav-clock" id="navClock">00:00:00</div>
+  </div>
+</div>
+
+<!-- ══ S0: TEASER ══ -->
+<div id="s0" class="screen active">
+  <div class="s0-body">
+    <div class="s0-eye">☯ MERIDIAN — Clinical Intelligence TCM</div>
+    <div class="s0-ttl">העוזר הקליני<br>שמחכה לך</div>
+    <div class="s0-sub">יותר מ-1,000 שאלות TCM · AI קליני בעברית<br>הקלטה ותמלול אוטומטי · ניהול מטופלים חכם</div>
+    <div class="s0-badges">
+      <div class="s0-badge">☯ 1,000+ שאלות</div>
+      <div class="s0-badge">🎙️ תמלול עברית</div>
+      <div class="s0-badge">📱 מנייד ודסקטופ</div>
+      <div class="s0-badge">🔒 מאובטח</div>
+    </div>
+    <button class="s0-btn" onclick="go('s1')">🚀 הצטרף ל-MERIDIAN</button>
+  </div>
+</div>
+
+<!-- ══ S1: REGISTER + WA ══ -->
+<div id="s1" class="screen">
+  <div class="s1-grid">
+
+    <!-- Form -->
+    <div class="card">
+      <div class="c-ttl">📋 פרטי הרשמה</div>
+      <div class="c-sub">מלא ושלח WhatsApp — ואז המשך לבחירת תוכנית</div>
+      <div class="fg2">
+        <div class="field">
+          <label class="flbl">שם פרטי *</label>
+          <input class="finp" id="f_first" placeholder="ישראל" oninput="upWA()">
+          <div class="ferr" id="e_first">שדה חובה</div>
+        </div>
+        <div class="field">
+          <label class="flbl">שם משפחה *</label>
+          <input class="finp" id="f_last" placeholder="כהן" oninput="upWA()">
+          <div class="ferr" id="e_last">שדה חובה</div>
+        </div>
+        <div class="field full">
+          <label class="flbl">כותרת מקצועית *</label>
+          <select class="fsel" id="f_title" onchange="upWA()">
+            <option value="">בחר...</option>
+            <option>מטפל/ת ברפואה סינית</option>
+            <option>דיקור סיני מוסמך</option>
+            <option>נטורופת</option>
+            <option>רופא/ה ורפואה משלימה</option>
+            <option>מטפל/ת הוליסטי</option>
+            <option>אחר</option>
+          </select>
+          <div class="ferr" id="e_title">שדה חובה</div>
+        </div>
+        <div class="field full">
+          <label class="flbl">שם הקליניקה</label>
+          <input class="finp" id="f_clinic" placeholder="קליניקת שלום..." oninput="upWA()">
+        </div>
+        <div class="field">
+          <label class="flbl">אימייל *</label>
+          <input class="finp" id="f_email" type="email" placeholder="you@clinic.com" dir="ltr" oninput="upWA()">
+          <div class="ferr" id="e_email">אימייל לא תקין</div>
+        </div>
+        <div class="field">
+          <label class="flbl">WhatsApp *</label>
+          <input class="finp" id="f_wa" type="tel" placeholder="05X-XXXXXXX" dir="ltr" oninput="upWA()">
+          <div class="ferr" id="e_wa">שדה חובה</div>
+        </div>
+        <div class="field">
+          <label class="flbl">עיר</label>
+          <input class="finp" id="f_city" placeholder="תל אביב" oninput="upWA()">
+        </div>
+        <div class="field">
+          <label class="flbl">מטפלים בקליניקה</label>
+          <select class="fsel" id="f_size" onchange="upWA()">
+            <option value="1">מטפל יחיד</option>
+            <option value="2-3">2-3</option>
+            <option value="4-10">4-10</option>
+            <option value="10+">10+</option>
+          </select>
+        </div>
+      </div>
+      <button class="back-btn" onclick="go('s0')" style="align-self:flex-start;margin-top:auto;">← חזור</button>
+    </div>
+
+    <!-- WA Card -->
+    <div class="wa-card">
+      <div class="wa-icon">💬</div>
+      <div class="wa-ttl">שלח לי WhatsApp ← קבל אישור</div>
+      <div class="wa-desc">מלא הטופס → הצג תצוגה מקדימה → שלח WhatsApp לאבשי → כפתור "המשך" יפתח</div>
+      <div class="wa-prev" id="waPreview">מלא את הטופס משמאל...</div>
+      <button class="wa-btn" id="waSendBtn" onclick="sendWA()" disabled>
+        💬 שלח WhatsApp לאישור
+      </button>
+      <button class="cont-btn" id="contBtn" onclick="go('s2')">
+        המשך לבחירת תוכנית ←
+      </button>
+      <div class="wa-hint">כפתור "המשך" יפתח לאחר שליחת WhatsApp</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ S2: TIER ══ -->
+<div id="s2" class="screen">
+  <div class="s2-in">
+    <div class="s2-hdr">
+      <div class="s2-ttl" id="s2ttl">בחר תוכנית MERIDIAN</div>
+      <div class="s2-sub">מחיר קבוע או בנה תוכנית מותאמת אישית</div>
+    </div>
+    <div class="tier-grid">
+      <div class="tc">
+        <div class="tc-ic">🌿</div>
+        <div class="tc-nm">MERIDIAN Standard</div>
+        <div class="tc-pr">$18.90<span>/חודש</span></div>
+        <div class="tc-feats">
+          <div>AI קליני בעברית</div>
+          <div>5 מפגשים ביום</div>
+          <div>1,000+ שאלות TCM</div>
+          <div>14 יום ניסיון חינם</div>
+          <div>ביטול בכל עת</div>
+        </div>
+        <button class="tc-btn tc-std" onclick="pickTier('standard')">הצטרף ל-Standard ←</button>
+      </div>
+      <div class="tc feat">
+        <div class="tc-fbadge">⭐ הכי גמיש</div>
+        <div class="tc-ic">🎯</div>
+        <div class="tc-nm">MERIDIAN Custom</div>
+        <div class="tc-pr" style="font-size:18px;font-family:'Cinzel',serif;color:var(--jade);">בנה תוכנית<br>אישית</div>
+        <div class="tc-feats">
+          <div>בחר 5 / 15 / ∞ מפגשים/יום</div>
+          <div>הקלטת אודיו אופציונלית</div>
+          <div>תמלול עברית AI</div>
+          <div>מחיר מותאם לצרכים</div>
+          <div>14 יום ניסיון חינם</div>
+        </div>
+        <button class="tc-btn tc-cus" onclick="pickTier('custom')">בנה תוכנית מותאמת ←</button>
+      </div>
+      <!-- GROUP CARD — inside grid = same row -->
+      <div class="tc group">
+        <img src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/images/group.jpg" class="tc-group-img" alt="Group Plan">
+        <div class="tc-nm" style="color:#5c2ca8;">MERIDIAN קליניקה</div>
+        <div class="tc-pr" style="font-size:16px;font-family:'Cinzel',serif;color:#5c2ca8;">תוכנית<br>קבוצתית</div>
+        <div class="tc-feats" style="font-size:12px;">
+          <div>2-10 מטפלים באותה קליניקה</div>
+          <div>מחיר לפי מספר מטפלים</div>
+          <div>ניהול מרכזי — חשבון אחד</div>
+          <div>כל תוספות Custom כלולות</div>
+          <div>כמו Netflix — שתפו חכם</div>
+        </div>
+        <button class="tc-call" onclick="callGroup()">📞 התקשל לקבל הצעה מיוחדת</button>
+        <button class="wa-group-btn" onclick="waGroup()">💬 WhatsApp לפרטים</button>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="back-btn" onclick="go('s1')">← חזור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3: PIZZA ══ -->
+<div id="s3" class="screen">
+  <div class="s3-in">
+
+    <!-- LEFT: Pizza Steps -->
+    <div class="pizza-steps">
+      <!-- Step 1: Base -->
+      <div class="sc">
+        <div class="sh"><div class="sn">1</div><div class="st">בסיס MERIDIAN — תמיד כלול</div></div>
+        <div style="font-size:11px;color:#555;background:rgba(13,92,69,0.06);border-radius:6px;padding:8px 10px;">
+          ✅ AI קליני · 1,000+ שאלות TCM · ניהול מטופלים<br>
+          <strong style="color:var(--jade);">$18.90/חודש</strong>
+        </div>
+      </div>
+
+      <!-- Step 2: Tier -->
+      <div class="sc">
+        <div class="sh"><div class="sn">2</div><div class="st">בחר tier — כמה מפגשים ביום?</div></div>
+        <div class="tok-row">
+          <div class="to sel" id="to_s" onclick="selTok('s')">
+            <div class="tn">Starter</div>
+            <div class="tp">+$9</div>
+            <div class="ts">5 מפגש/יום</div>
+          </div>
+          <div class="to" id="to_p" onclick="selTok('p')">
+            <div class="tn">Pro</div>
+            <div class="tp">+$25</div>
+            <div class="ts">15 מפגש/יום</div>
+          </div>
+          <div class="to" id="to_u" onclick="selTok('u')">
+            <div class="tn">Unlimited</div>
+            <div class="tp">+$42</div>
+            <div class="ts">∞ מפגש/יום</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Add-ons -->
+      <div class="sc">
+        <div class="sh"><div class="sn">3</div><div class="st">תוספות (אופציונלי)</div></div>
+        <div class="add-row">
+          <div class="at" id="at_audio" onclick="togAdd('audio')">
+            <div class="at-l">
+              <span class="at-ic">🎙️</span>
+              <div><div class="at-nm">הקלטת אודיו</div>
+              <div style="font-size:9px;color:#888;">MP3 · Supabase Storage</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="at-pr">+$8</span>
+              <div class="sw" id="sw_audio"></div>
+            </div>
+          </div>
+          <div class="at" id="at_trans" onclick="togAdd('trans')">
+            <div class="at-l">
+              <span class="at-ic">📝</span>
+              <div>
+                <div class="at-nm">תמלול עברית AI
+                  <span class="info-tip" onclick="event.stopPropagation();document.getElementById('tipTrans').classList.toggle('show')">ℹ️
+                    <div class="tip-box" id="tipTrans">
+                      <strong>למה Scribe שווה את זה?</strong><br>
+                      ✓ כל מפגש נשמר כדוח בתיק המטופל<br>
+                      ✓ המטפל מתחיל פגישה הבאה עם ידע מלא<br>
+                      ✓ חוסך ~10 דקות/מפגש לסיכום ידני<br>
+                      ✓ השקעה חכמה בטיפול מקצועי ורציף
+                    </div>
+                  </span>
+                </div>
+                <div style="font-size:9px;color:#888;">OpenAI Whisper · כל ה-tiers</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="at-pr" id="trans_price_badge">+$21</span>
+              <div class="sw" id="sw_trans"></div>
+            </div>
+          </div>
+          <div class="trans-warn" id="transWarn">
+            <span class="warn-pulse">💡</span> <strong id="transWarnTitle">שים לב — תמלול מסובסד</strong><br>
+            <span id="transWarnBody">תמחור תמלול מחושב לפי תוכנית — ראה פירוט בטבלת הערך.</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="back-btn" onclick="go('s2')" style="align-self:flex-start;">← חזור לתוכניות</button>
+    </div>
+
+    <!-- RIGHT: Live Value Table -->
+    <div class="val-col">
+      <div class="val-box">
+        <div class="val-header">
+          <div class="val-title">☯ מה אתה מקבל בדיוק</div>
+          <div class="val-plan-badge" id="valBadge">MERIDIAN Starter</div>
+        </div>
+
+        <table class="val-table">
+          <thead>
+            <tr>
+              <th>פיצ'ר</th>
+              <th>למפגש</th>
+              <th>לחודש</th>
+              <th>מחיר</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: Core — always active -->
+            <tr class="val-row active" id="vr_core">
+              <td>
+                <div class="val-feat">
+                  <span class="val-icon">🫓</span>
+                  <div><div class="val-fname">Core MERIDIAN</div>
+                  <div class="val-fdesc">AI + שאלות TCM + ניהול</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="val-num" id="vc_sess">110</div>
+                <div class="val-unit">מפגשים/חודש</div>
+              </td>
+              <td>
+                <div class="val-num2" id="vc_days">22 ימים</div>
+                <div class="val-unit" id="vc_perday">× 5/יום</div>
+              </td>
+              <td class="val-price-cell">
+                <div class="val-price">$18.90</div>
+                <div class="val-unit">קבוע</div>
+              </td>
+            </tr>
+
+            <!-- Row 2: Tokens -->
+            <tr class="val-row active" id="vr_tok">
+              <td>
+                <div class="val-feat">
+                  <span class="val-icon">🍅</span>
+                  <div><div class="val-fname" id="vt_tier">Starter Tokens</div>
+                  <div class="val-fdesc">Claude AI queries</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="val-num">16K</div>
+                <div class="val-unit">טוקנים/מפגש</div>
+              </td>
+              <td>
+                <div class="val-num2" id="vt_monthly">1.76M</div>
+                <div class="val-unit" id="vt_sessmo">110 שאילתות</div>
+              </td>
+              <td class="val-price-cell">
+                <div class="val-price" id="vt_price">+$9</div>
+                <div class="val-unit" id="vt_badge"><span class="val-add-badge">5 מפגש/יום</span></div>
+              </td>
+            </tr>
+
+            <!-- Row 3: Audio -->
+            <tr class="val-row inactive" id="vr_audio">
+              <td>
+                <div class="val-feat">
+                  <span class="val-icon">🎙️</span>
+                  <div><div class="val-fname">הקלטת אודיו</div>
+                  <div class="val-fdesc">MP3 · Supabase Storage</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="val-num">50</div>
+                <div class="val-unit">דקות הקלטה</div>
+              </td>
+              <td>
+                <div class="val-num2" id="va_monthly">2.5GB</div>
+                <div class="val-unit" id="va_files">110 קבצים</div>
+              </td>
+              <td class="val-price-cell">
+                <div class="val-price inactive" id="va_price">+$8</div>
+                <div class="val-unit"><span class="val-add-badge off" id="va_badge">לא פעיל</span></div>
+              </td>
+            </tr>
+
+            <!-- Row 4: Transcription -->
+            <tr class="val-row inactive" id="vr_trans">
+              <td>
+                <div class="val-feat">
+                  <span class="val-icon">📝</span>
+                  <div><div class="val-fname">תמלול עברית AI</div>
+                  <div class="val-fdesc">Whisper · 85-90% דיוק</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="val-num">50</div>
+                <div class="val-unit">דקות תמלול</div>
+              </td>
+              <td>
+                <div class="val-num2" id="vtr_monthly">5,500</div>
+                <div class="val-unit" id="vtr_mins">דקות/חודש</div>
+              </td>
+              <td class="val-price-cell">
+                <div class="val-price inactive" id="vtr_price">+$28</div>
+                <div class="val-unit"><span class="val-add-badge off" id="vtr_badge">לא פעיל</span></div>
+              </td>
+            </tr>
+
+            <!-- Total row -->
+            <tr class="val-row val-total-row">
+              <td colspan="2">
+                <div class="val-total-label">☯ סה"כ לחודש</div>
+                <div style="font-size:10px;color:#888;margin-top:2px;" id="totalDesc">110 מפגשים · Starter</div>
+              </td>
+              <td colspan="2" style="text-align:left;">
+                <div class="val-total-val" id="valTotal">$27.90</div>
+                <div style="font-size:10px;color:#888;">14 יום ניסיון חינם</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="val-cta-row">
+          <button class="val-cta" onclick="confirmPlan()">✅ אני רוצה זה — המשך לתשלום ←</button>
+          <button class="val-back" onclick="go('s2')">← חזור</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ S4: PAYMENT + LOGIN ══ -->
+<div id="s4" class="screen">
+  <div class="s4-in">
+    <div class="s4-hdr">
+      <div class="s4-ttl" id="s4ttl">🎉 כמעט סיימנו!</div>
+      <div class="s4-sub" id="s4sub">השלם תשלום וצור חשבון — גישה מיידית ל-MERIDIAN</div>
+    </div>
+    <div class="s4-grid">
+
+      <!-- Payment -->
+      <div class="pay-card">
+        <div class="pay-ttl">💳 תשלום <span class="demo-badge">⚡ DEMO</span></div>
+        <div class="plan-box">
+          <div class="plan-nm" id="payNm">MERIDIAN Starter</div>
+          <div class="plan-pr" id="payPr">$27.90<span>/חודש</span></div>
+        </div>
+        <input class="pinp" placeholder="שם בעל הכרטיס">
+        <input class="pinp" placeholder="1234  5678  9012  3456" maxlength="19"
+          oninput="this.value=this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()">
+        <div class="p2">
+          <input class="pinp" placeholder="MM/YY" maxlength="5">
+          <input class="pinp" placeholder="CVV" maxlength="3">
+        </div>
+        <div class="demo-note">⚡ DEMO — חיבור Stripe אמיתי בשלב P3</div>
+        <button class="pay-btn" onclick="demoPayment()">🔒 שלם וקבל גישה ←</button>
+        <div class="secure">🔒 SSL · Stripe · PCI DSS</div>
+      </div>
+
+      <!-- Login -->
+      <div class="login-card">
+        <div class="login-ttl">☯ צור חשבון — כנס ל-MERIDIAN CRM</div>
+        <div class="login-wel">
+          <div class="login-av">👨‍⚕️</div>
+          <div class="login-nm" id="loginNm">ברוך הבא!</div>
+          <div class="login-pl" id="loginPl">MERIDIAN · $27.90/חודש</div>
+        </div>
+        <div class="trial-box">🎁 <strong>14 יום ניסיון חינם</strong> — ללא חיוב עד לאחר הניסיון</div>
+        <input class="linp" id="loginEmail" placeholder="your@email.com" type="email">
+        <div style="position:relative;">
+          <input class="linp" id="loginPass" placeholder="סיסמה (8+ תווים)" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
+        <div class="pw-strength" id="pwStrength"></div>
+        <div style="position:relative;">
+          <input class="linp" id="loginPass2" placeholder="אמת סיסמה" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass2',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
+        <div class="pw-strength" id="pwMatch"></div>
+        <div class="login-note">לאחר תשלום — פרטים אלו ישמשו לכניסה ל-CRM</div>
+        <button class="login-btn" onclick="demoLogin()">☯ צור חשבון וכנס ←</button>
+      </div>
+
+    </div>
+    <div style="text-align:center;">
+      <button class="back-btn" onclick="go('s3')">← חזור לתוכנית</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SUPABASE ───
+const SUPA_URL='https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+let supa=null;
+try{
+  if(SUPA_KEY!=='YOUR_SUPABASE_ANON_KEY')
+    supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+}catch(e){}
+
+// ─── STATE ───
+let reg={};
+let pizza={tok:'s',audio:false,trans:false};
+const WA='972505231042'; // ← החלף במספר שלך
+
+// ─── TIER DATA — all volumes pre-calculated ───
+// 22 working days/month · 8 queries/session · 2000 tokens/query = 16K tokens/session
+// audio: 50min × 23MB = ~23MB/session (64kbps mono MP3)
+// transcription: 50 min/session
+const TIERS = {
+  s:{ name:'Starter', price:9,  daily:5,  monthly:110,
+      tokPerSess:'16,000', tokMonthly:'1.76M',
+      audioMB:'23MB',  audioGB:'2.5GB',  audioFiles:110,
+      transMin:50, transMonthly:'5,500', badge:'5 מפגש/יום', transPrice:21.45 },
+  p:{ name:'Pro',     price:25, daily:15, monthly:330,
+      tokPerSess:'16,000', tokMonthly:'5.28M',
+      audioMB:'23MB',  audioGB:'7.6GB',  audioFiles:330,
+      transMin:50, transMonthly:'16,500',badge:'15 מפגש/יום', transPrice:64.35 },
+  u:{ name:'Unlimited',price:42,daily:25, monthly:550,
+      tokPerSess:'16,000', tokMonthly:'8.8M',
+      audioMB:'23MB',  audioGB:'12.7GB', audioFiles:550,
+      transMin:50, transMonthly:'27,500',badge:'∞ מפגש/יום', transPrice:107.25 },
+};
+const PLAN_NAMES={
+  's00':'MERIDIAN Starter',    's10':'Starter + Audio',
+  's01':'Starter + Scribe',    's11':'Starter Complete',
+  'p00':'MERIDIAN Pro',        'p10':'Pro + Audio',
+  'p01':'Pro + Scribe',        'p11':'Pro Complete',
+  'u00':'MERIDIAN Unlimited',  'u10':'Unlimited + Audio',
+  'u01':'Unlimited + Scribe',  'u11':'MERIDIAN Ultimate ⭐',
+};
+
+// ─── CLOCK ───
+const pad=x=>String(x).padStart(2,'0');
+function tickClock(){
+  const n=new Date();
+  document.getElementById('navClock').textContent=
+    `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+}
+setInterval(tickClock,1000); tickClock();
+
+// ─── NAV ───
+const LABELS={s0:'כניסה ראשונה',s1:'הרשמה',s2:'בחירת תוכנית',s3:'בנה תוכנית',s4:'תשלום וגישה'};
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('navStep').textContent=LABELS[id]||'';
+}
+
+// ─── WA PREVIEW ───
+function upWA(){
+  const v=id=>document.getElementById(id).value.trim();
+  const first=v('f_first'),last=v('f_last'),title=v('f_title'),
+        clinic=v('f_clinic'),email=v('f_email'),wa=v('f_wa'),
+        city=v('f_city'),size=document.getElementById('f_size').value;
+  const ok=first&&last&&title&&email&&wa;
+  document.getElementById('waPreview').textContent = ok
+    ? `שלום אבשי! 👋\nאני ${first} ${last}\n${title}${clinic?' | '+clinic:''}\n\n📍 ${city||'—'} | ${size} מטפלים\n📧 ${email}\n📱 ${wa}\n\nמעוניין/ת להצטרף ל-MERIDIAN 🙏`
+    : 'מלא את הטופס משמאל...';
+  document.getElementById('waSendBtn').disabled=!ok;
+  if(ok) reg={first,last,title,clinic,email,wa,city,size,
+    token:'MRD-'+Math.random().toString(36).substr(2,8).toUpperCase(),
+    ts:new Date().toISOString()};
+}
+
+// ─── SEND WA ───
+function sendWA(){
+  const v=id=>document.getElementById(id).value.trim();
+  let ok=true;
+  const chk=(val,eid)=>{const bad=!val;document.getElementById(eid).classList.toggle('show',bad);if(bad)ok=false;};
+  chk(v('f_first'),'e_first'); chk(v('f_last'),'e_last'); chk(v('f_title'),'e_title');
+  chk(v('f_email')&&v('f_email').includes('@'),'e_email'); chk(v('f_wa'),'e_wa');
+  if(!ok) return;
+  if(supa){
+    supa.from('meridian_leads').insert([{
+      first_name:reg.first,last_name:reg.last,professional_title:reg.title,
+      clinic_name:reg.clinic,email:reg.email,whatsapp:reg.wa,
+      city:reg.city,clinic_size:reg.size,token:reg.token,
+      status:'registered',created_at:reg.ts
+    }]).then(()=>{}).catch(()=>{});
+  }
+  try{const l=JSON.parse(localStorage.getItem('meridian_leads')||'[]');
+    l.push(reg);localStorage.setItem('meridian_leads',JSON.stringify(l));}catch(e){}
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(document.getElementById('waPreview').textContent)}`,'_blank');
+  setTimeout(()=>{
+    document.getElementById('contBtn').classList.add('show');
+    const b=document.getElementById('waSendBtn');
+    b.textContent='✅ נשלח!'; b.style.background='#aaa'; b.disabled=true;
+  },700);
+}
+
+// ─── TIER PICKER ───
+function pickTier(t){
+  document.getElementById('s2ttl').textContent=
+    `שלום ${reg.first||''}! ${t==='standard'?'מצוין — Standard':'מעולה — בנה תוכנית'}`;
+  go('s3');
+  selTok('s');
+}
+
+// ─── PIZZA + VALUE TABLE ───
+function selTok(t){
+  pizza.tok=t;
+  ['s','p','u'].forEach(x=>document.getElementById('to_'+x).classList.toggle('sel',x===t));
+  upTable();
+}
+
+function togAdd(type){
+  pizza[type]=!pizza[type];
+  document.getElementById('at_'+type).classList.toggle('on',pizza[type]);
+  document.getElementById('sw_'+type).classList.toggle('on',pizza[type]);
+  // Smart warning: transcription subsidy is real math
+  const warn=document.getElementById('transWarn');
+  if(pizza.trans){
+    const T=TIERS[pizza.tok];
+    const realCost=(T.monthly*50*0.003).toFixed(2);
+    const profit=(T.transPrice-parseFloat(realCost)).toFixed(2);
+    const wt=document.getElementById('transWarnTitle');
+    const wb=document.getElementById('transWarnBody');
+    if(parseFloat(profit)<0){
+      wt.textContent='💰 תמלול מסובסד — מחיר הקמה מוגבל';
+      wb.innerHTML=`ב-<strong>${T.name}</strong> (${T.monthly} מפגשים/חודש), תמלול ${T.transMonthly} דקות עולה בפועל <strong>$${realCost}</strong>.<br>
+      אתה משלם <strong>$${T.transPrice}</strong> בלבד — הפרש <strong>$${Math.abs(profit)}</strong> מסובסד ע"י MERIDIAN לתקופת ההקמה.<br>
+      <span style="color:#27ae60;font-weight:700;">לאחר 3 חודשים — תמחור אישי לפי צריכה בפועל.</span>`;
+      warn.classList.add('show');
+    } else {
+      wt.textContent='✅ מחיר תמלול כדאי';
+      wb.innerHTML=`ב-<strong>${T.name}</strong> — עלות אמיתית <strong>$${realCost}</strong>, אתה משלם <strong>$${T.transPrice}</strong>. רווחי לשני הצדדים.`;
+      warn.classList.add('show');
+    }
+  } else {
+    document.getElementById('transWarn').classList.remove('show');
+  }
+  upTable();
+}
+
+function set(id,val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+function setHTML(id,val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
+
+function upTable(){
+  const T=TIERS[pizza.tok];
+  const base=18.90, tok=T.price, audio=pizza.audio?8:0, trans=pizza.trans?T.transPrice:0;
+  const total=(base+tok+audio+trans).toFixed(2);
+  const key=pizza.tok+(pizza.audio?'1':'0')+(pizza.trans?'1':'0');
+  const nm=PLAN_NAMES[key]||'MERIDIAN Custom';
+
+  // Header badge
+  set('valBadge', nm);
+
+  // Row 1: Core
+  set('vc_sess',  T.monthly);
+  set('vc_perday',`× ${T.daily}/יום`);
+
+  // Row 2: Tokens
+  set('vt_tier',   T.name+' Tokens');
+  set('vt_perSess',T.tokPerSess);
+  set('vt_monthly',T.tokMonthly);
+  set('vt_sessmo', T.monthly+' שאילתות/חודש');
+  set('vt_price',  '+$'+T.price);
+  setHTML('vt_badge',`<span class="val-add-badge">${T.badge}</span>`);
+
+  // Row 3: Audio
+  const aOn=pizza.audio;
+  document.getElementById('vr_audio').className='val-row '+(aOn?'active':'inactive');
+  set('va_perSess', T.audioMB);
+  set('va_monthly', T.audioGB);
+  set('va_files',   T.audioFiles+' קבצים/חודש');
+  set('va_price',   '+$8');
+  document.getElementById('va_price').className='val-price'+(aOn?'':' inactive');
+  setHTML('va_badge',`<span class="val-add-badge ${aOn?'':'off'}">${aOn?'פעיל ✓':'לא פעיל'}</span>`);
+
+  // Row 4: Transcription
+  const tOn=pizza.trans;
+  document.getElementById('vr_trans').className='val-row '+(tOn?'active':'inactive');
+  set('vtr_perSess', T.transMin+' דקות');
+  set('vtr_monthly', T.transMonthly);
+  set('vtr_files',   T.monthly+' תמלולים/חודש');
+  set('vtr_price',   '+$'+T.transPrice);
+  document.getElementById('vtr_price').className='val-price'+(tOn?'':' inactive');
+  setHTML('vtr_badge',`<span class="val-add-badge ${tOn?'':'off'}">${tOn?'פעיל ✓':'לא פעיל'}</span>`);
+
+  // Patients estimate row
+  set('vp_calc',  `${T.daily} × 22`);
+  set('vp_total', T.monthly);
+  set('vp_note',  `≈ ${T.daily} מטופלים/יום\n× 22 ימי עבודה`);
+
+  // Total
+  set('valTotal', '$'+total);
+  set('totalDesc', `${T.monthly} מפגשים/חודש · ${nm}`);
+
+  pizza._total=total; pizza._name=nm;
+}
+
+// ─── CONFIRM → S4 ───
+function confirmPlan(){
+  const nm=pizza._name||'MERIDIAN Starter';
+  const tot=pizza._total||'27.90';
+  set('s4ttl', `🎉 ${reg.first||'ברוך הבא'}, כמעט סיימנו!`);
+  set('s4sub', `${nm} · $${tot}/חודש · 14 יום ניסיון חינם`);
+  set('payNm', nm);
+  setHTML('payPr',`$${tot}<span>/חודש</span>`);
+  set('loginNm',`${reg.first||''} ${reg.last||''}`);
+  set('loginPl',`${nm} · $${tot}/חודש`);
+  const le=document.getElementById('loginEmail'); if(le) le.value=reg.email||'';
+  if(supa&&reg.token){
+    supa.from('meridian_leads').update({
+      selected_tier:pizza.tok, addon_audio:pizza.audio, addon_trans:pizza.trans,
+      plan_name:nm, monthly_price:'$'+tot, status:'plan_selected'
+    }).eq('token',reg.token).then(()=>{}).catch(()=>{});
+  }
+  go('s4');
+}
+
+// ─── PASSWORD VALIDATION ───
+function checkPass(){
+  const p1=document.getElementById('loginPass');
+  const p2=document.getElementById('loginPass2');
+  const s=document.getElementById('pwStrength');
+  const m=document.getElementById('pwMatch');
+  if(!p1||!p2) return;
+  const v1=p1.value, v2=p2.value;
+  // Strength
+  if(v1.length===0){ p1.className='linp'; s.className='pw-strength'; }
+  else if(v1.length<8){ p1.className='linp error'; s.className='pw-strength show'; s.innerHTML='<span class="pw-err">✗ נדרש לפחות 8 תווים ('+v1.length+'/8)</span>'; }
+  else { p1.className='linp valid'; s.className='pw-strength show'; s.innerHTML='<span class="pw-ok">✓ סיסמה תקינה</span>'; }
+  // Match
+  if(v2.length===0){ p2.className='linp'; m.className='pw-strength'; }
+  else if(v1!==v2){ p2.className='linp error'; m.className='pw-strength show'; m.innerHTML='<span class="pw-err">✗ הסיסמאות אינן תואמות</span>'; }
+  else { p2.className='linp valid'; m.className='pw-strength show'; m.innerHTML='<span class="pw-ok">✓ הסיסמאות תואמות</span>'; }
+}
+
+// ─── GROUP TIER ───
+function callGroup(){
+  alert('📞 התקשר לאבשי ספיר\n050-XXXXXXX\n\nאנחנו בונים יחד תוכנית קליניקה מותאמת אישית לקבוצה שלך.');
+}
+function waGroup(){
+  const msg=`שלום אבשי! 👋\nאני מעוניין בתוכנית MERIDIAN קבוצתית לקליניקה שלי.\n\nשם: ${reg.first||'—'} ${reg.last||''}\nקליניקה: ${reg.clinic||'—'}\nמטפלים: ${reg.size||'—'}\n\nאשמח לפרטים ומחיר 🙏`;
+  window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ─── DEMOS ───
+function demoPayment(){
+  alert('✅ DEMO\nבשלב P3 כאן יהיה חיבור אמיתי ל-Stripe.\nבינתיים — צור חשבון + שלח WhatsApp לאישור ידני.');
+}
+function togglePass(id, icon){
+  const el = document.getElementById(id);
+  if(el.type === 'password'){ el.type = 'text'; icon.textContent = '🙈'; }
+  else { el.type = 'password'; icon.textContent = '👁️'; }
+}
+
+function demoLogin(){
+  const e=document.getElementById('loginEmail').value;
+  const p=document.getElementById('loginPass').value;
+  if(!e||!p){alert('נא מלא אימייל וסיסמה');return;}
+  if(p.length<8){alert('סיסמה — לפחות 8 תווים');return;}
+  const pl=document.getElementById('loginPl').textContent;
+  alert(`✅ DEMO\n${reg.first||'מטפל'} — החשבון נוצר!\n📧 ${e}\n☯ ${pl}\n\nמעביר אותך ל-CRM...`);
+  window.location.href = 'crm.html';
+}
+
+// ─── INIT ───
+upTable();
+</script>
+</body>
+</html>
