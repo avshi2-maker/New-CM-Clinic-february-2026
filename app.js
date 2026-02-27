@@ -243,24 +243,29 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             const existing = document.getElementById('safetyBanner');
             if (existing) existing.remove();
 
+            // ── SMART POSITION: stack below any bars already showing ──
+            let topOffset = 60;
+            if (document.getElementById('meridianPatientBar')?.classList.contains('show')) topOffset += 34;
+            if (document.getElementById('patientSafetyBadge')) topOffset += 32;
+
             const banner = document.createElement('div');
             banner.id = 'safetyBanner';
             banner.dir = 'rtl';
             banner.style.cssText = `
-                position:fixed; top:70px; left:0; right:0; z-index:8500;
+                position:fixed; top:${topOffset}px; left:0; right:0; z-index:8500;
                 background:linear-gradient(135deg,#78350f,#92400e);
-                border-bottom:3px solid #f59e0b; padding:12px 20px;
+                border-bottom:3px solid #f59e0b; padding:10px 20px;
                 font-family:Heebo,sans-serif; display:flex;
                 align-items:flex-start; gap:14px;
                 box-shadow:0 4px 20px rgba(0,0,0,0.4);
                 animation:safetySlideIn 0.3s ease;
             `;
             banner.innerHTML = `
-                <div style="font-size:24px;flex-shrink:0;">⚠️</div>
+                <div style="font-size:22px;flex-shrink:0;margin-top:2px;">⚠️</div>
                 <div style="flex:1;">
-                    <div style="font-size:14px;font-weight:900;color:#fef3c7;margin-bottom:4px;">${rule.title_he}</div>
-                    <div style="font-size:12px;color:#fde68a;margin-bottom:6px;line-height:1.6;">${rule.message_he}</div>
-                    <div style="font-size:11px;color:#fbbf24;background:rgba(0,0,0,0.2);border-radius:6px;padding:6px 10px;line-height:1.6;">
+                    <div style="font-size:13px;font-weight:900;color:#fef3c7;margin-bottom:3px;">${rule.title_he}</div>
+                    <div style="font-size:11px;color:#fde68a;margin-bottom:5px;line-height:1.5;">${rule.message_he}</div>
+                    <div style="font-size:11px;color:#fbbf24;background:rgba(0,0,0,0.2);border-radius:6px;padding:5px 10px;line-height:1.5;">
                         <strong>מה לעשות:</strong> ${rule.action_he}
                     </div>
                 </div>
@@ -443,83 +448,93 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         function showPatientSafetyBadge(ctx) {
             if (!ctx) return;
 
+            // Build risk pills
             const risks = [];
-
             if (ctx.is_pregnant) {
-                const trimText = ctx.trimester ? ` — שליש ${ctx.trimester}` : '';
+                const trimText  = ctx.trimester      ? ` שליש ${ctx.trimester}` : '';
                 const weeksText = ctx.pregnancy_weeks ? ` (שבוע ${ctx.pregnancy_weeks})` : '';
-                risks.push({ icon: '🤰', text: `בהריון${trimText}${weeksText}`, color: '#7c3aed', bg: '#ede9fe' });
+                risks.push({ icon: '🤰', text: `הריון${trimText}${weeksText}`, color: '#7c3aed', bg: '#ede9fe' });
             }
-            if (ctx.breastfeeding) {
-                risks.push({ icon: '🍼', text: 'מניקה', color: '#0369a1', bg: '#dbeafe' });
+            if (ctx.breastfeeding)      risks.push({ icon: '🍼', text: 'מניקה',        color: '#0369a1', bg: '#dbeafe' });
+            if (ctx.trying_to_conceive) risks.push({ icon: '🌱', text: 'מנסה להרות',   color: '#065f46', bg: '#d1fae5' });
+            if (ctx.medications?.trim().length > 2) {
+                const short = ctx.medications.replace(/\n/g, ', ').substring(0, 50);
+                risks.push({ icon: '💊', text: `${short}${ctx.medications.length > 50 ? '…' : ''}`, color: '#92400e', bg: '#fef3c7' });
             }
-            if (ctx.trying_to_conceive) {
-                risks.push({ icon: '🌱', text: 'מנסה להרות', color: '#065f46', bg: '#d1fae5' });
+            if (ctx.previous_conditions?.trim().length > 2) {
+                const short = ctx.previous_conditions.substring(0, 50);
+                risks.push({ icon: '📋', text: `${short}${ctx.previous_conditions.length > 50 ? '…' : ''}`, color: '#1e3a5f', bg: '#dbeafe' });
             }
-            if (ctx.medications && ctx.medications.trim().length > 2) {
-                const medShort = ctx.medications.replace(/\n/g, ', ').substring(0, 60);
-                risks.push({ icon: '💊', text: `תרופות: ${medShort}${ctx.medications.length > 60 ? '...' : ''}`, color: '#92400e', bg: '#fef3c7' });
-            }
-            if (ctx.previous_conditions && ctx.previous_conditions.trim().length > 2) {
-                const condShort = ctx.previous_conditions.substring(0, 60);
-                risks.push({ icon: '📋', text: `מצבים: ${condShort}${ctx.previous_conditions.length > 60 ? '...' : ''}`, color: '#1e3a5f', bg: '#dbeafe' });
-            }
-            if (ctx.allergies && ctx.allergies.trim().length > 2) {
-                risks.push({ icon: '⚠️', text: `אלרגיות: ${ctx.allergies}`, color: '#991b1b', bg: '#fee2e2' });
+            if (ctx.allergies?.trim().length > 2) {
+                risks.push({ icon: '⚠️', text: ctx.allergies, color: '#991b1b', bg: '#fee2e2' });
             }
 
-            if (risks.length === 0) return; // No risks — no badge needed
+            if (risks.length === 0) return;
 
-            // Remove existing badge
-            const existing = document.getElementById('patientSafetyBadge');
-            if (existing) existing.remove();
+            // ── SMART MERGE: extend meridianPatientBar if it exists ──
+            // Avoids duplicate patient name + stacking bars
+            const existingBar = document.getElementById('meridianPatientBar');
+            if (existingBar && existingBar.classList.contains('show')) {
+                // Remove old standalone badge if any
+                const old = document.getElementById('patientSafetyBadge');
+                if (old) old.remove();
+
+                // Check if pills already added
+                if (document.getElementById('safetyPillsInBar')) return;
+
+                const pillContainer = document.createElement('span');
+                pillContainer.id = 'safetyPillsInBar';
+                pillContainer.style.cssText = 'display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;margin-right:8px;';
+
+                const divider = document.createElement('span');
+                divider.style.cssText = 'color:rgba(255,255,255,0.3);margin:0 4px;font-size:14px;';
+                divider.textContent = '|';
+                pillContainer.appendChild(divider);
+
+                risks.forEach(risk => {
+                    const pill = document.createElement('span');
+                    pill.style.cssText = `background:${risk.bg};color:${risk.color};border-radius:20px;padding:2px 9px;font-weight:700;white-space:nowrap;font-size:11px;`;
+                    pill.textContent = `${risk.icon} ${risk.text}`;
+                    pillContainer.appendChild(pill);
+                });
+
+                existingBar.appendChild(pillContainer);
+                console.log(`✅ Safety pills merged into meridianPatientBar (${risks.length} risks)`);
+                return;
+            }
+
+            // ── FALLBACK: No meridianPatientBar — create standalone badge ──
+            const old = document.getElementById('patientSafetyBadge');
+            if (old) old.remove();
+
+            // Position below whatever is already at the top
+            const topOffset = document.getElementById('meridianPatientBar') ? 88 : 60;
 
             const badge = document.createElement('div');
             badge.id = 'patientSafetyBadge';
             badge.dir = 'rtl';
             badge.style.cssText = `
-                position: fixed;
-                top: 60px; left: 0; right: 0;
-                z-index: 8000;
-                background: #1e1b4b;
-                border-bottom: 2px solid #4f46e5;
-                padding: 6px 16px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: wrap;
-                font-family: Heebo, sans-serif;
-                font-size: 11px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+                position:fixed; top:${topOffset}px; left:0; right:0; z-index:8000;
+                background:#1e1b4b; border-bottom:2px solid #4f46e5;
+                padding:6px 16px; display:flex; align-items:center;
+                gap:8px; flex-wrap:wrap; font-family:Heebo,sans-serif;
+                font-size:11px; box-shadow:0 2px 12px rgba(0,0,0,0.3);
             `;
 
-            const patientName = document.createElement('span');
-            patientName.style.cssText = 'color:#a5b4fc; font-weight:900; font-size:12px; flex-shrink:0;';
-            patientName.textContent = `👤 ${ctx.full_name}`;
-            badge.appendChild(patientName);
-
-            const sep = document.createElement('span');
-            sep.style.cssText = 'color:#4f46e5; font-size:16px;';
-            sep.textContent = '|';
-            badge.appendChild(sep);
+            const nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'color:#a5b4fc;font-weight:900;font-size:12px;flex-shrink:0;';
+            nameSpan.textContent = `🛡️ ${ctx.full_name}`;
+            badge.appendChild(nameSpan);
 
             risks.forEach(risk => {
                 const pill = document.createElement('span');
-                pill.style.cssText = `
-                    background: ${risk.bg};
-                    color: ${risk.color};
-                    border-radius: 20px;
-                    padding: 2px 10px;
-                    font-weight: 700;
-                    white-space: nowrap;
-                    font-size: 11px;
-                `;
+                pill.style.cssText = `background:${risk.bg};color:${risk.color};border-radius:20px;padding:2px 10px;font-weight:700;white-space:nowrap;font-size:11px;`;
                 pill.textContent = `${risk.icon} ${risk.text}`;
                 badge.appendChild(pill);
             });
 
             document.body.appendChild(badge);
-            console.log(`✅ Patient safety badge shown with ${risks.length} risk indicators`);
+            console.log(`✅ Standalone safety badge shown (${risks.length} risks)`);
         }
 
         // ── END PATIENT CONTEXT ──────────────────────────────────────
@@ -1430,6 +1445,9 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
             currentQueries = [];
             document.getElementById('activeQueries').innerHTML = '';
+            // Clear safety banner if visible (new session = clean slate)
+            const sb = document.getElementById('safetyBanner');
+            if (sb) sb.remove();
         }
 
         async function performMultiQuery() {
@@ -1905,12 +1923,18 @@ ${parts.join('\n')}
                 document.body.appendChild(panel);
             }
 
+            // ── SMART POSITION: below all bars showing at top ────────
+            let topOffset = 60;
+            if (document.getElementById('meridianPatientBar')?.classList.contains('show')) topOffset += 34;
+            if (document.getElementById('patientSafetyBadge')) topOffset += 32;
+            const maxH = `calc(100vh - ${topOffset + 20}px)`;
+
             panel.dir = 'rtl';
             panel.style.cssText = `
                 position: fixed;
-                top: 110px; right: -340px;
+                top: ${topOffset}px; right: -340px;
                 width: 320px;
-                max-height: calc(100vh - 130px);
+                max-height: ${maxH};
                 overflow-y: auto;
                 z-index: 7500;
                 background: linear-gradient(160deg, #0f172a, #1e1b4b);
