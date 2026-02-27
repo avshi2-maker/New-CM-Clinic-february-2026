@@ -29,7 +29,6 @@ body {
   direction: rtl;
 }
 
-/* ── BACKGROUND ────────────────────────────────────────────── */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -40,7 +39,6 @@ body::before {
   pointer-events: none;
 }
 
-/* ── GRID TEXTURE ───────────────────────────────────────────── */
 body::after {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -58,7 +56,6 @@ body::after {
   padding: 20px 20px 24px;
 }
 
-/* ── HEADER ─────────────────────────────────────────────────── */
 header {
   text-align: center;
   margin-bottom: 24px;
@@ -113,7 +110,6 @@ header {
   letter-spacing: 1px;
 }
 
-/* ── SECTION LABEL ──────────────────────────────────────────── */
 .section-label {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
@@ -125,7 +121,6 @@ header {
   opacity: 1;
 }
 
-/* ── PRIMARY GRID ───────────────────────────────────────────── */
 .primary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -147,7 +142,6 @@ header {
   margin-bottom: 16px;
 }
 
-/* ── MODULE CARD ────────────────────────────────────────────── */
 .card {
   background: rgba(255,255,255,0.65);
   border: 1px solid var(--border);
@@ -233,7 +227,6 @@ header {
   50% { opacity: 0.6; }
 }
 
-/* ── STATUS BAR ─────────────────────────────────────────────── */
 .status-bar {
   background: rgba(255,255,255,0.5);
   border: 1px solid var(--border);
@@ -271,7 +264,6 @@ header {
   font-weight: 700;
 }
 
-/* ── FOOTER ─────────────────────────────────────────────────── */
 footer {
   text-align: center;
   font-family: 'Space Mono', monospace;
@@ -282,7 +274,6 @@ footer {
   border-top: 1px solid rgba(184,134,11,0.2);
 }
 
-/* ── ANIMATIONS ─────────────────────────────────────────────── */
 @keyframes fadeDown {
   from { opacity: 0; transform: translateY(-20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -297,7 +288,6 @@ footer {
 .secondary-grid{ animation: fadeUp 0.7s 0.25s ease both; }
 .tertiary-grid { animation: fadeUp 0.7s 0.35s ease both; }
 
-/* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .primary-grid   { grid-template-columns: 1fr 1fr; }
   .secondary-grid { grid-template-columns: 1fr 1fr; }
@@ -314,19 +304,17 @@ footer {
 <body>
 <div class="container">
 
-  <!-- ── HEADER ──────────────────────────────────────────────── -->
   <header>
     <div class="meridian-logo">
       <div class="logo-symbol">⚕️</div>
       <div class="logo-text">MERIDIAN</div>
     </div>
     <div class="tagline">מערכת ניהול קליניקה לרפואה סינית</div>
-    <a href="index.html" style="display:inline-block;margin-top:12px;font-size:11px;letter-spacing:2px;color:rgba(139,100,0,0.8);text-decoration:none;border:1px solid rgba(139,100,0,0.3);padding:4px 14px;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.8)';this.style.color='#e8c96e'" onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='rgba(201,168,76,0.7)'">← מודול סשן קליני</a>
+    <a href="session.html" style="display:inline-block;margin-top:12px;font-size:11px;letter-spacing:2px;color:rgba(139,100,0,0.8);text-decoration:none;border:1px solid rgba(139,100,0,0.3);padding:4px 14px;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.8)';this.style.color='#e8c96e'" onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='rgba(201,168,76,0.7)'">← מודול סשן קליני</a>
     <div class="divider"></div>
     <div class="subtitle">TCM Clinical Management System · Powered by Supabase + Claude AI</div>
   </header>
 
-  <!-- ── LIVE STATUS ──────────────────────────────────────────── -->
   <div class="status-bar">
     <div class="status-item">
       <div class="status-dot"></div>
@@ -346,84 +334,68 @@ footer {
     </div>
   </div>
 
-  <!-- ── PRIMARY MODULES ──────────────────────────────────────── -->
   <div class="section-label">// מודולים ראשיים</div>
   <div class="primary-grid">
-
     <a class="card featured" href="dashboard_24022026.html">
       <div class="card-badge live">LIVE</div>
       <span class="card-icon">🏥</span>
       <div class="card-title">לוח בקרה</div>
       <div class="card-sub">מבט יומי · בינה קלינית · פרוטוקולי TCM</div>
     </a>
-
     <a class="card featured" href="queue_board_24022026.html">
       <div class="card-badge live">LIVE</div>
       <span class="card-icon">📋</span>
       <div class="card-title">לוח תורים</div>
       <div class="card-sub">ניהול תורים · SOS · הפעלת וידאו</div>
     </a>
-
     <a class="card featured" href="calendar_24022026.html">
       <div class="card-badge live">LIVE</div>
       <span class="card-icon">📅</span>
       <div class="card-title">לוח שנה</div>
       <div class="card-sub">תצוגה שבועית · עריכת תורים · פרטי מטופל</div>
     </a>
-
   </div>
 
-  <!-- ── SECONDARY MODULES ─────────────────────────────────────── -->
   <div class="section-label">// ניהול מטופלים</div>
   <div class="secondary-grid">
-
     <a class="card" href="patient_intake_v3_23022026.html">
       <div class="card-badge new">NEW</div>
       <span class="card-icon">📝</span>
       <div class="card-title">קבלת מטופל חדש</div>
       <div class="card-sub">טופס אינטייק V3 · עברית + English · חתימה דיגיטלית</div>
     </a>
-
     <a class="card" href="crm_24022026.html">
       <span class="card-icon">👥</span>
       <div class="card-title">CRM מטופלים</div>
       <div class="card-sub">חיפוש · היסטוריה · דגלים קליניים</div>
     </a>
-
     <a class="card" href="appointments_24022026.html">
       <span class="card-icon">➕</span>
       <div class="card-title">קביעת תור</div>
       <div class="card-sub">תור חדש · וידאו Jitsi · תזכורות</div>
     </a>
-
     <a class="card" href="therapist_intake_24022026.html">
       <span class="card-icon">🧑‍⚕️</span>
       <div class="card-title">פרופיל מטפל</div>
       <div class="card-sub">הגדרות · התמחויות · זמינות</div>
     </a>
-
   </div>
 
-  <!-- ── TERTIARY MODULES ──────────────────────────────────────── -->
   <div class="section-label">// כלים מתקדמים</div>
   <div class="tertiary-grid">
-
     <a class="card" href="video_session_25022026.html">
       <div class="card-badge new">NEW</div>
       <span class="card-icon">🎥</span>
       <div class="card-title">סשן וידאו</div>
       <div class="card-sub">Jitsi · אנמנזה 10 שאלות · תמלול עברית · שמירה ל-Supabase</div>
     </a>
-
     <a class="card" href="rooms_manager_24022026.html">
       <span class="card-icon">🚪</span>
       <div class="card-title">ניהול חדרים</div>
       <div class="card-sub">זמינות · הקצאה · סטטוס בזמן אמת</div>
     </a>
-
   </div>
 
-  <!-- ── FOOTER ────────────────────────────────────────────────── -->
   <footer>
     MERIDIAN TCM · AVSHI SAPIR · 2026 · SUPABASE + CLAUDE AI + JITSI
   </footer>
