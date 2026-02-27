@@ -99,13 +99,13 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .wa-hint{font-size:10px;color:#bbb;}
 
 /* ── S2 TIER ── */
-#s2{background:var(--bg);padding:12px;}
-.s2-in{max-width:800px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:10px;}
+#s2{background:var(--bg);padding:12px;overflow-y:auto;}
+.s2-in{max-width:1100px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:10px;padding-bottom:16px;}
 .s2-hdr{text-align:center;}
 .s2-ttl{font-family:'Cinzel',serif;font-size:15px;color:var(--jade);letter-spacing:2px;}
 .s2-sub{font-size:11px;color:#666;margin-top:2px;}
-.tier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex:1;}
-@media(max-width:700px){.tier-grid{grid-template-columns:1fr;overflow:auto;}}
+.tier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:800px){.tier-grid{grid-template-columns:1fr;overflow:auto;}}
 .tc.group{border-color:rgba(88,44,180,0.35);background:linear-gradient(135deg,rgba(255,255,255,0.96),rgba(245,240,255,0.96));}
 .tc-group-img{width:110px;height:110px;object-fit:cover;object-position:center;border-radius:50%;margin:0 auto 10px;display:block;border:3px solid rgba(88,44,180,0.3);}
 .tc-call{background:linear-gradient(135deg,#5c2ca8,#7b4fc4);color:white;
@@ -125,9 +125,9 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
   padding:2px 11px;border-radius:50px;margin-bottom:6px;}
 .tc-ic{font-size:26px;margin-bottom:5px;}
 .tc-nm{font-family:'Cinzel',serif;font-size:14px;color:var(--jade);}
-.tc-pr{font-family:'Abril Fatface',serif;font-size:30px;color:#1a2e1a;line-height:1.1;margin:3px 0;}
-.tc-pr span{font-family:'Heebo',sans-serif;font-size:11px;color:#888;font-weight:400;}
-.tc-feats{flex:1;font-size:11px;color:#444;line-height:2.1;margin:7px 0;}
+.tc-pr{font-family:'Abril Fatface',serif;font-size:30px;color:#0a1a0a;line-height:1.1;margin:3px 0;}
+.tc-pr span{font-family:'Heebo',sans-serif;font-size:11px;color:#555;font-weight:400;}
+.tc-feats{flex:1;font-size:12px;color:#222;line-height:2.2;margin:7px 0;font-weight:500;}
 .tc-feats div::before{content:'✓ ';color:var(--jade);font-weight:700;}
 .tc-btn{width:100%;padding:10px;border-radius:9px;border:none;cursor:pointer;
   font-family:'Cinzel',serif;font-size:11px;font-weight:700;letter-spacing:1.5px;transition:all .2s;}
@@ -135,9 +135,9 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .tc-cus{background:rgba(201,168,76,0.1);color:var(--jade);border:1.5px solid rgba(13,92,69,0.2)!important;border:none;}
 
 /* ── S3 PIZZA ── */
-#s3{background:var(--bg);padding:11px;}
-.s3-in{max-width:980px;margin:0 auto;height:100%;
-  display:grid;grid-template-columns:280px 1fr;gap:12px;}
+#s3{background:var(--bg);padding:11px;overflow-y:auto;}
+.s3-in{max-width:980px;margin:0 auto;min-height:100%;
+  display:grid;grid-template-columns:280px 1fr;gap:12px;padding-bottom:16px;}
 @media(max-width:700px){.s3-in{grid-template-columns:1fr;overflow:auto;}}
 .pizza-steps{display:flex;flex-direction:column;gap:7px;}
 .sc{background:var(--card);border-radius:11px;padding:11px 14px;
@@ -193,11 +193,11 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .val-row td{padding:9px 8px;vertical-align:middle;}
 .val-feat{display:flex;align-items:center;gap:7px;}
 .val-icon{font-size:18px;flex-shrink:0;}
-.val-fname{font-size:12px;font-weight:700;color:#1a2e1a;}
-.val-fdesc{font-size:10px;color:#888;margin-top:1px;}
+.val-fname{font-size:12px;font-weight:700;color:#0a1a0a;}
+.val-fdesc{font-size:10px;color:#555;margin-top:1px;}
 .val-num{font-family:'Abril Fatface',serif;font-size:20px;color:var(--jade);line-height:1;}
-.val-unit{font-size:10px;color:#666;margin-top:1px;}
-.val-num2{font-family:'Abril Fatface',serif;font-size:20px;color:#1a2e1a;line-height:1;}
+.val-unit{font-size:10px;color:#444;margin-top:1px;}
+.val-num2{font-family:'Abril Fatface',serif;font-size:20px;color:#0a1a0a;line-height:1;}
 .val-price-cell{text-align:left;}
 .val-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--jade);}
 .val-price.inactive{color:#aaa;}
@@ -242,8 +242,9 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .s4-hdr{text-align:center;}
 .s4-ttl{font-family:'Cinzel',serif;font-size:15px;color:var(--jade);letter-spacing:2px;}
 .s4-sub{font-size:11px;color:#555;margin-top:2px;}
-.s4-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;}
+.s4-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;}
 @media(max-width:540px){.s4-grid{grid-template-columns:1fr;overflow:auto;}}
+#s4 .s4-in{overflow-y:auto;padding-bottom:16px;}
 
 .pay-card{background:var(--card);border-radius:14px;padding:16px;
   box-shadow:var(--shadow);border:1.5px solid rgba(13,92,69,0.09);
@@ -452,13 +453,12 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         </div>
         <button class="tc-btn tc-cus" onclick="pickTier('custom')">בנה תוכנית מותאמת ←</button>
       </div>
-    </div>
-      <!-- GROUP CARD -->
+      <!-- GROUP CARD — inside grid = same row -->
       <div class="tc group">
         <img src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/images/group.jpg" class="tc-group-img" alt="Group Plan">
         <div class="tc-nm" style="color:#5c2ca8;">MERIDIAN קליניקה</div>
         <div class="tc-pr" style="font-size:16px;font-family:'Cinzel',serif;color:#5c2ca8;">תוכנית<br>קבוצתית</div>
-        <div class="tc-feats" style="font-size:11px;">
+        <div class="tc-feats" style="font-size:12px;">
           <div>2-10 מטפלים באותה קליניקה</div>
           <div>מחיר לפי מספר מטפלים</div>
           <div>ניהול מרכזי — חשבון אחד</div>
@@ -732,9 +732,15 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         </div>
         <div class="trial-box">🎁 <strong>14 יום ניסיון חינם</strong> — ללא חיוב עד לאחר הניסיון</div>
         <input class="linp" id="loginEmail" placeholder="your@email.com" type="email">
-        <input class="linp" id="loginPass" placeholder="סיסמה (8+ תווים)" type="password" oninput="checkPass()">
+        <div style="position:relative;">
+          <input class="linp" id="loginPass" placeholder="סיסמה (8+ תווים)" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
         <div class="pw-strength" id="pwStrength"></div>
-        <input class="linp" id="loginPass2" placeholder="אמת סיסמה" type="password" oninput="checkPass()">
+        <div style="position:relative;">
+          <input class="linp" id="loginPass2" placeholder="אמת סיסמה" type="password" oninput="checkPass()" style="padding-left:36px;">
+          <span onclick="togglePass('loginPass2',this)" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;">👁️</span>
+        </div>
         <div class="pw-strength" id="pwMatch"></div>
         <div class="login-note">לאחר תשלום — פרטים אלו ישמשו לכניסה ל-CRM</div>
         <button class="login-btn" onclick="demoLogin()">☯ צור חשבון וכנס ←</button>
@@ -927,9 +933,6 @@ function upTable(){
   document.getElementById('va_price').className='val-price'+(aOn?'':' inactive');
   setHTML('va_badge',`<span class="val-add-badge ${aOn?'':'off'}">${aOn?'פעיל ✓':'לא פעיל'}</span>`);
 
-  // Update trans price badge on addon toggle row
-  set('trans_price_badge', '+$'+T.transPrice);
-
   // Row 4: Transcription
   const tOn=pizza.trans;
   document.getElementById('vr_trans').className='val-row '+(tOn?'active':'inactive');
@@ -1003,13 +1006,20 @@ function waGroup(){
 function demoPayment(){
   alert('✅ DEMO\nבשלב P3 כאן יהיה חיבור אמיתי ל-Stripe.\nבינתיים — צור חשבון + שלח WhatsApp לאישור ידני.');
 }
+function togglePass(id, icon){
+  const el = document.getElementById(id);
+  if(el.type === 'password'){ el.type = 'text'; icon.textContent = '🙈'; }
+  else { el.type = 'password'; icon.textContent = '👁️'; }
+}
+
 function demoLogin(){
   const e=document.getElementById('loginEmail').value;
   const p=document.getElementById('loginPass').value;
   if(!e||!p){alert('נא מלא אימייל וסיסמה');return;}
   if(p.length<8){alert('סיסמה — לפחות 8 תווים');return;}
   const pl=document.getElementById('loginPl').textContent;
-  alert(`✅ DEMO\n${reg.first||'מטפל'} — החשבון נוצר!\n📧 ${e}\n☯ ${pl}\n\nב-P3: Supabase Auth → כניסה ל-CRM.`);
+  alert(`✅ DEMO\n${reg.first||'מטפל'} — החשבון נוצר!\n📧 ${e}\n☯ ${pl}\n\nמעביר אותך ל-CRM...`);
+  window.location.href = 'crm.html';
 }
 
 // ─── INIT ───
