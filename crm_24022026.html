@@ -16,8 +16,6 @@
 body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
   display:grid;grid-template-columns:260px 1fr;min-height:100vh;}
 @media(max-width:768px){body{grid-template-columns:1fr;}}
-
-/* ── SIDEBAR ── */
 .sidebar{background:var(--sidebar);color:white;display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;overflow-y:auto;}
 .sb-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
@@ -30,44 +28,32 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
 .sb-stat-n{font-size:22px;font-weight:900;color:#4adeac;}
 .sb-stat-l{font-size:10px;opacity:0.55;margin-top:1px;}
 .sb-menu{padding:12px 0;flex:1;}
-.sb-sec{font-size:10px;opacity:0.4;letter-spacing:0.12em;text-transform:uppercase;
-  padding:12px 20px 6px;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:11px 20px;
-  cursor:pointer;transition:all 0.15s;font-size:13px;font-weight:500;
-  border-right:3px solid transparent;}
+.sb-sec{font-size:10px;opacity:0.4;letter-spacing:0.12em;text-transform:uppercase;padding:12px 20px 6px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;
+  transition:all 0.15s;font-size:13px;font-weight:500;border-right:3px solid transparent;}
 .sb-item:hover{background:rgba(255,255,255,0.06);}
 .sb-item.on{background:rgba(13,92,99,0.35);border-right-color:#4adeac;color:#4adeac;}
 .sb-item .ico{font-size:16px;width:22px;text-align:center;}
 .sb-clock{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);
   font-family:monospace;font-size:16px;font-weight:900;color:#4adeac;letter-spacing:2px;}
-
-/* ── MAIN ── */
 .main{overflow-y:auto;max-height:100vh;}
 .topbar{background:var(--card);border-bottom:1px solid var(--border);
-  padding:16px 28px;display:flex;align-items:center;gap:14px;
-  position:sticky;top:0;z-index:100;}
+  padding:16px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
 .topbar h1{font-size:18px;font-weight:900;flex:1;}
 .search-box{display:flex;align-items:center;gap:8px;background:var(--bg);
   border:2px solid var(--border);border-radius:10px;padding:8px 14px;min-width:240px;}
-.search-box input{border:none;background:none;font-family:'Heebo',sans-serif;
-  font-size:13px;outline:none;flex:1;}
+.search-box input{border:none;background:none;font-family:'Heebo',sans-serif;font-size:13px;outline:none;flex:1;}
 .add-btn{background:linear-gradient(135deg,var(--teal),var(--teal-l));color:white;
   border:none;padding:10px 20px;border-radius:10px;font-family:'Heebo',sans-serif;
   font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
-
 .content{padding:24px 28px;}
-
-/* ── FILTER CHIPS ── */
 .filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
 .chip{padding:7px 16px;border-radius:20px;border:2px solid var(--border);background:var(--card);
-  font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;
-  font-family:'Heebo',sans-serif;}
+  font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;font-family:'Heebo',sans-serif;}
 .chip.on{background:var(--teal);color:white;border-color:var(--teal);}
 .sort-sel{padding:7px 14px;border:2px solid var(--border);border-radius:20px;
   font-family:'Heebo',sans-serif;font-size:12px;font-weight:700;outline:none;
   background:var(--card);cursor:pointer;appearance:none;}
-
-/* ── PATIENT TABLE ── */
 .table-wrap{background:var(--card);border-radius:16px;border:1px solid var(--border);
   box-shadow:0 2px 12px rgba(0,0,0,0.05);overflow:hidden;}
 .table-head{display:grid;grid-template-columns:44px 1fr 120px 120px 100px 80px 120px;
@@ -77,37 +63,25 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
   gap:0;padding:14px 20px;border-top:1px solid var(--border);align-items:center;
   cursor:pointer;transition:background 0.15s;}
 .patient-row:hover{background:#f8fafb;}
-.patient-row.selected{background:#e8f4f5;}
 @media(max-width:900px){
   .table-head,.patient-row{grid-template-columns:44px 1fr 100px 80px 100px;}
-  .col-hide{display:none;}
-}
+  .col-hide{display:none;}}
 .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-weight:900;font-size:14px;color:white;flex-shrink:0;}
 .p-name{font-weight:700;font-size:14px;}
 .p-sub{font-size:11px;color:var(--muted);margin-top:1px;}
-.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px;}
 .badge{display:inline-block;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;}
-.b-green{background:#d1fae5;color:#065f46;}
-.b-red{background:#fee2e2;color:#7f1d1d;}
-.b-gold{background:#fef3c7;color:#92400e;}
-.b-blue{background:#dbeafe;color:#1e40af;}
-.b-gray{background:#f3f4f6;color:#374151;}
-.b-purple{background:#ede9fe;color:#5b21b6;}
-.flag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;
-  margin-right:3px;}
-.f-allergy{background:#fee2e2;color:#7f1d1d;}
-.f-pregnant{background:#fce7f3;color:#831843;}
+.b-green{background:#d1fae5;color:#065f46;}.b-red{background:#fee2e2;color:#7f1d1d;}
+.b-blue{background:#dbeafe;color:#1e40af;}.b-gray{background:#f3f4f6;color:#374151;}
+.flag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;margin-right:3px;}
+.f-allergy{background:#fee2e2;color:#7f1d1d;}.f-pregnant{background:#fce7f3;color:#831843;}
 .f-meds{background:#fef3c7;color:#92400e;}
-
-/* ── DETAIL PANEL ── */
 .detail-panel{position:fixed;left:0;top:0;width:480px;height:100vh;background:var(--card);
   box-shadow:-4px 0 24px rgba(0,0,0,0.15);z-index:200;overflow-y:auto;
   transform:translateX(-100%);transition:transform 0.3s ease;}
 .detail-panel.open{transform:translateX(0);}
-@media(max-width:768px){.detail-panel{width:100%;right:0;left:0;}}
-.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;
-  display:none;}
+@media(max-width:768px){.detail-panel{width:100%;}}
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;display:none;}
 .panel-overlay.show{display:block;}
 .panel-top{background:linear-gradient(135deg,#0a3d44,var(--teal));color:white;
   padding:24px;display:flex;align-items:flex-start;gap:16px;}
@@ -116,16 +90,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
   background:rgba(255,255,255,0.2);flex-shrink:0;}
 .panel-name{font-size:20px;font-weight:900;margin-bottom:4px;}
 .panel-id{font-size:12px;opacity:0.7;font-family:monospace;}
-.panel-close{margin-right:auto;background:rgba(255,255,255,0.15);border:none;
-  color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;
+.panel-close{margin-right:auto;background:rgba(255,255,255,0.15);border:none;color:white;
+  width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .panel-body{padding:20px;}
 .sec-block{margin-bottom:20px;}
 .sec-title{font-size:11px;font-weight:800;color:var(--teal);text-transform:uppercase;
-  letter-spacing:0.1em;margin-bottom:12px;padding-bottom:6px;
-  border-bottom:2px solid var(--border);}
+  letter-spacing:0.1em;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--border);}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.info-item{}
 .info-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;
   letter-spacing:0.05em;margin-bottom:3px;}
 .info-val{font-size:13px;font-weight:600;color:var(--ink);}
@@ -143,88 +115,38 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--ink);
 .pa-whatsapp{background:#22c55e;color:white;}
 .pa-print{background:#7c3aed;color:white;}
 .pa-edit{background:#f3f4f6;color:var(--ink);}
-
-/* EMPTY + LOADING */
 .empty{text-align:center;padding:60px 20px;color:var(--muted);}
 .empty-ico{font-size:56px;margin-bottom:12px;}
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
 .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);
   border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite;margin-left:8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* DASHBOARD BACK BUTTON */
-.dash-back{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--gold,#c9933a),#e8a84c);
-  color:white!important;text-decoration:none!important;padding:8px 16px;border-radius:10px;
-  font-family:'Heebo',sans-serif;font-size:12px;font-weight:800;border:none;cursor:pointer;
-  box-shadow:0 3px 12px rgba(201,147,58,0.4);
-  animation:dashPulse 2.5s ease-in-out infinite;}
-.dash-back:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,147,58,0.6);animation:none;}
-@keyframes dashPulse{0%,100%{box-shadow:0 3px 12px rgba(201,147,58,0.4);}50%{box-shadow:0 3px 20px rgba(201,147,58,0.8);}}
-/* THERAPIST NAME BADGE */
-.therapist-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);
-  color:white;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;}
-/* FOOTER BACK BAR */
-.footer-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;
-  background:rgba(10,61,68,0.95);backdrop-filter:blur(8px);
-  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
-  border-top:2px solid rgba(201,147,58,0.5);}
-.footer-bar .footer-module{font-size:11px;color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;}
-.footer-bar .footer-user{font-size:11px;color:#4adeac;font-family:'Heebo',sans-serif;font-weight:700;}
+.dash-back{display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,#c9933a,#e8a84c);color:white!important;
+  text-decoration:none!important;padding:8px 16px;border-radius:10px;
+  font-family:'Heebo',sans-serif;font-size:12px;font-weight:800;cursor:pointer;}
+.dash-back:hover{transform:translateY(-2px);}
+.therapist-badge{display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.15);color:white;padding:5px 12px;
+  border-radius:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;}
 body{padding-bottom:52px;}
-
-/* ── SOS LOG BADGE (animated) ───────────────────────────────── */
-.sos-badge-wrap{
-  background:linear-gradient(135deg,#1a0000,#3b0000);
-  border:2px solid #dc2626;border-radius:12px;
-  padding:14px 16px;margin-bottom:14px;
-  position:relative;overflow:hidden;
-}
-.sos-badge-wrap::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(220,38,38,0.08),transparent);
-  animation:sosSweep 2.5s linear infinite;
-}
-@keyframes sosSweep{from{transform:translateX(-100%);}to{transform:translateX(100%);}}
-.sos-badge-title{
-  display:flex;align-items:center;gap:10px;
-  font-size:13px;font-weight:900;color:#ff4444;
-  font-family:'Heebo',sans-serif;margin-bottom:10px;
-}
-.sos-badge-icon{
-  width:32px;height:32px;border-radius:50%;
-  background:#dc2626;display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
-  box-shadow:0 0 0 0 rgba(220,38,38,0.7);
-  animation:sosBadgePulse 1.4s infinite;
-}
-@keyframes sosBadgePulse{
-  0%{box-shadow:0 0 0 0 rgba(220,38,38,0.7);}
-  70%{box-shadow:0 0 0 14px rgba(220,38,38,0);}
-  100%{box-shadow:0 0 0 0 rgba(220,38,38,0);}
-}
-.sos-event-row{
-  background:rgba(220,38,38,0.1);border-radius:8px;
-  padding:10px 12px;margin-bottom:6px;border-right:3px solid #dc2626;
-  font-family:'Heebo',sans-serif;
-}
-.sos-event-row:last-child{margin-bottom:0;}
+.sos-badge-wrap{background:linear-gradient(135deg,#1a0000,#3b0000);
+  border:2px solid #dc2626;border-radius:12px;padding:14px 16px;margin-bottom:14px;
+  position:relative;overflow:hidden;}
+.sos-badge-title{display:flex;align-items:center;gap:10px;font-size:13px;
+  font-weight:900;color:#ff4444;font-family:'Heebo',sans-serif;margin-bottom:10px;}
+.sos-badge-icon{width:32px;height:32px;border-radius:50%;background:#dc2626;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sos-event-row{background:rgba(220,38,38,0.1);border-radius:8px;padding:10px 12px;
+  margin-bottom:6px;border-right:3px solid #dc2626;font-family:'Heebo',sans-serif;}
 .sos-event-date{font-size:10px;color:#fca5a5;font-weight:700;margin-bottom:4px;}
 .sos-event-note{font-size:12px;color:#fecaca;line-height:1.6;}
-.sos-event-meta{font-size:10px;color:rgba(252,165,165,0.6);margin-top:4px;}
-
 </style>
 </head>
 <body>
-
-<!-- OVERLAY -->
 <div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detailPanel"><div id="panelContent"></div></div>
 
-<!-- PATIENT DETAIL PANEL -->
-<div class="detail-panel" id="detailPanel">
-  <div id="panelContent"><!-- filled dynamically --></div>
-</div>
-
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sb-logo">
     <div class="clinic">TCM Clinic System</div>
@@ -232,22 +154,10 @@ body{padding-bottom:52px;}
     <div class="sub">Patient Management</div>
   </div>
   <div class="sb-stats">
-    <div class="sb-stat">
-      <div class="sb-stat-n" id="sbTotal">—</div>
-      <div class="sb-stat-l">מטופלים</div>
-    </div>
-    <div class="sb-stat">
-      <div class="sb-stat-n" id="sbToday" style="color:#fbbf24;">—</div>
-      <div class="sb-stat-l">היום</div>
-    </div>
-    <div class="sb-stat">
-      <div class="sb-stat-n" id="sbAlerts" style="color:#f87171;">—</div>
-      <div class="sb-stat-l">התראות</div>
-    </div>
-    <div class="sb-stat">
-      <div class="sb-stat-n" id="sbPregnant" style="color:#f9a8d4;">—</div>
-      <div class="sb-stat-l">הריון</div>
-    </div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sbTotal">—</div><div class="sb-stat-l">מטופלים</div></div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sbToday" style="color:#fbbf24;">—</div><div class="sb-stat-l">היום</div></div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sbAlerts" style="color:#f87171;">—</div><div class="sb-stat-l">התראות</div></div>
+    <div class="sb-stat"><div class="sb-stat-n" id="sbPregnant" style="color:#f9a8d4;">—</div><div class="sb-stat-l">הריון</div></div>
   </div>
   <nav class="sb-menu">
     <div class="sb-sec">ניווט</div>
@@ -262,20 +172,17 @@ body{padding-bottom:52px;}
   <div class="sb-clock" id="sbClock">00:00:00</div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <h1 id="viewTitle">👥 כל המטופלים</h1>
     <div class="search-box">
       <span>🔍</span>
-      <input type="text" id="searchInput" placeholder="חפש שם, ת.ז., טלפון..."
-        oninput="handleSearch(this.value)">
+      <input type="text" id="searchInput" placeholder="חפש שם, ת.ז., טלפון..." oninput="handleSearch(this.value)">
     </div>
     <span class="therapist-badge therapist-name-slot" style="display:none;background:rgba(13,92,99,0.1);color:var(--teal);"></span>
     <a href="dashboard_24022026.html" class="dash-back">🏠 דשבורד</a>
     <button class="add-btn" onclick="location.href='patient_intake_v3_23022026.html'">➕ מטופל חדש</button>
   </div>
-
   <div class="content">
     <div class="filter-row">
       <span class="chip on" onclick="setChip('all',this)">הכל</span>
@@ -289,20 +196,13 @@ body{padding-bottom:52px;}
         <option value="age">🔢 לפי גיל</option>
       </select>
     </div>
-
     <div class="table-wrap">
       <div class="table-head">
-        <div></div>
-        <div>שם מטופל</div>
-        <div class="col-hide">טלפון</div>
-        <div class="col-hide">תאריך לידה</div>
-        <div>דגלים</div>
-        <div>גיל</div>
-        <div>נרשם</div>
+        <div></div><div>שם מטופל</div>
+        <div class="col-hide">טלפון</div><div class="col-hide">תאריך לידה</div>
+        <div>דגלים</div><div>גיל</div><div>נרשם</div>
       </div>
-      <div id="patientTable">
-        <div class="loading">טוען מטופלים... <span class="spinner"></span></div>
-      </div>
+      <div id="patientTable"><div class="loading">טוען מטופלים... <span class="spinner"></span></div></div>
     </div>
   </div>
 </div>
@@ -312,473 +212,226 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── STATE ─────────────────────────────────────────────────────
-let allPatients = [];
-let filtered = [];
-let activeChip = 'all';
-let activeSort = 'recent';
-let searchTerm = '';
-let currentView = 'patients';
+let allPatients=[], filtered=[], activeChip='all', activeSort='recent', searchTerm='', currentView='patients';
 
-// ── CLOCK ─────────────────────────────────────────────────────
-setInterval(() => {
-  const n = new Date();
-  document.getElementById('sbClock').textContent =
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('sbClock').textContent=
     `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-}, 1000);
+},1000);
 
-// ── LOAD DATA ─────────────────────────────────────────────────
-async function loadPatients() {
-  try {
-    const { data, error } = await db
-      .from('patients')
-      .select(`*, patient_assessments(form_data, pregnancy_status, created_at)`)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    allPatients = (data || []).map(p => {
-      const assessment = p.patient_assessments?.[0];
-      const fd = assessment?.form_data || {};
-      return {
-        id: p.id,
-        full_name: p.full_name || '—',
-        phone: p.phone || fd.phone_mobile || '—',
-        email: p.email || fd.email || '—',
-        dob: p.date_of_birth || fd.date_of_birth,
-        gender: p.sex || fd.gender || '—',
-        id_number: p.id_number || fd.national_id || '—',
-        created_at: p.created_at,
-        age: p.date_of_birth ? Math.floor((new Date()-new Date(p.date_of_birth))/(365.25*24*60*60*1000)) : (fd.age || '—'),
-        // Flags from form_data
-        allergies: fd.allergies || assessment?.form_data?.allergies || '',
-        medications: fd.current_medications || '',
-        pregnancy: fd.pregnancy_data || null,
-        chief_complaint: fd.chief_complaint || '',
-        current_symptoms: fd.current_symptoms || '',
-        previous_conditions: fd.previous_conditions || '',
-        diet: fd.diet || fd.diet_description || '',
-        stress: fd.lifestyle?.stress_level || fd.stress_level || '',
-        sleep: fd.lifestyle?.sleep_hours || fd.sleep_hours || '',
-        address: fd.address || '',
-        occupation: fd.occupation || '',
-        marital: fd.marital_status || '',
-        emergency: fd.emergency || {},
-        consent: fd.consent || {},
-        patient_id_code: fd.patient_id_code || '',
-        raw_fd: fd
+async function loadPatients(){
+  try{
+    const{data,error}=await db.from('patients')
+      .select(`*, patient_assessments(form_data,pregnancy_status,created_at)`)
+      .order('created_at',{ascending:false});
+    if(error)throw error;
+    allPatients=(data||[]).map(p=>{
+      const assessment=p.patient_assessments?.[0];
+      const fd=assessment?.form_data||{};
+      return{
+        id:p.id, full_name:p.full_name||'—', phone:p.phone||fd.phone_mobile||'—',
+        email:p.email||fd.email||'—', dob:p.date_of_birth||fd.date_of_birth,
+        gender:p.sex||fd.gender||'—', id_number:p.id_number||fd.national_id||'—',
+        created_at:p.created_at,
+        age:p.date_of_birth?Math.floor((new Date()-new Date(p.date_of_birth))/(365.25*24*60*60*1000)):(fd.age||'—'),
+        allergies:fd.allergies||'', medications:fd.current_medications||'',
+        pregnancy:fd.pregnancy_data||null, chief_complaint:fd.chief_complaint||'',
+        current_symptoms:fd.current_symptoms||'', previous_conditions:fd.previous_conditions||'',
+        diet:fd.diet||fd.diet_description||'', stress:fd.lifestyle?.stress_level||fd.stress_level||'',
+        sleep:fd.lifestyle?.sleep_hours||fd.sleep_hours||'', address:fd.address||'',
+        occupation:fd.occupation||'', emergency:fd.emergency||{}, consent:fd.consent||{},
+        patient_id_code:fd.patient_id_code||''
       };
     });
-    updateStats();
-    applyFilters();
-  } catch(err) {
-    console.error('Load error:', err);
-    document.getElementById('patientTable').innerHTML =
-      `<div class="empty"><div class="empty-ico">⚠️</div>
-      <div>שגיאה בטעינה: ${err.message}<br><small>בדוק חיבור Supabase</small></div></div>`;
+    updateStats(); applyFilters();
+  }catch(err){
+    document.getElementById('patientTable').innerHTML=
+      `<div class="empty"><div class="empty-ico">⚠️</div><div>שגיאה: ${err.message}</div></div>`;
   }
 }
 
-// ── STATS ─────────────────────────────────────────────────────
-function updateStats() {
-  document.getElementById('sbTotal').textContent = allPatients.length;
-  const today = new Date().toDateString();
-  document.getElementById('sbToday').textContent =
-    allPatients.filter(p => new Date(p.created_at).toDateString() === today).length;
-  document.getElementById('sbAlerts').textContent =
-    allPatients.filter(p => p.allergies && p.allergies.trim() && p.allergies.toLowerCase() !== 'none').length;
-  document.getElementById('sbPregnant').textContent =
-    allPatients.filter(p => p.pregnancy?.is_pregnant).length;
+function updateStats(){
+  document.getElementById('sbTotal').textContent=allPatients.length;
+  const today=new Date().toDateString();
+  document.getElementById('sbToday').textContent=allPatients.filter(p=>new Date(p.created_at).toDateString()===today).length;
+  document.getElementById('sbAlerts').textContent=allPatients.filter(p=>p.allergies&&p.allergies.trim()&&p.allergies.toLowerCase()!=='none').length;
+  document.getElementById('sbPregnant').textContent=allPatients.filter(p=>p.pregnancy?.is_pregnant).length;
 }
 
-// ── FILTERS ───────────────────────────────────────────────────
-function applyFilters() {
-  filtered = allPatients.filter(p => {
-    // search
-    if (searchTerm) {
-      const s = searchTerm.toLowerCase();
-      if (!p.full_name.toLowerCase().includes(s) &&
-          !p.phone.includes(s) && !p.id_number.includes(s)) return false;
-    }
-    // chip
-    if (activeChip === 'allergy') return p.allergies && p.allergies.trim();
-    if (activeChip === 'pregnant') return p.pregnancy?.is_pregnant || p.pregnancy?.trying_to_conceive;
-    if (activeChip === 'meds') return p.medications && p.medications.trim();
-    if (activeChip === 'recent') {
-      if(!p.created_at) return true;
-      const d = new Date(); d.setDate(d.getDate()-60);
-      return new Date(p.created_at) > d;
-    }
-    // view
-    if (currentView === 'alerts') return p.allergies && p.allergies.trim();
-    if (currentView === 'pregnant') return p.pregnancy?.is_pregnant || p.pregnancy?.trying_to_conceive;
-    if (currentView === 'recent') {
-      if(!p.created_at) return true; // if no date, show anyway
-      const d = new Date(); d.setDate(d.getDate()-60); // extended to 60 days
-      return new Date(p.created_at) > d;
-    }
+function applyFilters(){
+  filtered=allPatients.filter(p=>{
+    if(searchTerm){const s=searchTerm.toLowerCase();if(!p.full_name.toLowerCase().includes(s)&&!p.phone.includes(s)&&!p.id_number.includes(s))return false;}
+    if(activeChip==='allergy')return p.allergies&&p.allergies.trim();
+    if(activeChip==='pregnant')return p.pregnancy?.is_pregnant||p.pregnancy?.trying_to_conceive;
+    if(activeChip==='meds')return p.medications&&p.medications.trim();
+    if(activeChip==='recent'){const d=new Date();d.setDate(d.getDate()-60);return new Date(p.created_at)>d;}
+    if(currentView==='alerts')return p.allergies&&p.allergies.trim();
+    if(currentView==='pregnant')return p.pregnancy?.is_pregnant||p.pregnancy?.trying_to_conceive;
+    if(currentView==='recent'){const d=new Date();d.setDate(d.getDate()-60);return new Date(p.created_at)>d;}
     return true;
   });
-
-  // sort
-  if (activeSort === 'name') filtered.sort((a,b) => a.full_name.localeCompare(b.full_name, 'he'));
-  else if (activeSort === 'age') filtered.sort((a,b) => (parseInt(b.age)||0)-(parseInt(a.age)||0));
-  else filtered.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
-
+  if(activeSort==='name')filtered.sort((a,b)=>a.full_name.localeCompare(b.full_name,'he'));
+  else if(activeSort==='age')filtered.sort((a,b)=>(parseInt(b.age)||0)-(parseInt(a.age)||0));
+  else filtered.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   renderTable();
 }
 
-// ── RENDER TABLE ──────────────────────────────────────────────
-function renderTable() {
-  const el = document.getElementById('patientTable');
-  if (filtered.length === 0) {
-    el.innerHTML = `<div class="empty"><div class="empty-ico">👥</div>
-      <div>אין מטופלים להצגה</div></div>`;
-    return;
-  }
-
-  const colors = ['#0d5c63','#7c3aed','#c9933a','#dc2626','#059669','#2563eb','#db2777'];
-  el.innerHTML = filtered.map((p, i) => {
-    const initials = p.full_name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '??';
-    const color = colors[i % colors.length];
-    const flags = [
-      p.allergies && p.allergies.trim() ? `<span class="flag f-allergy">⚠️ אלרגיה</span>` : '',
-      p.pregnancy?.is_pregnant ? `<span class="flag f-pregnant">🤰 הריון ש${p.pregnancy.pregnancy_weeks||'?'}</span>` : '',
-      p.pregnancy?.trying_to_conceive ? `<span class="flag f-pregnant">🌸 מנסה</span>` : '',
-      p.medications && p.medications.trim() ? `<span class="flag f-meds">💊 תרופות</span>` : ''
+function renderTable(){
+  const el=document.getElementById('patientTable');
+  if(!filtered.length){el.innerHTML=`<div class="empty"><div class="empty-ico">👥</div><div>אין מטופלים</div></div>`;return;}
+  const colors=['#0d5c63','#7c3aed','#c9933a','#dc2626','#059669','#2563eb','#db2777'];
+  el.innerHTML=filtered.map((p,i)=>{
+    const initials=p.full_name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'??';
+    const color=colors[i%colors.length];
+    const flags=[
+      p.allergies&&p.allergies.trim()?`<span class="flag f-allergy">⚠️ אלרגיה</span>`:'',
+      p.pregnancy?.is_pregnant?`<span class="flag f-pregnant">🤰 הריון</span>`:'',
+      p.pregnancy?.trying_to_conceive?`<span class="flag f-pregnant">🌸 מנסה</span>`:'',
+      p.medications&&p.medications.trim()?`<span class="flag f-meds">💊 תרופות</span>`:''
     ].filter(Boolean).join('');
-    const dateStr = p.created_at ? new Date(p.created_at).toLocaleDateString('he-IL') : '—';
-    const dobStr = p.dob ? new Date(p.dob).toLocaleDateString('he-IL') : '—';
-    return `
-    <div class="patient-row" onclick="openPatient('${p.id}')">
+    const dateStr=p.created_at?new Date(p.created_at).toLocaleDateString('he-IL'):'—';
+    const dobStr=p.dob?new Date(p.dob).toLocaleDateString('he-IL'):'—';
+    return`<div class="patient-row" onclick="openPatient('${p.id}')">
       <div><div class="avatar" style="background:${color}">${initials}</div></div>
-      <div>
-        <div class="p-name">${p.full_name}</div>
-        <div class="p-sub">${p.patient_id_code || p.id.slice(0,8)}</div>
-      </div>
+      <div><div class="p-name">${p.full_name}</div><div class="p-sub">${p.patient_id_code||p.id.slice(0,8)}</div></div>
       <div class="col-hide"><div class="p-sub">${p.phone}</div></div>
       <div class="col-hide"><div class="p-sub">${dobStr}</div></div>
-      <div>${flags || '<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
+      <div>${flags||'<span style="color:var(--muted);font-size:11px;">—</span>'}</div>
       <div><span class="badge b-gray">${p.age}</span></div>
       <div><span class="badge b-blue">${dateStr}</span></div>
     </div>`;
   }).join('');
 }
 
-// ── OPEN PATIENT DETAIL ───────────────────────────────────────
-function openPatient(id) {
-  const p = allPatients.find(x => x.id === id);
-  if (!p) return;
-  const colors = ['#0d5c63','#7c3aed','#c9933a','#dc2626','#059669'];
-  const color = colors[Math.abs(id.charCodeAt(0)) % colors.length];
-  const initials = p.full_name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-  const preg = p.pregnancy;
-
-  // ── SOS LOG CHECK ──────────────────────────────────────────
-  // Fetch any SOS events from appointments for this patient
-  // (done async, injected after panel opens)
-  setTimeout(function(){ loadSosLog(id); }, 300);
-
-  // Build warnings
-  let warnings = '';
-  if (p.allergies && p.allergies.trim()) {
-    warnings += `<div class="warn-box red">
-      <div class="warn-title">⚠️ אלרגיות — ALLERGIES</div>
-      <div class="warn-list">${p.allergies}</div>
-    </div>`;
-  }
-  if (preg?.is_pregnant) {
-    warnings += `<div class="warn-box pink">
-      <div class="warn-title">🤰 הריון — שבוע ${preg.pregnancy_weeks || '?'} | טרימסטר ${preg.trimester || '?'}</div>
-      <div class="warn-list">
-        <strong>נקודות אסורות:</strong><br>
-        ${(preg.forbidden_points?.always_forbidden || []).join(', ')}<br><br>
-        <strong>צמחים אסורים:</strong><br>
-        ${(preg.critical_herbs_warning?.always_forbidden || []).slice(0,5).join(', ')}...
-      </div>
-    </div>`;
-  }
-  if (preg?.trying_to_conceive) {
-    warnings += `<div class="warn-box orange">
-      <div class="warn-title">🌸 מנסה להרות — זהירות בנקודות LI4, SP6</div>
-    </div>`;
-  }
-  if (preg?.breastfeeding) {
-    warnings += `<div class="warn-box orange">
-      <div class="warn-title">🍼 מניקה — בדוק צמחי מרפא</div>
-    </div>`;
-  }
-  if (p.medications && p.medications.trim()) {
-    warnings += `<div class="warn-box orange">
-      <div class="warn-title">💊 תרופות נוכחיות</div>
-      <div class="warn-list">${p.medications}</div>
-    </div>`;
-  }
-
-  const waMsg = encodeURIComponent(
-    `שלום ${p.full_name.split(' ')[0]}, קליניקת TCM רוצה לתאם איתך תור. מתי נוח לך?`
-  );
-
-  document.getElementById('panelContent').innerHTML = `
+function openPatient(id){
+  const p=allPatients.find(x=>x.id===id);if(!p)return;
+  const colors=['#0d5c63','#7c3aed','#c9933a','#dc2626','#059669'];
+  const color=colors[Math.abs(id.charCodeAt(0))%colors.length];
+  const initials=p.full_name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const preg=p.pregnancy;
+  setTimeout(()=>loadSosLog(id),300);
+  let warnings='';
+  if(p.allergies&&p.allergies.trim())warnings+=`<div class="warn-box red"><div class="warn-title">⚠️ אלרגיות</div><div class="warn-list">${p.allergies}</div></div>`;
+  if(preg?.is_pregnant)warnings+=`<div class="warn-box pink"><div class="warn-title">🤰 הריון — שבוע ${preg.pregnancy_weeks||'?'}</div><div class="warn-list"><strong>נקודות אסורות:</strong> ${(preg.forbidden_points?.always_forbidden||[]).join(', ')}</div></div>`;
+  if(preg?.trying_to_conceive)warnings+=`<div class="warn-box orange"><div class="warn-title">🌸 מנסה להרות — זהירות LI4, SP6</div></div>`;
+  if(preg?.breastfeeding)warnings+=`<div class="warn-box orange"><div class="warn-title">🍼 מניקה — בדוק צמחי מרפא</div></div>`;
+  if(p.medications&&p.medications.trim())warnings+=`<div class="warn-box orange"><div class="warn-title">💊 תרופות</div><div class="warn-list">${p.medications}</div></div>`;
+  const waMsg=encodeURIComponent(`שלום ${p.full_name.split(' ')[0]}, קליניקת TCM רוצה לתאם איתך תור`);
+  document.getElementById('panelContent').innerHTML=`
     <div class="panel-top">
       <div class="panel-avatar" style="background:${color}">${initials}</div>
       <div style="flex:1;">
         <div class="panel-name">${p.full_name}</div>
-        <div class="panel-id">${p.patient_id_code || p.id.slice(0,8)}</div>
+        <div class="panel-id">${p.patient_id_code||p.id.slice(0,8)}</div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
-          ${p.gender ? `<span class="badge b-gray" style="background:rgba(255,255,255,0.15);color:white;">${p.gender.split('/')[0]}</span>` : ''}
-          ${p.age ? `<span class="badge b-gray" style="background:rgba(255,255,255,0.15);color:white;">גיל ${p.age}</span>` : ''}
+          ${p.gender?`<span style="background:rgba(255,255,255,0.15);color:white;padding:3px 9px;border-radius:8px;font-size:11px;">${p.gender.split('/')[0]}</span>`:''}
+          ${p.age?`<span style="background:rgba(255,255,255,0.15);color:white;padding:3px 9px;border-radius:8px;font-size:11px;">גיל ${p.age}</span>`:''}
         </div>
       </div>
       <button class="panel-close" onclick="closePanel()">✕</button>
     </div>
     <div class="panel-body">
-
       <div id="sosPanelLog_${p.id.replace(/-/g,'_')}"></div>
-
-      ${warnings ? `<div class="sec-block"><div class="sec-title">🚨 התראות טיפול — TREATMENT ALERTS</div>${warnings}</div>` : ''}
-
+      ${warnings?`<div class="sec-block"><div class="sec-title">🚨 התראות טיפול</div>${warnings}</div>`:''}
       <div class="sec-block">
         <div class="sec-title">📞 פרטי קשר</div>
         <div class="info-grid">
-          <div class="info-item"><div class="info-label">טלפון</div><div class="info-val">${p.phone}</div></div>
-          <div class="info-item"><div class="info-label">דוא"ל</div><div class="info-val" style="font-size:11px;">${p.email}</div></div>
-          <div class="info-item"><div class="info-label">ת.ז.</div><div class="info-val">${p.id_number}</div></div>
-          <div class="info-item"><div class="info-label">גיל / DOB</div><div class="info-val">${p.age} | ${p.dob ? new Date(p.dob).toLocaleDateString('he-IL') : '—'}</div></div>
-          ${p.occupation ? `<div class="info-item"><div class="info-label">מקצוע</div><div class="info-val">${p.occupation}</div></div>` : ''}
-          ${p.address ? `<div class="info-item" style="grid-column:span 2;"><div class="info-label">כתובת</div><div class="info-val">${p.address}</div></div>` : ''}
+          <div><div class="info-label">טלפון</div><div class="info-val">${p.phone}</div></div>
+          <div><div class="info-label">דוא"ל</div><div class="info-val" style="font-size:11px;">${p.email}</div></div>
+          <div><div class="info-label">ת.ז.</div><div class="info-val">${p.id_number}</div></div>
+          <div><div class="info-label">גיל</div><div class="info-val">${p.age}</div></div>
+          ${p.occupation?`<div><div class="info-label">מקצוע</div><div class="info-val">${p.occupation}</div></div>`:''}
+          ${p.address?`<div style="grid-column:span 2;"><div class="info-label">כתובת</div><div class="info-val">${p.address}</div></div>`:''}
         </div>
-        ${p.emergency?.name ? `<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:12px;">
-          🚨 <strong>חירום:</strong> ${p.emergency.name} (${p.emergency.relationship||''}) — ${p.emergency.phone||''}
-        </div>` : ''}
       </div>
-
       <div class="sec-block">
         <div class="sec-title">🏥 סיבת פנייה</div>
-        ${p.chief_complaint ? `<div style="font-size:13px;line-height:1.6;padding:10px;background:var(--bg);border-radius:8px;">${p.chief_complaint}</div>` : '<div style="color:var(--muted);font-size:13px;">לא צוין</div>'}
-        ${p.current_symptoms ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">תסמינים: ${p.current_symptoms}</div>` : ''}
-        ${p.previous_conditions ? `<div style="margin-top:6px;font-size:12px;color:var(--muted);">היסטוריה: ${p.previous_conditions}</div>` : ''}
+        ${p.chief_complaint?`<div style="font-size:13px;line-height:1.6;padding:10px;background:var(--bg);border-radius:8px;">${p.chief_complaint}</div>`:'<div style="color:var(--muted);font-size:13px;">לא צוין</div>'}
       </div>
-
-      <div class="sec-block">
-        <div class="sec-title">🌿 אורח חיים</div>
-        <div class="info-grid">
-          ${p.diet ? `<div class="info-item"><div class="info-label">תזונה</div><div class="info-val">${p.diet}</div></div>` : ''}
-          ${p.sleep ? `<div class="info-item"><div class="info-label">שינה</div><div class="info-val">${p.sleep} שעות</div></div>` : ''}
-          ${p.stress ? `<div class="info-item"><div class="info-label">לחץ</div><div class="info-val">${p.stress}/10</div></div>` : ''}
-        </div>
-      </div>
-
       <div class="sec-block">
         <div class="sec-title">✅ הסכמות</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12px;">
-          <span class="badge ${p.consent?.treatment ? 'b-green' : 'b-red'}">
-            ${p.consent?.treatment ? '✅' : '❌'} טיפול</span>
-          <span class="badge ${p.consent?.privacy ? 'b-green' : 'b-red'}">
-            ${p.consent?.privacy ? '✅' : '❌'} פרטיות</span>
-          <span class="badge ${p.consent?.accuracy ? 'b-green' : 'b-red'}">
-            ${p.consent?.accuracy ? '✅' : '❌'} דיוק</span>
+          <span class="badge ${p.consent?.treatment?'b-green':'b-red'}">${p.consent?.treatment?'✅':'❌'} טיפול</span>
+          <span class="badge ${p.consent?.privacy?'b-green':'b-red'}">${p.consent?.privacy?'✅':'❌'} פרטיות</span>
         </div>
       </div>
-
       <div class="action-row">
         <button class="pa-btn pa-session" onclick="startSession('${id}')">▶️ התחל טיפול</button>
-        <button class="pa-btn pa-whatsapp" onclick="window.open('https://wa.me/${p.phone.replace(/[^0-9]/,'')}?text=${waMsg}','_blank')">💬 WA</button>
+        <button class="pa-btn pa-whatsapp" onclick="window.open('https://wa.me/972${p.phone.replace(/[^0-9]/g,'')}?text=${waMsg}','_blank')">💬 WA</button>
         <button class="pa-btn pa-print" onclick="window.print()">🖨️</button>
         <button class="pa-btn pa-edit">✏️ ערוך</button>
       </div>
     </div>`;
-
   document.getElementById('detailPanel').classList.add('open');
   document.getElementById('overlay').classList.add('show');
 }
 
-
-// ── SOS LOG LOADER (CRM) ─────────────────────────────────────
-async function loadSosLog(patientId) {
-  var dbC = typeof db !== 'undefined' ? db : null;
-  if(!dbC) return;
-  try {
-    // 1. Check patients.sos_log column — may not exist, ignore 400
-    var pData = null;
-    try {
-      var { data: pd, error: pe } = await dbC.from('patients')
-        .select('sos_log').eq('id', patientId).single();
-      if (!pe) pData = pd;
-    } catch(e) { /* column missing — skip */ }
-
-    // 2. Check appointments.sos_event — may not exist, ignore 400
-    var aptData = null;
-    try {
-      var { data: ad, error: ae } = await dbC.from('appointments')
-        .select('sos_event,start_datetime,therapist_name')
-        .eq('patient_id', patientId)
-        .not('sos_event', 'is', null)
-        .order('start_datetime', {ascending:false})
-        .limit(10);
-      if (!ae) aptData = ad;
-    } catch(e) { /* column missing — skip */ }
-
-    var events = [];
-    if(pData && pData.sos_log) {
-      try {
-        var log = Array.isArray(pData.sos_log) ? pData.sos_log : JSON.parse(pData.sos_log);
-        events = events.concat(log);
-      } catch(e){}
-    }
-    if(aptData && aptData.length) {
-      aptData.forEach(function(a){
-        if(a.sos_event && a.sos_event.triggered_at) events.push(a.sos_event);
-      });
-    }
-
-    // Deduplicate by triggered_at
-    var seen = {};
-    events = events.filter(function(e){
-      if(!e.triggered_at) return true;
-      if(seen[e.triggered_at]) return false;
-      seen[e.triggered_at] = true;
-      return true;
-    });
-    // Sort newest first
-    events.sort(function(a,b){ return new Date(b.triggered_at)-new Date(a.triggered_at); });
-
-    // Find the container (panel might have been re-opened with different patient)
-    var safeId = patientId.replace(/-/g,'_');
-    var container = document.getElementById('sosPanelLog_' + safeId);
-    if(!container) return;
-
-    if(!events.length) { container.innerHTML=''; return; }
-
-    var html = '<div class="sec-block"><div class="sos-badge-wrap">';
-    html += '<div class="sos-badge-title"><div class="sos-badge-icon">🚨</div>';
-    html += '<span>היסטוריית אירועי חירום — SOS LOG (' + events.length + ')</span></div>';
-
-    events.forEach(function(ev) {
-      var dt = ev.triggered_at ? new Date(ev.triggered_at).toLocaleString('he-IL') : '—';
-      html += '<div class="sos-event-row">';
-      html += '<div class="sos-event-date">⏰ ' + dt + '</div>';
-      html += '<div class="sos-event-note">' + (ev.notes || 'ללא הערות') + '</div>';
-      html += '<div class="sos-event-meta">מטפל: ' + (ev.therapist_name||'—') +
-        (ev.called_101 ? ' | 📞 101 חויג' : '') + '</div>';
-      html += '</div>';
-    });
-
-    html += '</div></div>';
-    container.innerHTML = html;
-
-    // Also flag in the sidebar stats
-    var sbAlerts = document.getElementById('sbAlerts');
-    if(sbAlerts) sbAlerts.style.color = '#ff4444';
-
-  } catch(e) { console.log('SOS log load error:', e); }
+async function loadSosLog(patientId){
+  try{
+    let events=[];
+    try{const{data:pd}=await db.from('patients').select('sos_log').eq('id',patientId).single();
+      if(pd?.sos_log){const log=Array.isArray(pd.sos_log)?pd.sos_log:JSON.parse(pd.sos_log);events=events.concat(log);}}catch(e){}
+    try{const{data:ad}=await db.from('appointments').select('sos_event,start_datetime').eq('patient_id',patientId).not('sos_event','is',null).order('start_datetime',{ascending:false}).limit(10);
+      if(ad?.length)ad.forEach(a=>{if(a.sos_event?.triggered_at)events.push(a.sos_event);});}catch(e){}
+    let seen={};events=events.filter(e=>{if(!e.triggered_at||seen[e.triggered_at])return false;seen[e.triggered_at]=true;return true;});
+    events.sort((a,b)=>new Date(b.triggered_at)-new Date(a.triggered_at));
+    const container=document.getElementById('sosPanelLog_'+patientId.replace(/-/g,'_'));
+    if(!container||!events.length)return;
+    let html='<div class="sec-block"><div class="sos-badge-wrap"><div class="sos-badge-title"><div class="sos-badge-icon">🚨</div><span>SOS LOG ('+events.length+')</span></div>';
+    events.forEach(ev=>{html+=`<div class="sos-event-row"><div class="sos-event-date">⏰ ${ev.triggered_at?new Date(ev.triggered_at).toLocaleString('he-IL'):'—'}</div><div class="sos-event-note">${ev.notes||'ללא הערות'}</div></div>`;});
+    html+='</div></div>';
+    container.innerHTML=html;
+  }catch(e){}
 }
 
-function closePanel() {
+function closePanel(){
   document.getElementById('detailPanel').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
 }
 
-function startSession(id) {
-  const p = allPatients.find(x => x.id === id);
-  if (!p) return;
-
-  // Primary complaint → box 1
-  const complaint = p.chief_complaint || p.current_symptoms || '';
-
-  // Extra issues from intake → chips panel
-  const extras = [
-    p.current_symptoms !== complaint ? p.current_symptoms : null,
-    p.previous_conditions || null,
-    p.medications        || null,
-    p.allergies          || null,
-    p.sleep              ? 'שינה: ' + p.sleep : null,
-    p.stress             ? 'לחץ: ' + p.stress + '/10' : null,
-    p.diet               || null,
+// ══════════════════════════════════════════════════════════════
+// KEY FIX: opens session.html (not index.html)
+// ══════════════════════════════════════════════════════════════
+function startSession(id){
+  const p=allPatients.find(x=>x.id===id);if(!p)return;
+  const complaint=p.chief_complaint||p.current_symptoms||'';
+  const extras=[
+    p.current_symptoms!==complaint?p.current_symptoms:null,
+    p.previous_conditions||null, p.medications||null, p.allergies||null,
+    p.sleep?'שינה: '+p.sleep:null, p.stress?'לחץ: '+p.stress+'/10':null, p.diet||null,
   ].filter(Boolean);
-
-  const url = 'index.html' +
-    '?from=crm' +
-    '&patient='   + encodeURIComponent(p.full_name || 'מטופל') +
-    '&complaint=' + encodeURIComponent(complaint) +
-    '&apt='       + encodeURIComponent(id) +
-    (extras.length ? '&issues=' + encodeURIComponent(extras.join('|')) : '');
-
-  window.open(url, '_blank');
+  const url='session.html'
+    +'?from=crm'
+    +'&patient='+encodeURIComponent(p.full_name||'מטופל')
+    +'&complaint='+encodeURIComponent(complaint)
+    +'&apt='+encodeURIComponent(id)
+    +(extras.length?'&issues='+encodeURIComponent(extras.join('|')):'');
+  window.open(url,'_blank');
 }
 
-// ── FILTER CONTROLS ───────────────────────────────────────────
-function setChip(val, el) {
-  activeChip = val;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-  applyFilters();
-}
-function handleSearch(val) { searchTerm = val; applyFilters(); }
-function handleSort(val) { activeSort = val; applyFilters(); }
-function setView(view) {
-  currentView = view;
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('on'));
+function setChip(val,el){activeChip=val;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');applyFilters();}
+function handleSearch(val){searchTerm=val;applyFilters();}
+function handleSort(val){activeSort=val;applyFilters();}
+function setView(view){
+  currentView=view;
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));
   event.target.closest('.sb-item').classList.add('on');
-  const titles = {
-    patients: '👥 כל המטופלים',
-    alerts: '⚠️ התראות בטיחות',
-    pregnant: '🤰 הריון / הנקה',
-    recent: '🕐 הצטרפו לאחרונה'
-  };
-  document.getElementById('viewTitle').textContent = titles[view] || '👥 מטופלים';
-  activeChip = 'all';
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-  document.querySelector('.chip').classList.add('on');
+  const titles={patients:'👥 כל המטופלים',alerts:'⚠️ התראות',pregnant:'🤰 הריון',recent:'🕐 הצטרפו לאחרונה'};
+  document.getElementById('viewTitle').textContent=titles[view]||'👥 מטופלים';
+  activeChip='all';document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));document.querySelector('.chip').classList.add('on');
   applyFilters();
 }
 
-// ── EXPORT CSV ────────────────────────────────────────────────
-function exportCSV() {
-  const rows = [
-    ['שם מלא','טלפון','אימייל','ת.ז.','תאריך לידה','גיל','אלרגיות','תרופות','הריון','תאריך רישום']
-  ];
-  allPatients.forEach(p => rows.push([
-    p.full_name, p.phone, p.email, p.id_number,
-    p.dob || '—', p.age,
-    p.allergies || '—', p.medications || '—',
-    p.pregnancy?.is_pregnant ? `שבוע ${p.pregnancy.pregnancy_weeks}` : '—',
-    p.created_at ? new Date(p.created_at).toLocaleDateString('he-IL') : '—'
-  ]));
-  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `patients_crm_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
+function exportCSV(){
+  const rows=[['שם מלא','טלפון','אימייל','ת.ז.','גיל','אלרגיות','תרופות','הריון','תאריך רישום']];
+  allPatients.forEach(p=>rows.push([p.full_name,p.phone,p.email,p.id_number,p.age,p.allergies||'—',p.medications||'—',p.pregnancy?.is_pregnant?'כן':'—',p.created_at?new Date(p.created_at).toLocaleDateString('he-IL'):'—']));
+  const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`patients_crm_${new Date().toISOString().split('T')[0]}.csv`;a.click();
 }
 
-// ── INIT ──────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', loadPatients);
-
-// ── THERAPIST NAME LOADER ────────────────────────────────────────
-async function loadCurrentTherapist(){
-  try{
-    // 1. Check sessionStorage first
-    const saved=sessionStorage.getItem('tcm_current_therapist');
-    let name='';
-    const db=typeof getDB==='function'?getDB():null;
-    if(db){
-      if(saved){
-        const{data}=await db.from('therapists').select('full_name').eq('id',saved).single();
-        if(data)name=data.full_name;
-      }
-      if(!name){
-        const{data}=await db.from('therapists').select('full_name,id').order('full_name').limit(1);
-        if(data&&data.length){name=data[0].full_name;sessionStorage.setItem('tcm_current_therapist',data[0].id);}
-      }
-    }
-    if(name){
-      document.querySelectorAll('.therapist-name-slot').forEach(el=>{el.textContent='👤 '+name;el.style.display='inline-flex';});
-      document.querySelectorAll('.footer-user').forEach(el=>el.textContent='👤 מחובר: '+name);
-    }
-  }catch(e){}
-}
-document.addEventListener('DOMContentLoaded',()=>{setTimeout(loadCurrentTherapist,300);});
-
+document.addEventListener('DOMContentLoaded',loadPatients);
 </script>
 </body>
 </html>
