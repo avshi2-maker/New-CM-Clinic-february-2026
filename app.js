@@ -193,6 +193,71 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     }
                 }
 
+                // ── STEP 2c: BLOOD PRESSURE — numeric threshold check ──
+                const bpRaw = patientContext?.blood_pressure?.toString().trim() || '';
+                if (bpRaw.length > 2) {
+                    // Parse formats: "180/110", "180/110 mmHg", "גבוה מאוד"
+                    const bpMatch = bpRaw.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+                    if (bpMatch) {
+                        const systolic  = parseInt(bpMatch[1]);
+                        const diastolic = parseInt(bpMatch[2]);
+                        console.log(`💉 BP check: ${systolic}/${diastolic}`);
+
+                        if (systolic >= 180 || diastolic >= 110) {
+                            // HYPERTENSIVE CRISIS — warn, refer to doctor
+                            console.log(`🚫 BP CRISIS: ${systolic}/${diastolic}`);
+                            addToAuditLog({ type: 'bp_safety_triggered', severity: 'block',
+                                bp: bpRaw, patient_id: patientContext?.patient_id, queries });
+                            return { blocked: true, warned: false,
+                                rule: {
+                                    title_he:   `🚫 משבר יתר לחץ דם — ${systolic}/${diastolic} mmHg`,
+                                    message_he: `לחץ הדם של המטופל הוא ${systolic}/${diastolic} mmHg — זהו משבר יתר לחץ דם. אסור לטפל! יש להפנות מיידית לרופא/חדר מיון.`,
+                                    action_he:  'הפסק טיפול. מדוד לחץ דם שוב. מעל 180/110 — שלח למיון מיידית.'
+                                },
+                                source: 'bp_check' };
+                        }
+                        if (systolic >= 160 || diastolic >= 100) {
+                            // HIGH — warn therapist
+                            console.log(`⚠️ BP HIGH: ${systolic}/${diastolic}`);
+                            addToAuditLog({ type: 'bp_safety_triggered', severity: 'warn',
+                                bp: bpRaw, patient_id: patientContext?.patient_id, queries });
+                            patientContext._bpWarning = `${systolic}/${diastolic}`;
+                            return { blocked: false, warned: true,
+                                rule: {
+                                    title_he:   `⚠️ לחץ דם גבוה — ${systolic}/${diastolic} mmHg`,
+                                    message_he: `לחץ הדם של המטופל גבוה (${systolic}/${diastolic}). מדוד שוב לפני טיפול. הימנע מנקודות מורידות לחץ דם חזקות (LR3+LI4 חזק). מנוחה לפני טיפול.`,
+                                    action_he:  'מדוד לחץ דם לפני טיפול. אם מעל 180/110 — הפנה לרופא.'
+                                },
+                                source: 'bp_check' };
+                        }
+                        if (systolic <= 90 || diastolic <= 60) {
+                            // LOW BP — warn
+                            console.log(`⚠️ BP LOW: ${systolic}/${diastolic}`);
+                            patientContext._bpWarning = `${systolic}/${diastolic}`;
+                            return { blocked: false, warned: true,
+                                rule: {
+                                    title_he:   `⚠️ לחץ דם נמוך — ${systolic}/${diastolic} mmHg`,
+                                    message_he: `לחץ הדם של המטופל נמוך (${systolic}/${diastolic}). סיכון לסחרחורת/התעלפות לאחר דיקור. שמור על שכיבה לאחר טיפול.`,
+                                    action_he:  'ודא שמטופל שוכב בטיפול. השגח על קום איטי לאחר טיפול.'
+                                },
+                                source: 'bp_check' };
+                        }
+                    }
+                    // Text-based BP keywords (no numbers found)
+                    const bpLow = bpRaw.match(/נמוך|low|hypotension/i);
+                    const bpHigh = bpRaw.match(/גבוה מאוד|crisis|180|יתר לחץ/i);
+                    if (bpHigh) {
+                        patientContext._bpWarning = bpRaw;
+                        return { blocked: false, warned: true,
+                            rule: {
+                                title_he:   '⚠️ לחץ דם גבוה — מדוד לפני טיפול',
+                                message_he: `נרשם לחץ דם גבוה: "${bpRaw}". מדוד לחץ דם מספרי לפני טיפול.`,
+                                action_he:  'מדוד לחץ דם לפני טיפול.'
+                            },
+                            source: 'bp_check' };
+                    }
+                }
+
                 // ── STEP 2b: CONDITION SAFETY — match_patient_conditions() ──
                 const conditionsText  = patientContext?.previous_conditions?.trim() || '';
                 const allergiesText   = patientContext?.allergies?.trim() || '';
@@ -1977,6 +2042,7 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             if (ctx.previous_conditions?.trim()) parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
             if (ctx.surgeries?.trim())           parts.push(`ניתוחים: ${ctx.surgeries}`);
             if (ctx.chief_complaint?.trim())     parts.push(`תלונה עיקרית: ${ctx.chief_complaint}`);
+            if (ctx.blood_pressure)              parts.push(`לחץ דם: ${ctx.blood_pressure} mmHg`);
 
             // ── INJECT DRUG MATCHES ──────────────────────────────────
             let drugBlock = '';
