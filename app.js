@@ -1057,29 +1057,45 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             
             if (!append) {
                 container.innerHTML = '';
-                container.removeEventListener('scroll', handleModule2Scroll);
-                container.addEventListener('scroll', handleModule2Scroll);
+            } else {
+                // Remove old load-more button before adding new questions
+                const oldBtn = document.getElementById('module2LoadMore');
+                if (oldBtn) oldBtn.remove();
             }
             
             questions.forEach(q => {
                 const questionDiv = document.createElement('div');
-                questionDiv.className = 'p-3 bg-white border-2 border-purple-200 rounded-lg hover:border-purple-400 hover:shadow-md cursor-pointer transition-all text-right';
+                questionDiv.style.cssText = 'background:white;border:2px solid #e9d5ff;border-radius:8px;padding:10px;margin:8px 0;cursor:pointer;transition:all 0.2s;text-align:right;';
                 
                 const categoryHebrew = translateCategoryToHebrew(q.category);
                 const answerPreview = q.answer_hebrew ? q.answer_hebrew.substring(0, 100) + '...' : '';
                 questionDiv.title = answerPreview;
                 
                 questionDiv.innerHTML = `
-                    <div class="font-medium text-sm text-gray-800">${q.question_hebrew || 'ללא שאלה'}</div>
-                    <div class="text-xs text-purple-600 mt-1">${categoryHebrew || ''}</div>
+                    <div style="font-weight:600;font-size:13px;color:#1f2937;margin-bottom:4px;">${q.question_hebrew || 'ללא שאלה'}</div>
+                    <div style="font-size:11px;color:#7c3aed;background:#f5f3ff;display:inline-block;padding:2px 8px;border-radius:4px;">${categoryHebrew || ''}</div>
                 `;
                 
-                questionDiv.onclick = () => {
-                    pasteModule2ToQueryBox(q.question_hebrew);
-                };
+                questionDiv.onclick = () => { pasteModule2ToQueryBox(q.question_hebrew); };
+                questionDiv.onmouseover = function(){ this.style.background='#f5f3ff'; this.style.borderColor='#7c3aed'; };
+                questionDiv.onmouseout  = function(){ this.style.background='white';   this.style.borderColor='#e9d5ff'; };
                 
                 container.appendChild(questionDiv);
             });
+
+            // Load-more button — same pattern as Module 1
+            if (!module2AllQuestionsLoaded) {
+                const loadMore = document.createElement('div');
+                loadMore.id = 'module2LoadMore';
+                loadMore.style.cssText = 'background:#f5f3ff;color:#5b21b6;padding:10px;margin:10px 0;text-align:center;cursor:pointer;border-radius:8px;font-weight:bold;border:2px dashed #a78bfa;font-family:Heebo,sans-serif;font-size:13px;';
+                loadMore.innerHTML = '📥 טען עוד 3 שאלות';
+                loadMore.onclick = () => {
+                    loadMore.innerHTML = '⏳ טוען...';
+                    loadMore.style.opacity = '0.6';
+                    filterModule2Questions(module2CurrentOffset);
+                };
+                container.appendChild(loadMore);
+            }
         }
         
         function handleModule2Scroll() {
