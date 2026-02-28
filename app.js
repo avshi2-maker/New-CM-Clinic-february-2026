@@ -193,6 +193,53 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
                     }
                 }
 
+                // ── STEP 2b: CONDITION SAFETY — match_patient_conditions() ──
+                const conditionsText  = patientContext?.previous_conditions?.trim() || '';
+                const allergiesText   = patientContext?.allergies?.trim() || '';
+                const complaintsText  = patientContext?.chief_complaint?.trim() || patientContext?.current_symptoms?.trim() || '';
+                const hasConditionData = conditionsText.length > 2 || allergiesText.length > 2 || complaintsText.length > 2;
+
+                if (hasConditionData) {
+                    console.log('🏥 Running condition safety check via match_patient_conditions()...');
+                    const { data: condMatches, error: condError } = await supabaseClient
+                        .rpc('match_patient_conditions', {
+                            p_conditions_text: conditionsText,
+                            p_allergies_text:  allergiesText,
+                            p_symptoms_text:   complaintsText,
+                            p_include_caution: false
+                        });
+                    if (!condError && condMatches && condMatches.length > 0) {
+                        console.log(`✅ Condition matches: ${condMatches.length}`, condMatches.map(c => `${c.condition_en}(${c.severity})`));
+                        patientContext._conditionMatches = condMatches;
+                        const blockCond = condMatches.find(c => c.severity === 'block' && c.validated === true);
+                        const warnCond  = condMatches.find(c => c.severity === 'warn');
+                        if (blockCond) {
+                            console.log(`🚫 Condition BLOCK: ${blockCond.condition_en}`);
+                            addToAuditLog({ type: 'condition_safety_triggered', source: 'condition_safety_index',
+                                condition: blockCond.condition_en, severity: 'block',
+                                patient_id: patientContext?.patient_id, queries });
+                            return { blocked: true, warned: false,
+                                rule: { title_he:   blockCond.warning_title_he,
+                                        message_he: blockCond.warning_message_he,
+                                        action_he:  blockCond.action_he },
+                                source: 'condition_safety_index' };
+                        }
+                        if (warnCond) {
+                            console.log(`⚠️ Condition WARN: ${warnCond.condition_en}`);
+                            addToAuditLog({ type: 'condition_safety_triggered', source: 'condition_safety_index',
+                                condition: warnCond.condition_en, severity: 'warn',
+                                patient_id: patientContext?.patient_id, queries });
+                            return { blocked: false, warned: true,
+                                rule: { title_he:   warnCond.warning_title_he,
+                                        message_he: warnCond.warning_message_he,
+                                        action_he:  warnCond.action_he },
+                                source: 'condition_safety_index' };
+                        }
+                    } else if (condError) {
+                        console.warn('⚠️ Condition safety check error:', condError.message);
+                    }
+                }
+
                 // ── STEP 3: FALLBACK — keyword scan on safety_rules ──────
                 if (!rules || rules.length === 0) return { blocked: false, warned: false };
                 const profileText = patientContext ? [
@@ -1883,34 +1930,88 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             const ctx = patientContext || {};
             const parts = [];
 
+            // ── PREGNANCY PROTOCOL ───────────────────────────────────
             if (ctx.is_pregnant) {
-                parts.push(`המטופלת בהריון${ctx.trimester ? ` שליש ${ctx.trimester}` : ''}${ctx.pregnancy_weeks ? ` שבוע ${ctx.pregnancy_weeks}` : ''}`);
+                const t = ctx.trimester || '?';
+                const w = ctx.pregnancy_weeks ? ` שבוע ${ctx.pregnancy_weeks}` : '';
+                parts.push(`המטופלת בהריון שליש ${t}${w}`);
+                parts.push(`⚠️ פרוטוקול הריון — שליש ${t}:`);
+                if (t === 1 || t === '1') {
+                    parts.push(`• שליש ראשון: אסור לחלוטין — SP6, LI4, BL60, BL67, GB21, ST36 (חזק), כל נקודה מניעה`);
+                    parts.push(`• אסורות תנועה חזקה של דם — הונג הואה, דאן שן, יי מו כאו`);
+                    parts.push(`• אסור: מוקסה על בטן, דיקור חזק, גריפה על גב תחתון`);
+                    parts.push(`• מותר: נקודות הרגעה עדינות — P6, HT7, KD1`);
+                } else if (t === 2 || t === '2') {
+                    parts.push(`• שליש שני: זהירות — הימנע SP6, LI4, BL67`);
+                    parts.push(`• מוקסה לצורך תיקון מצג עוקבי — BL67 (רק מומחה!)`);
+                    parts.push(`• מותר: טיפול עדין, הרגעה, בחילות (P6, ST36 עדין)`);
+                } else {
+                    parts.push(`• שליש שלישי: BL67 לתיקון עוקבי מותר, הכנה ללידה`);
+                    parts.push(`• SP6, LI4 מותרים בזהירות בסוף הריון להכנת צוואר הרחם`);
+                    parts.push(`• אסור: לחץ על בטן, אזור מותני חזק`);
+                }
             }
-            if (ctx.breastfeeding)      parts.push('המטופלת מניקה');
-            if (ctx.trying_to_conceive) parts.push('המטופלת מנסה להרות');
-            if (ctx.medications?.trim())          parts.push(`תרופות קבועות: ${ctx.medications}`);
-            if (ctx.allergies?.trim())            parts.push(`אלרגיות: ${ctx.allergies}`);
-            if (ctx.previous_conditions?.trim())  parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
-            if (ctx.surgeries?.trim())            parts.push(`ניתוחים בעבר: ${ctx.surgeries}`);
 
-            // ── INJECT REAL DRUG MATCHES from drug_safety_database ───
-            let drugInteractionBlock = '';
+            // ── BREASTFEEDING PROTOCOL ───────────────────────────────
+            if (ctx.breastfeeding) {
+                parts.push(`המטופלת מניקה`);
+                parts.push(`⚠️ פרוטוקול הנקה:`);
+                parts.push(`• אסורים צמחים: גבישי מנטה (כמות גדולה), מרוות, נענע גדולה (מפחיתות חלב)`);
+                parts.push(`• אסורים צמחים מיובלים: מא הואנג, אפדרה`);
+                parts.push(`• מותר: SP17 להגברת חלב, ST18, KD27`);
+                parts.push(`• זהירות: כל צמח מועבר לחלב — בדוק מול בסיס נתונים לקטציה`);
+            }
+
+            // ── TRYING TO CONCEIVE ───────────────────────────────────
+            if (ctx.trying_to_conceive) {
+                parts.push(`המטופלת מנסה להרות`);
+                parts.push(`• לאחר ביוץ (שלב לוטאלי): הימנע SP6, LI4 בעוצמה גבוהה`);
+                parts.push(`• IVF: הימנע גריפה, כוסות רוח, חום חזק על בטן תחתונה`);
+            }
+
+            // ── MEDICATIONS ─────────────────────────────────────────
+            if (ctx.medications?.trim()) parts.push(`תרופות קבועות: ${ctx.medications}`);
+            if (ctx.allergies?.trim())   parts.push(`אלרגיות: ${ctx.allergies}`);
+
+            // ── CONDITIONS ──────────────────────────────────────────
+            if (ctx.previous_conditions?.trim()) parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
+            if (ctx.surgeries?.trim())           parts.push(`ניתוחים: ${ctx.surgeries}`);
+            if (ctx.chief_complaint?.trim())     parts.push(`תלונה עיקרית: ${ctx.chief_complaint}`);
+
+            // ── INJECT DRUG MATCHES ──────────────────────────────────
+            let drugBlock = '';
             if (ctx._drugMatches && ctx._drugMatches.length > 0) {
                 const lines = ctx._drugMatches.map(d => {
                     const herbs  = d.contraindicated_herbs_he?.join(', ') || 'אין';
                     const points = d.contraindicated_points?.join(', ')   || 'אין';
-                    const evidence = d.evidence_level === 'A' ? 'מחקר קליני' :
-                                     d.evidence_level === 'B' ? 'דיווחי מקרה' :
-                                     d.evidence_level === 'C' ? 'מחקר מעבדה' : 'הנחיות מומחים';
-                    return `• ${d.drug_class_he} (${d.generic_name_en}):\n  אסור צמחים: ${herbs}\n  נקודות להימנע: ${points}\n  ראיות: ${evidence}`;
+                    const ev = d.evidence_level === 'A' ? 'מחקר קליני' :
+                               d.evidence_level === 'B' ? 'דיווחי מקרה' :
+                               d.evidence_level === 'C' ? 'מחקר מעבדה' : 'הנחיות מומחים';
+                    return `• ${d.drug_class_he} (${d.generic_name_en}): צמחים אסורים: ${herbs} | נקודות: ${points} | ראיות: ${ev}`;
                 }).join('\n');
-                drugInteractionBlock = `\n\nאינטראקציות תרופה-צמחים (ממסד נתונים קליני):\n${lines}`;
+                drugBlock = `\n\n💊 אינטראקציות תרופה-צמחים:\n${lines}`;
+            }
+
+            // ── INJECT CONDITION MATCHES ─────────────────────────────
+            let condBlock = '';
+            if (ctx._conditionMatches && ctx._conditionMatches.length > 0) {
+                const lines = ctx._conditionMatches.map(c => {
+                    const techniques = c.block_techniques?.join(', ') || '';
+                    const points     = c.forbidden_points?.join(', ') || '';
+                    const herbs      = c.forbidden_herbs_he?.join(', ') || '';
+                    let detail = c.warning_message_he;
+                    if (techniques) detail += ` | אסור: ${techniques}`;
+                    if (points)     detail += ` | נקודות: ${points}`;
+                    if (herbs)      detail += ` | צמחים: ${herbs}`;
+                    return `• ${c.condition_he} [${c.severity}]: ${detail}`;
+                }).join('\n');
+                condBlock = `\n\n🏥 מצבים רפואיים — אזהרות:\n${lines}`;
             }
 
             return `אתה יועץ בטיחות לרפואה סינית (TCM). 
             
 פרופיל מטופל:
-${parts.join('\n')}${drugInteractionBlock}
+${parts.join('\n')}${drugBlock}${condBlock}
 
 שאלות הטיפול הנוכחי: ${queries.join(', ')}
 
