@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — הגדרות</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --gold:      #c9933a;
+  --gold-l:    #e8b96a;
+  --jade:      #0d5c63;
+  --jade-l:    #1a8a94;
+  --bg:        #faf7f2;
+  --card:      #ffffff;
+  --text:      #1a1a1a;
+  --muted:     #6b7280;
+  --border:    #e8dcc8;
+  --success:   #10b981;
+  --danger:    #ef4444;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP NAV ── */
+.topnav {
+  background: linear-gradient(135deg, var(--jade), var(--jade-l));
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.nav-brand {
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+.nav-back {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--gold); }
+
+/* ── SPLIT LAYOUT ── */
+.split {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 52px);
+}
+
+/* ── LEFT — IMAGE PANEL ── */
+.img-panel {
+  width: 38%;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.img-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to left, rgba(250,247,242,0.15) 0%, rgba(13,92,99,0.3) 100%);
+}
+.img-title {
+  position: absolute;
+  bottom: 32px;
+  right: 24px;
+  left: 24px;
+  text-align: right;
+}
+.img-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: white;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  line-height: 1.3;
+}
+.img-title p {
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* ── RIGHT — SETTINGS PANEL ── */
+.settings-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 28px;
+  background: var(--bg);
+}
+
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--jade);
+}
+.page-header p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ── SECTION TABS ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  background: white;
+  color: var(--muted);
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab.active {
+  background: var(--jade);
+  border-color: var(--jade);
+  color: white;
+}
+.tab:hover:not(.active) {
+  border-color: var(--jade);
+  color: var(--jade);
+}
+
+/* ── SECTION CARD ── */
+.section { display: none; }
+.section.active { display: block; }
+
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--jade);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── FORM FIELDS ── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.field-row.single { grid-template-columns: 1fr; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color 0.2s;
+  outline: none;
+  direction: rtl;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--jade);
+  background: white;
+}
+.field textarea { resize: vertical; min-height: 80px; }
+.field input[type="password"] { letter-spacing: 2px; }
+
+/* ── SUBSCRIPTION CARD ── */
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-l));
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 900;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+.stat-box {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  border: 1.5px solid var(--border);
+}
+.stat-box .val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--jade);
+}
+.stat-box .lbl {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.usage-bar-wrap {
+  background: var(--bg);
+  border-radius: 8px;
+  height: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.usage-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--jade), var(--jade-l));
+  border-radius: 8px;
+  transition: width 1s ease;
+}
+
+/* ── AI KEY SECTION ── */
+.key-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.key-display input { flex: 1; }
+.eye-btn {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+.eye-btn:hover { border-color: var(--jade); }
+
+.model-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.model-opt {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.model-opt.selected {
+  border-color: var(--jade);
+  background: #e8f4f5;
+}
+.model-opt .model-name { font-weight: 900; font-size: 13px; color: var(--jade); }
+.model-opt .model-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ── SAVE BUTTON ── */
+.save-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--jade), var(--jade-l));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13,92,99,0.3); }
+.save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--jade);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+  z-index: 999;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--danger); }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(250,247,242,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+.spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--border);
+  border-top-color: var(--jade);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .img-panel { display: none; }
+  .settings-panel { padding: 20px 16px; }
+  .field-row { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <span class="nav-brand">✦ MERIDIAN</span>
+  <a href="crm.html" class="nav-back">← חזור ל-CRM</a>
+</nav>
+
+<!-- SPLIT LAYOUT -->
+<div class="split">
+
+  <!-- LEFT — IMAGE -->
+  <div class="img-panel">
+    <img src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/images/questionary.png" alt="TCM">
+    <div class="img-overlay"></div>
+    <div class="img-title">
+      <h2>הגדרות<br>המרפאה</h2>
+      <p>ניהול פרופיל · מנוי · בינה מלאכותית</p>
+    </div>
+  </div>
+
+  <!-- RIGHT — SETTINGS -->
+  <div class="settings-panel">
+
+    <div class="page-header">
+      <h1>⚙️ הגדרות MERIDIAN</h1>
+      <p>כל השינויים נשמרים ב-Supabase ומתעדכנים מיידית</p>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('clinic')">🏥 מרפאה</button>
+      <button class="tab" onclick="showTab('therapist')">👤 מטפל</button>
+      <button class="tab" onclick="showTab('subscription')">💳 מנוי</button>
+      <button class="tab" onclick="showTab('claude')">🤖 Claude AI</button>
+    </div>
+
+    <!-- ── SECTION 1: CLINIC PROFILE ── -->
+    <div class="section active" id="sec-clinic">
+      <div class="card">
+        <div class="card-title">🏥 פרופיל המרפאה</div>
+        <div class="field-row">
+          <div class="field">
+            <label>שם המרפאה</label>
+            <input type="text" id="clinic_name" placeholder="מרפאת הבריאות שלי">
+          </div>
+          <div class="field">
+            <label>טלפון</label>
+            <input type="tel" id="clinic_phone" placeholder="050-0000000">
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label>כתובת</label>
+            <input type="text" id="clinic_address" placeholder="רחוב הרצל 1">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>עיר</label>
+            <input type="text" id="clinic_city" placeholder="תל אביב">
+          </div>
+          <div class="field">
+            <label>אתר אינטרנט</label>
+            <input type="url" id="clinic_website" placeholder="https://...">
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label>שעות פעילות</label>
+            <input type="text" id="clinic_hours" placeholder="ראשון-חמישי 09:00-19:00">
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveClinic()">💾 שמור פרופיל מרפאה</button>
+      </div>
+    </div>
+
+    <!-- ── SECTION 2: THERAPIST PROFILE ── -->
+    <div class="section" id="sec-therapist">
+      <div class="card">
+        <div class="card-title">👤 פרופיל המטפל</div>
+        <div class="field-row">
+          <div class="field">
+            <label>שם מלא</label>
+            <input type="text" id="th_name" placeholder="ד״ר ישראל ישראלי">
+          </div>
+          <div class="field">
+            <label>אימייל</label>
+            <input type="email" id="th_email" placeholder="name@example.com" dir="ltr">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>מספר רישיון</label>
+            <input type="text" id="th_license" placeholder="רופא TCM מס׳ 12345">
+          </div>
+          <div class="field">
+            <label>שנות ניסיון</label>
+            <input type="number" id="th_years" placeholder="10" min="0" max="60">
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label>התמחות</label>
+            <input type="text" id="th_specialty" placeholder="TCM — רפואה סינית מסורתית, דיקור, צמחים">
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label>ביוגרפיה קצרה</label>
+            <textarea id="th_bio" placeholder="מטפל מנוסה בתחום הרפואה הסינית המסורתית..."></textarea>
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveTherapist()">💾 שמור פרופיל מטפל</button>
+      </div>
+    </div>
+
+    <!-- ── SECTION 3: SUBSCRIPTION ── -->
+    <div class="section" id="sec-subscription">
+      <div class="card">
+        <div class="card-title">💳 סטטוס מנוי</div>
+        <div class="plan-badge">⭐ <span id="sub_plan_he">טוען...</span></div>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="val" id="sub_price">$—</div>
+            <div class="lbl">לחודש</div>
+          </div>
+          <div class="stat-box">
+            <div class="val" id="sub_sessions_used">—</div>
+            <div class="lbl">סשנים החודש</div>
+          </div>
+          <div class="stat-box">
+            <div class="val" id="sub_renewal">—</div>
+            <div class="lbl">חידוש מנוי</div>
+          </div>
+        </div>
+        <div style="margin:16px 0;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;">
+            <span>שימוש בסשנים</span>
+            <span id="sub_usage_text">— / —</span>
+          </div>
+          <div class="usage-bar-wrap">
+            <div class="usage-bar" id="sub_usage_bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:14px;border:1.5px solid var(--border);font-size:13px;color:var(--muted);text-align:center;">
+          לשדרוג תוכנית — <a href="mailto:avshi2@gmail.com" style="color:var(--gold);font-weight:700;">צור קשר</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 4: CLAUDE AI ── -->
+    <div class="section" id="sec-claude">
+      <div class="card">
+        <div class="card-title">🤖 הגדרות Claude AI</div>
+
+        <div class="field-row single">
+          <div class="field">
+            <label>מפתח API (Anthropic)</label>
+            <div class="key-display">
+              <input type="password" id="claude_key" placeholder="sk-ant-..." dir="ltr">
+              <button class="eye-btn" onclick="toggleKey()">👁</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>שפת תגובה</label>
+            <select id="claude_lang">
+              <option value="he">עברית 🇮🇱</option>
+              <option value="en">English 🇺🇸</option>
+              <option value="ar">العربية 🇸🇦</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>מקסימום tokens לתגובה</label>
+            <select id="claude_tokens">
+              <option value="1000">1,000 — קצר וממוקד</option>
+              <option value="1500" selected>1,500 — סטנדרטי</option>
+              <option value="2000">2,000 — מפורט</option>
+              <option value="3000">3,000 — מקיף</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row single">
+          <div class="field">
+            <label>מודל Claude</label>
+            <div class="model-select-grid">
+              <div class="model-opt selected" onclick="selectModel('claude-sonnet-4-20250514', this)">
+                <div class="model-name">Sonnet 4</div>
+                <div class="model-desc">מהיר · חכם · מומלץ</div>
+              </div>
+              <div class="model-opt" onclick="selectModel('claude-opus-4-5', this)">
+                <div class="model-name">Opus 4</div>
+                <div class="model-desc">הכי חכם · איטי יותר</div>
+              </div>
+            </div>
+            <input type="hidden" id="claude_model" value="claude-sonnet-4-20250514">
+          </div>
+        </div>
+
+        <div class="field-row single">
+          <div class="field">
+            <label>רמת בטיחות</label>
+            <select id="claude_safety">
+              <option value="strict">מחמיר — חסם בספק</option>
+              <option value="standard" selected>סטנדרטי — אזהרה בספק</option>
+              <option value="minimal">מינימלי — הצג הכל</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="save-btn" onclick="saveClaude()">💾 שמור הגדרות AI</button>
+      </div>
+    </div>
+
+  </div><!-- /settings-panel -->
+</div><!-- /split -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const USER_ID = 'default';
+
+// ── TABS ──────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [c, th, sub, ai] = await Promise.all([
+      sb.from('clinic_settings').select('*').eq('user_id', USER_ID).single(),
+      sb.from('therapist_profile').select('*').eq('user_id', USER_ID).single(),
+      sb.from('subscription_status').select('*').eq('user_id', USER_ID).single(),
+      sb.from('claude_settings').select('*').eq('user_id', USER_ID).single(),
+    ]);
+
+    // Clinic
+    if (c.data) {
+      document.getElementById('clinic_name').value    = c.data.clinic_name    || '';
+      document.getElementById('clinic_phone').value   = c.data.phone          || '';
+      document.getElementById('clinic_address').value = c.data.address        || '';
+      document.getElementById('clinic_city').value    = c.data.city           || '';
+      document.getElementById('clinic_website').value = c.data.website        || '';
+      document.getElementById('clinic_hours').value   = c.data.opening_hours  || '';
+    }
+
+    // Therapist
+    if (th.data) {
+      document.getElementById('th_name').value      = th.data.full_name      || '';
+      document.getElementById('th_email').value     = th.data.email          || '';
+      document.getElementById('th_license').value   = th.data.license_number || '';
+      document.getElementById('th_years').value     = th.data.years_exp      || '';
+      document.getElementById('th_specialty').value = th.data.specialty      || '';
+      document.getElementById('th_bio').value       = th.data.bio_he         || '';
+    }
+
+    // Subscription
+    if (sub.data) {
+      document.getElementById('sub_plan_he').textContent = sub.data.plan_he || 'Starter';
+      document.getElementById('sub_price').textContent   = '$' + (sub.data.price_usd || 8);
+      document.getElementById('sub_sessions_used').textContent = sub.data.sessions_used || 0;
+      const renewal = sub.data.renewal_date ? new Date(sub.data.renewal_date).toLocaleDateString('he-IL') : '—';
+      document.getElementById('sub_renewal').textContent = renewal;
+      const used  = sub.data.sessions_used  || 0;
+      const limit = sub.data.sessions_limit || 100;
+      const pct   = Math.min(Math.round(used / limit * 100), 100);
+      document.getElementById('sub_usage_text').textContent = `${used} / ${limit}`;
+      setTimeout(() => { document.getElementById('sub_usage_bar').style.width = pct + '%'; }, 300);
+    }
+
+    // Claude
+    if (ai.data) {
+      document.getElementById('claude_key').value    = ai.data.api_key      || '';
+      document.getElementById('claude_lang').value   = ai.data.response_lang || 'he';
+      document.getElementById('claude_tokens').value = ai.data.max_tokens   || 1500;
+      document.getElementById('claude_model').value  = ai.data.model        || 'claude-sonnet-4-20250514';
+      document.getElementById('claude_safety').value = ai.data.safety_level || 'standard';
+      // Highlight selected model
+      document.querySelectorAll('.model-opt').forEach(el => {
+        el.classList.toggle('selected', el.querySelector('.model-name').textContent.includes(
+          (ai.data.model || '').includes('opus') ? 'Opus' : 'Sonnet'
+        ));
+      });
+    }
+
+  } catch(e) {
+    console.warn('Load error:', e);
+  } finally {
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+}
+
+// ── SAVE CLINIC ───────────────────────────────────────────────────
+async function saveClinic() {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '⏳ שומר...';
+  try {
+    const { error } = await sb.from('clinic_settings').upsert({
+      user_id:       USER_ID,
+      clinic_name:   document.getElementById('clinic_name').value,
+      phone:         document.getElementById('clinic_phone').value,
+      address:       document.getElementById('clinic_address').value,
+      city:          document.getElementById('clinic_city').value,
+      website:       document.getElementById('clinic_website').value,
+      opening_hours: document.getElementById('clinic_hours').value,
+      updated_at:    new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+    showToast('✅ פרופיל מרפאה נשמר!');
+  } catch(e) {
+    showToast('❌ שגיאה: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 שמור פרופיל מרפאה';
+  }
+}
+
+// ── SAVE THERAPIST ────────────────────────────────────────────────
+async function saveTherapist() {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '⏳ שומר...';
+  try {
+    const { error } = await sb.from('therapist_profile').upsert({
+      user_id:        USER_ID,
+      full_name:      document.getElementById('th_name').value,
+      email:          document.getElementById('th_email').value,
+      license_number: document.getElementById('th_license').value,
+      years_exp:      parseInt(document.getElementById('th_years').value) || 0,
+      specialty:      document.getElementById('th_specialty').value,
+      bio_he:         document.getElementById('th_bio').value,
+      updated_at:     new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+    showToast('✅ פרופיל מטפל נשמר!');
+  } catch(e) {
+    showToast('❌ שגיאה: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 שמור פרופיל מטפל';
+  }
+}
+
+// ── SAVE CLAUDE ───────────────────────────────────────────────────
+async function saveClaude() {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '⏳ שומר...';
+  try {
+    const { error } = await sb.from('claude_settings').upsert({
+      user_id:       USER_ID,
+      api_key:       document.getElementById('claude_key').value,
+      model:         document.getElementById('claude_model').value,
+      response_lang: document.getElementById('claude_lang').value,
+      max_tokens:    parseInt(document.getElementById('claude_tokens').value),
+      safety_level:  document.getElementById('claude_safety').value,
+      updated_at:    new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+    showToast('✅ הגדרות AI נשמרו!');
+  } catch(e) {
+    showToast('❌ שגיאה: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 שמור הגדרות AI';
+  }
+}
+
+// ── TOGGLE API KEY VISIBILITY ─────────────────────────────────────
+function toggleKey() {
+  const inp = document.getElementById('claude_key');
+  const btn = event.target;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ── SELECT MODEL ──────────────────────────────────────────────────
+function selectModel(modelId, el) {
+  document.querySelectorAll('.model-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('claude_model').value = modelId;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
