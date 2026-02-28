@@ -133,104 +133,95 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
         async function runPreSearchSafetyCheck(queries) {
             try {
                 const rules = await loadSafetyRules();
-                if (!rules || rules.length === 0) return { blocked: false, warned: false };
-
-                // ── BUILD COMBINED SCAN TEXT ─────────────────────────
-                // Scan BOTH query text AND patient clinical profile
                 const queryText = queries.join(' ').toLowerCase();
 
-                // Build patient profile text from loaded context
+                // ── STEP 1: PREGNANCY — direct from patient context ──────
+                if (patientContext?.is_pregnant) {
+                    const severity = patientContext.trimester === 1 ? 'block' : 'warn';
+                    const pregnancyRule = rules.find(r =>
+                        r.category === 'pregnancy' && r.severity === severity
+                    ) || rules.find(r => r.category === 'pregnancy');
+                    if (pregnancyRule) {
+                        console.log(`🔒 Safety: Patient pregnant (T${patientContext.trimester})`);
+                        addToAuditLog({ type: 'safety_rule_triggered', source: 'patient_context',
+                            rule_category: 'pregnancy', rule_severity: pregnancyRule.severity,
+                            patient_id: patientContext.patient_id, queries });
+                        return { blocked: pregnancyRule.severity === 'block',
+                                 warned:  pregnancyRule.severity === 'warn',
+                                 rule: pregnancyRule, source: 'patient_assessment' };
+                    }
+                }
+
+                // ── STEP 2: DRUG SAFETY — call match_patient_drugs() ─────
+                const medicationText = patientContext?.medications?.trim() || '';
+                if (medicationText.length > 2) {
+                    console.log('💊 Running drug safety check via match_patient_drugs()...');
+                    const { data: drugMatches, error: drugError } = await supabaseClient
+                        .rpc('match_patient_drugs', {
+                            p_medication_text: medicationText,
+                            p_include_caution: false
+                        });
+                    if (!drugError && drugMatches && drugMatches.length > 0) {
+                        console.log(`✅ Drug matches: ${drugMatches.length}`, drugMatches.map(d => `${d.generic_name_en}(${d.severity})`));
+                        patientContext._drugMatches = drugMatches;
+                        const blockMatch = drugMatches.find(d => d.severity === 'block' && d.validated === true);
+                        const warnMatch  = drugMatches.find(d => d.severity === 'warn');
+                        if (blockMatch) {
+                            console.log(`🚫 Drug BLOCK: ${blockMatch.generic_name_en}`);
+                            addToAuditLog({ type: 'drug_safety_triggered', source: 'drug_safety_index',
+                                drug: blockMatch.generic_name_en, severity: 'block',
+                                patient_id: patientContext?.patient_id, queries });
+                            return { blocked: true, warned: false,
+                                rule: { title_he: `🚫 אינטראקציה תרופה — ${blockMatch.drug_class_he}`,
+                                        message_he: blockMatch.warning_message_he,
+                                        action_he: blockMatch.action_he },
+                                source: 'drug_safety_index' };
+                        }
+                        if (warnMatch) {
+                            console.log(`⚠️ Drug WARN: ${warnMatch.generic_name_en}`);
+                            addToAuditLog({ type: 'drug_safety_triggered', source: 'drug_safety_index',
+                                drug: warnMatch.generic_name_en, severity: 'warn',
+                                patient_id: patientContext?.patient_id, queries });
+                            return { blocked: false, warned: true,
+                                rule: { title_he: `⚠️ זהירות תרופה — ${warnMatch.drug_class_he}`,
+                                        message_he: warnMatch.warning_message_he,
+                                        action_he: warnMatch.action_he },
+                                source: 'drug_safety_index' };
+                        }
+                    } else if (drugError) {
+                        console.warn('⚠️ Drug safety check error:', drugError.message);
+                    }
+                }
+
+                // ── STEP 3: FALLBACK — keyword scan on safety_rules ──────
+                if (!rules || rules.length === 0) return { blocked: false, warned: false };
                 const profileText = patientContext ? [
-                    patientContext.medications        || '',
+                    patientContext.medications         || '',
                     patientContext.previous_conditions || '',
                     patientContext.allergies           || '',
                     patientContext.current_symptoms    || '',
                     patientContext.is_pregnant   ? 'הריון pregnant' : '',
                     patientContext.breastfeeding ? 'הנקה breastfeeding' : '',
                 ].join(' ').toLowerCase() : '';
-
                 const fullScanText = `${queryText} ${profileText}`;
-
-                // ── PATIENT CONTEXT DIRECT CHECKS ───────────────────
-                // Pregnancy from patient_assessments (most reliable source)
-                if (patientContext?.is_pregnant) {
-                    const severity = patientContext.trimester === 1 ? 'block' : 'warn';
-                    // Find matching rule
-                    const pregnancyRule = rules.find(r =>
-                        r.category === 'pregnancy' && r.severity === severity
-                    ) || rules.find(r => r.category === 'pregnancy');
-
-                    if (pregnancyRule) {
-                        console.log(`🔒 Safety: Patient is pregnant (trimester ${patientContext.trimester}) — auto-triggering`);
-                        addToAuditLog({
-                            type: 'safety_rule_triggered',
-                            source: 'patient_context',
-                            rule_category: 'pregnancy',
-                            rule_severity: pregnancyRule.severity,
-                            patient_id: patientContext.patient_id,
-                            queries
-                        });
-                        return {
-                            blocked: pregnancyRule.severity === 'block',
-                            warned:  pregnancyRule.severity === 'warn',
-                            rule:    pregnancyRule,
-                            source:  'patient_assessment'
-                        };
-                    }
-                }
-
-                // ── PASS 1: BLOCK rules first — always highest priority ──
-                const blockRules = rules.filter(r => r.severity === 'block');
-                for (const rule of blockRules) {
-                    const triggered = rule.trigger_keywords.some(kw =>
-                        fullScanText.includes(kw.toLowerCase())
-                    );
-                    if (triggered) {
-                        console.log(`🚫 Safety BLOCK triggered: ${rule.title_he}`);
+                for (const rule of rules.filter(r => r.severity === 'block')) {
+                    if (rule.trigger_keywords.some(kw => fullScanText.includes(kw.toLowerCase()))) {
+                        console.log(`🚫 Keyword BLOCK: ${rule.title_he}`);
                         addToAuditLog({ type: 'safety_rule_triggered', source: 'keyword_block',
                             rule_id: rule.id, rule_category: rule.category, rule_severity: 'block',
                             rule_title: rule.title_he, patient_id: patientContext?.patient_id || null, queries });
                         return { blocked: true, warned: false, rule, source: 'keyword_block' };
                     }
                 }
-
-                // ── PASS 2: Patient pregnancy direct check (warn) ────────
-                // Only reaches here if no BLOCK rule was triggered
-                if (patientContext?.is_pregnant) {
-                    const severity = patientContext.trimester === 1 ? 'block' : 'warn';
-                    const pregnancyRule = rules.find(r => r.category === 'pregnancy' && r.severity === severity)
-                                       || rules.find(r => r.category === 'pregnancy');
-                    if (pregnancyRule) {
-                        console.log(`🔒 Safety: Patient pregnant (trimester ${patientContext.trimester})`);
-                        addToAuditLog({ type: 'safety_rule_triggered', source: 'patient_context_pregnant',
-                            rule_category: 'pregnancy', rule_severity: pregnancyRule.severity,
-                            patient_id: patientContext.patient_id, queries });
-                        return {
-                            blocked: pregnancyRule.severity === 'block',
-                            warned:  pregnancyRule.severity === 'warn',
-                            rule: pregnancyRule, source: 'patient_context_pregnant'
-                        };
-                    }
-                }
-
-                // ── PASS 3: WARN rules — query + profile scan ────────────
-                const warnRules = rules.filter(r => r.severity === 'warn');
-                for (const rule of warnRules) {
-                    const triggered = rule.trigger_keywords.some(kw =>
-                        fullScanText.includes(kw.toLowerCase())
-                    );
-                    if (triggered) {
-                        const source = queryText.includes(
-                            rule.trigger_keywords.find(kw => queryText.includes(kw.toLowerCase())) || ''
-                        ) ? 'query_text' : 'patient_profile';
-                        console.log(`⚠️ Safety WARN triggered via ${source}: ${rule.title_he}`);
-                        addToAuditLog({ type: 'safety_rule_triggered', source,
+                for (const rule of rules.filter(r => r.severity === 'warn')) {
+                    if (rule.trigger_keywords.some(kw => fullScanText.includes(kw.toLowerCase()))) {
+                        console.log(`⚠️ Keyword WARN: ${rule.title_he}`);
+                        addToAuditLog({ type: 'safety_rule_triggered', source: 'keyword_warn',
                             rule_id: rule.id, rule_category: rule.category, rule_severity: 'warn',
                             rule_title: rule.title_he, patient_id: patientContext?.patient_id || null, queries });
-                        return { blocked: false, warned: true, rule, source };
+                        return { blocked: false, warned: true, rule, source: 'keyword_warn' };
                     }
                 }
-
                 return { blocked: false, warned: false };
             } catch (e) {
                 console.warn('⚠️ Safety check exception:', e.message);
@@ -1897,15 +1888,29 @@ const SUPABASE_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
             }
             if (ctx.breastfeeding)      parts.push('המטופלת מניקה');
             if (ctx.trying_to_conceive) parts.push('המטופלת מנסה להרות');
-            if (ctx.medications?.trim())         parts.push(`תרופות קבועות: ${ctx.medications}`);
-            if (ctx.allergies?.trim())           parts.push(`אלרגיות: ${ctx.allergies}`);
-            if (ctx.previous_conditions?.trim()) parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
-            if (ctx.surgeries?.trim())           parts.push(`ניתוחים בעבר: ${ctx.surgeries}`);
+            if (ctx.medications?.trim())          parts.push(`תרופות קבועות: ${ctx.medications}`);
+            if (ctx.allergies?.trim())            parts.push(`אלרגיות: ${ctx.allergies}`);
+            if (ctx.previous_conditions?.trim())  parts.push(`מצבים רפואיים: ${ctx.previous_conditions}`);
+            if (ctx.surgeries?.trim())            parts.push(`ניתוחים בעבר: ${ctx.surgeries}`);
+
+            // ── INJECT REAL DRUG MATCHES from drug_safety_database ───
+            let drugInteractionBlock = '';
+            if (ctx._drugMatches && ctx._drugMatches.length > 0) {
+                const lines = ctx._drugMatches.map(d => {
+                    const herbs  = d.contraindicated_herbs_he?.join(', ') || 'אין';
+                    const points = d.contraindicated_points?.join(', ')   || 'אין';
+                    const evidence = d.evidence_level === 'A' ? 'מחקר קליני' :
+                                     d.evidence_level === 'B' ? 'דיווחי מקרה' :
+                                     d.evidence_level === 'C' ? 'מחקר מעבדה' : 'הנחיות מומחים';
+                    return `• ${d.drug_class_he} (${d.generic_name_en}):\n  אסור צמחים: ${herbs}\n  נקודות להימנע: ${points}\n  ראיות: ${evidence}`;
+                }).join('\n');
+                drugInteractionBlock = `\n\nאינטראקציות תרופה-צמחים (ממסד נתונים קליני):\n${lines}`;
+            }
 
             return `אתה יועץ בטיחות לרפואה סינית (TCM). 
             
 פרופיל מטופל:
-${parts.join('\n')}
+${parts.join('\n')}${drugInteractionBlock}
 
 שאלות הטיפול הנוכחי: ${queries.join(', ')}
 
