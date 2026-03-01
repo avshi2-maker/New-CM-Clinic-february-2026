@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>☯ MERIDIAN</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Heebo:wght@300;400;600;700;900&family=Abril+Fatface&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Heebo:wght@300;400;600;700;900&family=Abril+Fatface&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -352,6 +352,102 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 
 @keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ═══ ROLLS-ROYCE HERO ═══ */
+#s0{
+  background-image:url('https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/sign/images/clinickey.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8wYzMwY2Y5MC1kYTY5LTRhNzgtYTAyYi1kNmZkNTA2NDc3NjUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvY2xpbmlja2V5LnBuZyIsImlhdCI6MTc3MjExMzU3NSwiZXhwIjozMzQ4OTEzNTc1fQ.ljErkcsh4NNeDiFnuWmaLa_IeWxKY0KGy0qYE-zo10o'),
+    linear-gradient(160deg,#030a05,#0a2e1a 40%,#060e06);
+  background-size:cover;background-position:center;overflow:hidden;}
+#s0::before{content:'';position:absolute;inset:0;z-index:0;
+  background:linear-gradient(to bottom,
+    rgba(3,10,5,0.5) 0%,rgba(6,14,6,0.75) 50%,rgba(3,10,5,0.94) 100%);}
+#s0::after{content:'';position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(0deg,transparent 49.5%,rgba(201,168,76,0.035) 50%,transparent 50.5%),
+    linear-gradient(90deg,transparent 49.5%,rgba(13,92,69,0.05) 50%,transparent 50.5%);
+  background-size:100px 100px;animation:gridDrift 25s linear infinite;}
+@keyframes gridDrift{from{background-position:0 0;}to{background-position:100px 100px;}}
+.s0-orb{position:absolute;border-radius:50%;filter:blur(80px);z-index:0;pointer-events:none;}
+.s0-orb1{width:550px;height:550px;
+  background:radial-gradient(circle,rgba(13,92,69,0.16),transparent 70%);
+  top:-120px;right:-80px;animation:orbP 9s ease-in-out infinite;}
+.s0-orb2{width:380px;height:380px;
+  background:radial-gradient(circle,rgba(201,168,76,0.09),transparent 70%);
+  bottom:-60px;left:-40px;animation:orbP 12s ease-in-out infinite reverse;}
+@keyframes orbP{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+.s0-body{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  height:100%;padding:16px 20px;text-align:center;}
+.s0-eye{font-family:'Cinzel',serif;font-size:10px;letter-spacing:5px;
+  color:var(--gold2);margin-bottom:8px;animation:fadeUp .75s ease both;}
+.s0-ttl{font-family:'Cinzel',serif;font-size:clamp(22px,5vw,52px);font-weight:900;
+  color:#f0ece0;line-height:1.1;margin-bottom:6px;letter-spacing:1px;
+  text-shadow:0 4px 24px rgba(0,0,0,0.6);animation:fadeUp .8s ease both 0.1s;}
+.s0-tagline{font-size:clamp(11px,1.8vw,15px);color:rgba(232,201,110,0.75);
+  margin-bottom:16px;letter-spacing:0.5px;line-height:1.5;
+  animation:fadeUp .85s ease both 0.18s;}
+.s0-stats{display:flex;gap:clamp(10px,3vw,38px);
+  justify-content:center;align-items:center;
+  margin-bottom:16px;animation:fadeUp .9s ease both 0.26s;}
+.stat-item{text-align:center;}
+.stat-num{font-family:'Abril Fatface',serif;font-size:clamp(24px,4.5vw,44px);
+  color:var(--gold2);line-height:1;text-shadow:0 0 28px rgba(201,168,76,0.3);}
+.stat-lbl{font-size:clamp(7px,1.1vw,9px);color:rgba(240,236,224,0.45);
+  letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;font-weight:600;}
+.stat-div{width:1px;height:34px;
+  background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.2),transparent);}
+@media(max-width:400px){.stat-div{display:none;}.s0-stats{gap:10px;}}
+.s0-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;
+  max-width:520px;margin-bottom:18px;animation:fadeUp .95s ease both 0.34s;}
+.pill{background:rgba(13,92,69,0.15);border:1px solid rgba(13,92,69,0.3);
+  border-radius:50px;padding:4px 12px;font-size:9px;font-weight:700;
+  color:rgba(240,236,224,0.75);letter-spacing:0.5px;backdrop-filter:blur(4px);}
+.pill.gold{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.28);
+  color:rgba(232,201,110,0.85);}
+.float-badge{position:absolute;z-index:2;
+  backdrop-filter:blur(10px);border-radius:12px;padding:10px 13px;text-align:center;}
+.badge-coverage{top:56px;left:14px;
+  background:rgba(6,46,30,0.82);border:1px solid rgba(201,168,76,0.22);
+  animation:badgeL .9s cubic-bezier(.34,1.56,.64,1) both 1s;}
+.badge-security{top:56px;right:14px;
+  background:rgba(6,6,20,0.82);border:1px solid rgba(79,70,229,0.25);
+  animation:badgeR .9s cubic-bezier(.34,1.56,.64,1) both 1.15s;}
+@keyframes badgeL{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+@keyframes badgeR{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+.fbadge-num{font-family:'Abril Fatface',serif;font-size:24px;line-height:1;}
+.badge-coverage .fbadge-num{color:var(--gold2);text-shadow:0 0 16px rgba(201,168,76,0.35);}
+.badge-security .fbadge-num{font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:1px;color:rgba(165,180,252,0.85);}
+.fbadge-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
+.badge-coverage .fbadge-lbl{color:rgba(240,236,224,0.4);}
+.badge-security .fbadge-lbl{color:rgba(165,180,252,0.45);}
+.fbadge-sub{font-size:8px;margin-top:2px;}
+.badge-coverage .fbadge-sub{color:rgba(52,211,153,0.75);}
+.badge-security .fbadge-sub{color:rgba(165,180,252,0.6);}
+@media(max-width:500px){.float-badge{display:none;}}
+.s0-trust{position:absolute;bottom:10px;left:0;right:0;
+  display:flex;justify-content:center;align-items:center;
+  gap:12px;font-size:8px;letter-spacing:2px;
+  color:rgba(240,236,224,0.2);text-transform:uppercase;
+  z-index:1;animation:fadeUp 1.2s ease both .6s;}
+.trust-sep{width:2px;height:2px;border-radius:50%;background:rgba(201,168,76,0.2);}
+.s0-btn{padding:13px 34px;border-radius:50px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--jade),var(--jade2));
+  color:var(--gold2);font-family:'Cinzel',serif;font-size:11px;
+  font-weight:700;letter-spacing:2px;
+  box-shadow:0 8px 28px rgba(13,92,69,0.45);transition:all .3s;}
+.s0-btn:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(13,92,69,0.6);}
+.s0-btn-ghost{padding:12px 22px;border-radius:50px;
+  border:1px solid rgba(201,168,76,0.22);background:rgba(201,168,76,0.05);
+  color:rgba(201,168,76,0.65);font-family:'Cinzel',serif;font-size:10px;
+  letter-spacing:1.5px;cursor:pointer;backdrop-filter:blur(4px);transition:all .25s;}
+.s0-btn-ghost:hover{border-color:rgba(201,168,76,0.45);color:var(--gold2);
+  background:rgba(201,168,76,0.1);}
+.s0-sub{display:none;}
+.s0-badges{display:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+/* ═══ END HERO ═══ */
+
 </style>
 </head>
 <body>
@@ -367,17 +463,62 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 
 <!-- ══ S0: TEASER ══ -->
 <div id="s0" class="screen active">
+  <div class="s0-orb s0-orb1"></div>
+  <div class="s0-orb s0-orb2"></div>
+  <div class="float-badge badge-coverage">
+    <div class="fbadge-num" id="statCoverage">95%</div>
+    <div class="fbadge-lbl">כיסוי בטיחות</div>
+    <div class="fbadge-sub">✓ <span id="coverageClaim">95</span>% contraindications</div>
+  </div>
+  <div class="float-badge badge-security">
+    <div class="fbadge-num">🔐</div>
+    <div class="fbadge-lbl">Zero-Knowledge</div>
+    <div class="fbadge-sub">AES-256-GCM</div>
+  </div>
   <div class="s0-body">
     <div class="s0-eye">☯ MERIDIAN — Clinical Intelligence TCM</div>
-    <div class="s0-ttl">העוזר הקליני<br>שמחכה לך</div>
-    <div class="s0-sub">יותר מ-1,000 שאלות TCM · AI קליני בעברית<br>הקלטה ותמלול אוטומטי · ניהול מטופלים חכם</div>
-    <div class="s0-badges">
-      <div class="s0-badge">☯ 1,000+ שאלות</div>
-      <div class="s0-badge">🎙️ תמלול עברית</div>
-      <div class="s0-badge">📱 מנייד ודסקטופ</div>
-      <div class="s0-badge">🔒 מאובטח</div>
+    <div class="s0-ttl">המערכת הקלינית<br>שמחכה לך</div>
+    <div class="s0-tagline">הכלי המקצועי הראשון לרפואה סינית — עברית, מוצפן, חכם.</div>
+    <div class="s0-stats">
+      <div class="stat-item">
+        <div class="stat-num" id="statQuestions">1000+</div>
+        <div class="stat-lbl">שאלות TCM</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num" id="statCards">40</div>
+        <div class="stat-lbl">מצבים קליניים</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num" id="statDrugs">25</div>
+        <div class="stat-lbl">תרופות מנוטרות</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num" style="font-size:clamp(12px,2.5vw,24px);letter-spacing:-1px;">AES-256</div>
+        <div class="stat-lbl">הצפנת נתונים</div>
+      </div>
     </div>
-    <button class="s0-btn" onclick="go('s1')">🚀 הצטרף ל-MERIDIAN</button>
+    <div class="s0-pills">
+      <span class="pill gold" id="pillCoverage">🛡️ 95% כיסוי בטיחות קלינית</span>
+      <span class="pill">🧠 Claude AI בעברית</span>
+      <span class="pill">🔐 Zero-Knowledge Vault</span>
+      <span class="pill">🎙️ תמלול קולי</span>
+      <span class="pill">📋 היסטוריה קלינית אוטומטית</span>
+      <span class="pill">☯ 1,000+ שאלות TCM</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:fadeUp 1s ease both .42s;">
+      <button class="s0-btn" onclick="go('s1')">🚀 הצטרף ל-MERIDIAN</button>
+      <button class="s0-btn-ghost" onclick="go('s1')">← צפה בתכניות</button>
+    </div>
+  </div>
+  <div class="s0-trust">
+    <span>ד"ר רוני ספיר</span><span class="trust-sep"></span>
+    <span>35+ שנות TCM</span><span class="trust-sep"></span>
+    <span>Claude AI</span><span class="trust-sep"></span>
+    <span>GDPR Zero-Knowledge</span><span class="trust-sep"></span>
+    <span>פותח בישראל</span>
   </div>
 </div>
 
@@ -1010,6 +1151,7 @@ function selTok(t){
   pizza.tok=t;
   ['s','p','u'].forEach(x=>document.getElementById('to_'+x).classList.toggle('sel',x===t));
   upTable();
+loadSiteStats();
 }
 
 function togAdd(type){
@@ -1392,6 +1534,41 @@ function toggleEye(inputId, btnId){
   else { inp.type = 'password'; btn.textContent = '👁'; }
 }
 
+
+// ─── LIVE SITE STATS FROM SUPABASE site_stats TABLE ───
+async function loadSiteStats() {
+  try {
+    if (!supa) supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+    const { data } = await supa.from('site_stats').select('key,value');
+    if (!data || !data.length) return;
+    const st = {};
+    data.forEach(r => { st[r.key] = r.value; });
+    const pct   = parseInt(st.safety_coverage_pct || 95);
+    const cards = parseInt(st.safety_card_count   || 40);
+    const drugs = parseInt(st.drug_interactions   || 25);
+    const qs    = parseInt(st.question_count      || 1000);
+    animateStat('statCoverage', pct,  '%', 1800);
+    animateStat('statCards',    cards, '',  1500);
+    animateStat('statDrugs',    drugs, '',  1300);
+    animateStat('statQuestions',qs,   '+', 2000);
+    const cl = document.getElementById('coverageClaim');
+    if (cl) cl.textContent = pct;
+    const pill = document.getElementById('pillCoverage');
+    if (pill) pill.textContent = '\uD83D\uDEE1\uFE0F ' + pct + '% \u05DB\u05D9\u05E1\u05D5\u05D9 \u05D1\u05D8\u05D9\u05D7\u05D5\u05EA \u05E7\u05DC\u05D9\u05E0\u05D9\u05EA';
+  } catch(e) { /* fallback values in HTML */ }
+}
+function animateStat(id, to, suffix, ms) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const t0 = performance.now();
+  (function tick(now) {
+    const p = Math.min((now-t0)/ms, 1);
+    const e = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(to*e).toLocaleString() + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
 // ─── INIT ───
 upTable();
 </script>
@@ -1432,14 +1609,5 @@ upTable();
       ⚕️ כתב ויתור רפואי
     </a>
     <span style="color:#ccc;">|</span>
-    <a href="mailto:avshi2@gmail.com"
-      style="color:var(--jade);text-decoration:none;font-size:11px;"
-      onmouseover="this.style.textDecoration='underline'"
-      onmouseout="this.style.textDecoration='none'">
-      ✉️ avshi2@gmail.com
-    </a>
-  </div>
-</footer>
-
-</body>
-</html>
+    <a href="/cdn-cgi/l/email-protection#e8899e9b8081daa88f85898184c68b8785" style="color:var(--jade);text-decoration:none;font-size:11px;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+      ✉️ <span class="__cf_email__" data-cfemail="
