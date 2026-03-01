@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — הצטרפות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Heebo:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --jade:   #0d5c45;
+  --jade2:  #1a7a5e;
+  --gold:   #c9a84c;
+  --gold2:  #e8c96a;
+  --indigo: #4f46e5;
+  --bg:     #080c14;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── ANIMATED BACKGROUND ── */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, rgba(13,92,69,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(79,70,229,0.25) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 60% at 50% 50%, rgba(201,168,76,0.08) 0%, transparent 50%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(13,92,69,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,92,69,0.07) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.bg-orb {
+  position: fixed; border-radius: 50%;
+  filter: blur(80px);
+  animation: orbFloat 8s ease-in-out infinite;
+  z-index: 0;
+}
+.orb1 { width:500px;height:500px;background:rgba(13,92,69,0.12);top:-100px;left:-100px; }
+.orb2 { width:400px;height:400px;background:rgba(79,70,229,0.1);bottom:-80px;right:-80px;animation-delay:-4s; }
+@keyframes orbFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.05)} }
+
+/* ── LAYOUT ── */
+.wrap {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 520px;
+}
+@media(max-width:900px) { .wrap { grid-template-columns: 1fr; } .hero-side { display: none; } }
+
+/* ── HERO SIDE ── */
+.hero-side {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 60px 48px;
+}
+.hero-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 42px; font-weight: 900;
+  letter-spacing: 6px;
+  background: linear-gradient(135deg, var(--jade2) 30%, var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.hero-yin { font-size: 28px; margin-bottom: 4px; }
+.hero-tagline {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 4px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+.hero-title {
+  font-size: 36px; font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 20px;
+  color: white;
+}
+.hero-title span { color: var(--gold2); }
+.hero-desc {
+  font-size: 15px; color: rgba(255,255,255,0.65);
+  line-height: 1.9; margin-bottom: 36px;
+}
+.feature-list { list-style: none; }
+.feature-list li {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 14px; color: rgba(255,255,255,0.8);
+  margin-bottom: 14px; line-height: 1.6;
+}
+.feat-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; margin-top: 2px;
+}
+.feat-icon.green { background: rgba(13,92,69,0.3); border: 1px solid rgba(13,92,69,0.5); }
+.feat-icon.gold  { background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3); }
+.feat-icon.indigo{ background: rgba(79,70,229,0.2); border: 1px solid rgba(79,70,229,0.4); }
+
+/* ── FORM SIDE ── */
+.form-side {
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 48px 40px;
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(20px);
+}
+
+/* ── STEP SYSTEM ── */
+.step { display: none; }
+.step.active { display: block; animation: stepIn 0.4s ease both; }
+@keyframes stepIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.step-header { margin-bottom: 28px; }
+.step-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--gold); margin-bottom: 6px;
+}
+.step-title {
+  font-family: 'Cinzel', serif;
+  font-size: 22px; font-weight: 700;
+  color: white; margin-bottom: 6px;
+}
+.step-sub {
+  font-size: 13px; color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+}
+
+/* ── TIER CARDS ── */
+.tier-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.tier-card {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 16px 20px;
+  cursor: pointer; transition: all 0.25s;
+  display: flex; align-items: center; gap: 16px;
+}
+.tier-card:hover { border-color: var(--jade2); background: rgba(13,92,69,0.1); }
+.tier-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+.tier-icon { font-size: 28px; flex-shrink: 0; }
+.tier-info { flex: 1; }
+.tier-name { font-weight: 900; font-size: 15px; margin-bottom: 3px; }
+.tier-desc { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+.tier-price {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700;
+  color: var(--gold2); text-align: left; flex-shrink: 0;
+}
+.tier-price small { display: block; font-size: 9px; color: rgba(255,255,255,0.4); }
+.tier-badge-trial { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid #34d399; border-radius: 8px; font-size: 10px; padding: 2px 8px; margin-top: 4px; display: inline-block; }
+
+/* ── INPUTS ── */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 6px; letter-spacing: 0.5px; }
+.field input {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 10px; color: white;
+  font-family: 'Heebo', sans-serif; font-size: 14px;
+  outline: none; transition: border-color 0.2s;
+  direction: rtl;
+}
+.field input:focus { border-color: var(--jade2); }
+.field input.error { border-color: #f87171; }
+.field-error { color: #f87171; font-size: 11px; margin-top: 4px; min-height: 16px; }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--jade), var(--jade2));
+  color: white; border: none; border-radius: 12px;
+  font-family: 'Heebo', sans-serif; font-size: 15px; font-weight: 900;
+  cursor: pointer; letter-spacing: 1px;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(13,92,69,0.5); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-secondary {
+  width: 100%; padding: 10px;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; font-size: 13px;
+  cursor: pointer; font-family: 'Heebo', sans-serif;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+
+/* ── CODE REVEAL ── */
+.code-reveal {
+  background: linear-gradient(135deg, rgba(13,92,69,0.15), rgba(201,168,76,0.08));
+  border: 2px solid var(--gold);
+  border-radius: 16px; padding: 28px 32px;
+  text-align: center; margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.code-reveal::before {
+  content: '☯';
+  position: absolute; right: -20px; top: -20px;
+  font-size: 120px; opacity: 0.04;
+}
+.code-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 3px;
+  color: rgba(255,255,255,0.4); margin-bottom: 14px;
+  text-transform: uppercase;
+}
+.code-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 26px; font-weight: 700;
+  color: var(--gold2);
+  letter-spacing: 4px;
+  margin-bottom: 16px;
+  word-break: break-all;
+  text-shadow: 0 0 20px rgba(201,168,76,0.4);
+}
+.code-copy-btn {
+  background: rgba(201,168,76,0.15);
+  border: 1px solid var(--gold);
+  color: var(--gold2);
+  border-radius: 8px; padding: 6px 20px;
+  font-size: 12px; cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  transition: all 0.2s;
+}
+.code-copy-btn:hover { background: rgba(201,168,76,0.3); }
+.code-warning {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px; padding: 12px 16px;
+  font-size: 12px; color: #fca5a5;
+  line-height: 1.7; margin-top: 16px; text-align: right;
+}
+.code-saved-check {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 14px; cursor: pointer;
+}
+.code-saved-check input { width: 18px; height: 18px; cursor: pointer; }
+.code-saved-check span { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+/* ── PROGRESS ── */
+.progress-bar {
+  display: flex; gap: 6px; margin-bottom: 28px;
+}
+.progress-dot {
+  height: 3px; flex: 1; border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.progress-dot.done { background: var(--jade2); }
+.progress-dot.active { background: var(--gold); }
+
+/* ── LOGIN LINK ── */
+.login-link {
+  text-align: center; margin-top: 20px;
+  font-size: 12px; color: rgba(255,255,255,0.4);
+}
+.login-link a { color: var(--jade2); text-decoration: none; font-weight: 700; }
+.login-link a:hover { color: var(--gold2); }
+
+/* ── CHECKLIST ── */
+.checklist { margin: 16px 0; }
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  margin-bottom: 8px; font-size: 13px;
+  color: rgba(255,255,255,0.75); line-height: 1.5;
+}
+.check-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="wrap">
+
+  <!-- HERO SIDE -->
+  <div class="hero-side">
+    <div class="hero-yin">☯</div>
+    <div class="hero-logo">MERIDIAN</div>
+    <div class="hero-tagline">TCM Clinical Management System</div>
+
+    <div class="hero-title">
+      הקליניקה שלך —<br>
+      <span>מוגנת, חכמה,</span><br>
+      תמיד זמינה.
+    </div>
+    <p class="hero-desc">
+      מערכת ה-TCM הראשונה בעולם עם הצפנת AES-256 מלאה מצד הלקוח.
+      ההיסטוריה הקלינית שלך שמורה בכספת מוצפנת — רק אתה יכול לקרוא אותה.
+      אפילו אנחנו לא.
+    </p>
+    <ul class="feature-list">
+      <li>
+        <div class="feat-icon green">🔐</div>
+        <div><strong>הצפנה מלאה מהמכשיר שלך</strong><br>נתוני המטופלים מוצפנים לפני שמגיעים לשרת. AES-256-GCM. Zero-knowledge.</div>
+      </li>
+      <li>
+        <div class="feat-icon gold">🧠</div>
+        <div><strong>Claude AI עם זיכרון קליני</strong><br>המערכת זוכרת כל מפגש — Claude מקבל היסטוריה מלאה לפני כל טיפול.</div>
+      </li>
+      <li>
+        <div class="feat-icon indigo">🛡️</div>
+        <div><strong>מודול בטיחות ייחודי</strong><br>23 מצבים קליניים · 25 תרופות · בדיקת אינטראקציות בזמן אמת.</div>
+      </li>
+      <li>
+        <div class="feat-icon green">📋</div>
+        <div><strong>טיפול שקוף ורצוף</strong><br>היסטוריה קלינית נטענת אוטומטית — אין קבצים, אין חיפוש, אין בזבוז זמן.</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FORM SIDE -->
+  <div class="form-side">
+
+    <!-- PROGRESS -->
+    <div class="progress-bar">
+      <div class="progress-dot active" id="prog1"></div>
+      <div class="progress-dot" id="prog2"></div>
+      <div class="progress-dot" id="prog3"></div>
+      <div class="progress-dot" id="prog4"></div>
+    </div>
+
+    <!-- ── STEP 1: TIER SELECTION ── -->
+    <div class="step active" id="step1">
+      <div class="step-header">
+        <div class="step-num">// שלב 1 מתוך 4</div>
+        <div class="step-title">בחר תכנית</div>
+        <div class="step-sub">14 יום ניסיון חינם בכל תכנית. ללא חיוב עד לפתיחת המערכת המלאה.</div>
+      </div>
+
+      <div class="tier-grid">
+        <div class="tier-card selected" id="tier-pro" onclick="selectTier('pro')">
+          <div class="tier-icon">⚕️</div>
+          <div class="tier-info">
+            <div class="tier-name">מטפל יחיד</div>
+            <div class="tier-desc">כל הכלים הקליניים · כספת מוצפנת · Claude AI · בטיחות מלאה</div>
+            <div class="tier-badge-trial">14 יום ניסיון חינם</div>
+          </div>
+          <div class="tier-price">₪32<small>/חודש</small></div>
+        </div>
+
+        <div class="tier-card" id="tier-group" onclick="selectTier('group')">
+          <div class="tier-icon">🏥</div>
+          <div class="tier-info">
+            <div class="tier-name">קבוצה / קליניקה</div>
+            <div class="tier-desc">עד 5 מטפלים · כספת נפרדת לכל מטפל · דוחות מנהל · API</div>
+            <div class="tier-badge-trial">14 יום ניסיון חינם</div>
+          </div>
+          <div class="tier-price">₪89<small>/חודש</small></div>
+        </div>
+
+        <div class="tier-card" id="tier-encyclopedia" onclick="selectTier('encyclopedia')">
+          <div class="tier-icon">📚</div>
+          <div class="tier-info">
+            <div class="tier-name">אנציקלופדיה + מטפל</div>
+            <div class="tier-desc">הכל במטפל יחיד + גישה לאנציקלופדיה ד"ר רוני ספיר המלאה</div>
+            <div class="tier-badge-trial">14 יום ניסיון חינם</div>
+          </div>
+          <div class="tier-price">₪65<small>/חודש</small></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="goToStep(2)">המשך →</button>
+      <div class="login-link">כבר רשום? <a href="#" onclick="showLoginFlow()">התחבר עם הקוד שלך</a></div>
+    </div>
+
+    <!-- ── STEP 2: DETAILS ── -->
+    <div class="step" id="step2">
+      <div class="step-header">
+        <div class="step-num">// שלב 2 מתוך 4</div>
+        <div class="step-title">פרטים בסיסיים</div>
+        <div class="step-sub">אין צורך בכרטיס אשראי עכשיו. רק הפרטים הבסיסיים ביותר.</div>
+      </div>
+
+      <div class="field">
+        <label>שם מלא</label>
+        <input type="text" id="reg_name" placeholder="ד״ר / מר / גב׳ ...">
+        <div class="field-error" id="err_name"></div>
+      </div>
+      <div class="field">
+        <label>כתובת אימייל</label>
+        <input type="email" id="reg_email" placeholder="your@email.com" dir="ltr">
+        <div class="field-error" id="err_email"></div>
+      </div>
+      <div class="field">
+        <label>שם הקליניקה (אופציונלי)</label>
+        <input type="text" id="reg_clinic" placeholder="קליניקת ...">
+      </div>
+
+      <button class="btn-primary" onclick="validateStep2()">המשך →</button>
+      <button class="btn-secondary" onclick="goToStep(1)">← חזור</button>
+    </div>
+
+    <!-- ── STEP 3: CODE REVEAL ── -->
+    <div class="step" id="step3">
+      <div class="step-header">
+        <div class="step-num">// שלב 3 מתוך 4</div>
+        <div class="step-title">הקוד הפרטי שלך 🔐</div>
+        <div class="step-sub">זה הרגע הכי חשוב. קרא בעיון לפני שממשיכים.</div>
+      </div>
+
+      <div class="code-reveal" id="codeRevealBox">
+        <div class="code-label">// הקוד הפרטי שלך — MERIDIAN VAULT KEY</div>
+        <div class="code-value" id="generatedCode">MRD-⏳--</div>
+        <button class="code-copy-btn" onclick="copyCode()">📋 העתק קוד</button>
+        <div id="copyConfirm" style="color:#34d399;font-size:11px;margin-top:8px;min-height:18px;"></div>
+        <div class="code-warning">
+          🚨 <strong>קרא זאת לפני שממשיך:</strong><br><br>
+          • הקוד הזה הוא <strong>המפתח היחיד</strong> לכל הנתונים הקליניים שלך.<br>
+          • אנחנו <strong>לא שומרים אותו בשום מקום</strong> — אפילו לא בצורה מוצפנת.<br>
+          • אם תאבד אותו — <strong>לא ניתן לשחזר</strong> את ההיסטוריה הקלינית.<br>
+          • שמור אותו ב-2 מקומות לפחות: מנהל סיסמאות + נייר פיזי.
+        </div>
+      </div>
+
+      <div class="code-saved-check">
+        <input type="checkbox" id="codeSavedCheck" onchange="updateStep3Btn()">
+        <span>שמרתי את הקוד במקום בטוח ואני מבין שאין אפשרות שחזור</span>
+      </div>
+
+      <br>
+      <button class="btn-primary" id="step3Btn" onclick="completeRegistration()" disabled>
+        🚀 צור את חשבוני
+      </button>
+      <button class="btn-secondary" onclick="goToStep(2)">← חזור</button>
+    </div>
+
+    <!-- ── STEP 4: SUCCESS ── -->
+    <div class="step" id="step4">
+      <div class="step-header">
+        <div class="step-num">// ✅ הצטרפת בהצלחה</div>
+        <div class="step-title">ברוך הבא ל-MERIDIAN!</div>
+        <div class="step-sub">הכספת שלך מוכנה. 14 ימי ניסיון מתחילים עכשיו.</div>
+      </div>
+
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div>חשבון נוצר בהצלחה — <span id="s4email" style="color:var(--gold2)"></span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">🔐</div>
+          <div>כספת מוצפנת פעילה — AES-256-GCM Zero Knowledge</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">🧠</div>
+          <div>Claude AI מחובר ומוכן לסשן הראשון שלך</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">📅</div>
+          <div>14 ימי ניסיון — ללא חיוב, ביטול בכל עת לאחר הפעלה</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(13,92,69,0.15);border:1px solid rgba(13,92,69,0.4);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:8px;font-family:'Space Mono',monospace;">// הקוד שלך — לשמור!</div>
+        <div style="font-family:'Space Mono',monospace;font-size:18px;color:var(--gold2);letter-spacing:3px;" id="s4code"></div>
+      </div>
+
+      <button class="btn-primary" onclick="enterApp()" style="background:linear-gradient(135deg,var(--jade),var(--jade2));">
+        🏥 כנס למערכת ←
+      </button>
+      <button class="btn-secondary" onclick="window.print()">🖨️ הדפס דף זה לשמירת הקוד</button>
+    </div>
+
+    <!-- ── LOGIN FLOW (hidden by default) ── -->
+    <div class="step" id="stepLogin">
+      <div class="step-header">
+        <div class="step-num">// כניסה</div>
+        <div class="step-title">הזן את הקוד שלך</div>
+        <div class="step-sub">הקוד הפרטי שקיבלת בהרשמה. המערכת תזהה אותך אוטומטית.</div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px;">
+        <label>הקוד הפרטי שלך</label>
+        <input type="text" id="login_code"
+          placeholder="MRD-XXXX-XXXX-XXXX"
+          maxlength="16" dir="ltr"
+          autocomplete="off" autocorrect="off" autocapitalize="characters"
+          style="font-family:'Space Mono',monospace;font-size:18px;letter-spacing:3px;text-align:center;"
+          oninput="formatCodeInput(this)"
+          onkeydown="if(event.key==='Enter') doLogin()">
+        <div class="field-error" id="err_login"></div>
+      </div>
+
+      <button class="btn-primary" onclick="doLogin()" id="loginBtn">🔓 כנס עם הקוד</button>
+      <button class="btn-secondary" onclick="showRegFlow()">← חדש? הירשם כאן</button>
+    </div>
+
+  </div><!-- /form-side -->
+</div><!-- /wrap -->
+
+<script>
+// ── SUPABASE ─────────────────────────────────────────────────
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+window.supabaseClient = sb;
+
+// ── STATE ─────────────────────────────────────────────────────
+let selectedTier     = 'pro';
+let currentStep      = 1;
+let _generatedCode   = null;
+let _registrationData = {};
+
+// ── INIT — Check if already logged in ────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  // Generate code on load (fast, no waiting)
+  generateAndShowCode();
+
+  // Check if code already in sessionStorage → skip to app
+  const existingCode = sessionStorage.getItem('meridian_vault_code');
+  if (existingCode) {
+    try {
+      const hash = await hashCode(existingCode);
+      const { data } = await sb.from('therapist_vault').select('id,email').eq('therapist_code_hash', hash).single();
+      if (data) {
+        // Already logged in — redirect to CRM
+        window.location.href = 'crm.html';
+        return;
+      }
+    } catch(e) {}
+  }
+});
+
+// ── TIER SELECTION ────────────────────────────────────────────
+function selectTier(tier) {
+  selectedTier = tier;
+  document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('tier-' + tier).classList.add('selected');
+}
+
+// ── STEP NAVIGATION ───────────────────────────────────────────
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  // Update progress
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('prog' + i);
+    if (!dot) continue;
+    dot.className = 'progress-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+}
+
+// ── STEP 2 VALIDATION ─────────────────────────────────────────
+function validateStep2() {
+  let ok = true;
+  const name  = document.getElementById('reg_name').value.trim();
+  const email = document.getElementById('reg_email').value.trim();
+
+  document.getElementById('err_name').textContent  = '';
+  document.getElementById('err_email').textContent = '';
+
+  if (!name || name.length < 2) {
+    document.getElementById('err_name').textContent = '⚠️ שם חובה (לפחות 2 תווים)';
+    ok = false;
+  }
+  if (!email || !email.includes('@')) {
+    document.getElementById('err_email').textContent = '⚠️ כתובת אימייל לא תקינה';
+    ok = false;
+  }
+
+  if (ok) {
+    _registrationData = {
+      displayName: name,
+      email:       email,
+      clinicName:  document.getElementById('reg_clinic').value.trim(),
+      tier:        selectedTier
+    };
+    goToStep(3);
+  }
+}
+
+// ── CODE GENERATION ───────────────────────────────────────────
+async function generateAndShowCode() {
+  // Use Web Crypto directly (MeridianCrypto not loaded yet on this page)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const arr   = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  const segs  = [];
+  for (let i = 0; i < 3; i++) {
+    let seg = '';
+    for (let j = 0; j < 4; j++) seg += chars[arr[i*4+j] % chars.length];
+    segs.push(seg);
+  }
+  _generatedCode = `MRD-${segs.join('-')}`;
+  document.getElementById('generatedCode').textContent = _generatedCode;
+}
+
+async function hashCode(code) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(code.toUpperCase().trim()));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(_generatedCode).then(() => {
+    document.getElementById('copyConfirm').textContent = '✅ הועתק ללוח!';
+    setTimeout(() => document.getElementById('copyConfirm').textContent = '', 3000);
+  });
+}
+
+function updateStep3Btn() {
+  document.getElementById('step3Btn').disabled = !document.getElementById('codeSavedCheck').checked;
+}
+
+// ── COMPLETE REGISTRATION ─────────────────────────────────────
+async function completeRegistration() {
+  const btn = document.getElementById('step3Btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ יוצר חשבון...';
+
+  try {
+    const codeHash = await hashCode(_generatedCode);
+
+    const { data, error } = await sb
+      .from('therapist_vault')
+      .insert({
+        therapist_code_hash: codeHash,
+        email:               _registrationData.email.toLowerCase().trim(),
+        display_name:        _registrationData.displayName,
+        clinic_name:         _registrationData.clinicName || '',
+        tier:                _registrationData.tier || 'pro',
+        subscription_active: false
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('כתובת האימייל כבר רשומה — <a href="#" onclick="showLoginFlow()">התחבר כאן</a>');
+      }
+      throw new Error(error.message);
+    }
+
+    // Store code in sessionStorage
+    sessionStorage.setItem('meridian_vault_code', _generatedCode);
+    sessionStorage.setItem('meridian_therapist_id', data.id);
+    sessionStorage.setItem('meridian_display_name', _registrationData.displayName);
+    sessionStorage.setItem('meridian_clinic_name', _registrationData.clinicName || '');
+    sessionStorage.setItem('meridian_email', _registrationData.email);
+
+    // Show success
+    document.getElementById('s4email').textContent  = _registrationData.email;
+    document.getElementById('s4code').textContent   = _generatedCode;
+    goToStep(4);
+
+  } catch(e) {
+    btn.disabled  = false;
+    btn.textContent = '🚀 צור את חשבוני';
+    alert('שגיאה בהרשמה: ' + e.message);
+  }
+}
+
+// ── ENTER APP ─────────────────────────────────────────────────
+function enterApp() {
+  window.location.href = 'crm.html';
+}
+
+// ── LOGIN FLOW ────────────────────────────────────────────────
+function showLoginFlow() {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('stepLogin').classList.add('active');
+  document.querySelectorAll('.progress-dot').forEach(d => d.className = 'progress-dot');
+  return false;
+}
+
+function showRegFlow() {
+  goToStep(1);
+}
+
+function formatCodeInput(input) {
+  let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  val = val.replace(/^MRD/, '');
+  let parts = [];
+  for (let i = 0; i < 3; i++) {
+    const chunk = val.substring(i*4, (i+1)*4);
+    if (chunk) parts.push(chunk);
+  }
+  input.value = parts.length ? 'MRD-' + parts.join('-') : '';
+}
+
+async function doLogin() {
+  const code  = document.getElementById('login_code').value.trim();
+  const errEl = document.getElementById('err_login');
+  const btn   = document.getElementById('loginBtn');
+  errEl.textContent = '';
+
+  if (!code || !/^MRD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code.toUpperCase())) {
+    errEl.textContent = '⚠️ פורמט שגוי — MRD-XXXX-XXXX-XXXX';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ מאמת...';
+
+  try {
+    const codeHash = await hashCode(code);
+    const { data, error } = await sb.from('therapist_vault').select('*').eq('therapist_code_hash', codeHash).single();
+    if (error || !data) throw new Error('קוד לא נמצא — בדוק שהעתקת נכון');
+
+    sessionStorage.setItem('meridian_vault_code',    code.toUpperCase());
+    sessionStorage.setItem('meridian_therapist_id',  data.id);
+    sessionStorage.setItem('meridian_display_name',  data.display_name);
+    sessionStorage.setItem('meridian_clinic_name',   data.clinic_name || '');
+    sessionStorage.setItem('meridian_email',         data.email);
+
+    // Update last active
+    await sb.from('therapist_vault').update({ last_active_at: new Date().toISOString() }).eq('id', data.id);
+
+    window.location.href = 'crm.html';
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '🔓 כנס עם הקוד';
+    errEl.textContent = '❌ ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
