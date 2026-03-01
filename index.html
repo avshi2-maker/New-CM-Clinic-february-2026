@@ -236,6 +236,42 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 .warn-pulse{display:inline-block;animation:pulse 1.5s ease-in-out infinite;font-size:14px;margin-left:4px;}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.7}}
 
+/* ══ FIX 1 — TOOLTIP CSS ══════════════════════════════════════════ */
+.info-tip{
+  position:relative;cursor:pointer;display:inline-block;
+  font-size:14px;vertical-align:middle;margin-right:3px;
+  user-select:none;
+}
+.tip-box{
+  display:none;
+  position:absolute;
+  top:calc(100% + 8px);
+  right:-10px;
+  width:230px;
+  background:#1a2e1a;
+  color:white;
+  border-radius:10px;
+  padding:11px 14px;
+  font-size:10px;
+  line-height:1.9;
+  z-index:999;
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  text-align:right;
+  font-family:'Heebo',sans-serif;
+  font-weight:400;
+  pointer-events:none;
+}
+.tip-box::before{
+  content:'';
+  position:absolute;
+  top:-6px;right:14px;
+  border:6px solid transparent;
+  border-bottom-color:#1a2e1a;
+  border-top:none;
+}
+.tip-box.show{display:block;animation:fadeUp .2s ease both;}
+/* ══════════════════════════════════════════════════════════════════ */
+
 /* ── S4 PAYMENT + LOGIN ── */
 #s4{background:var(--bg);padding:12px;}
 .s4-in{max-width:800px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:10px;}
@@ -304,6 +340,15 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
   border-radius:7px;padding:6px 14px;cursor:pointer;
   font-size:11px;color:#777;font-family:'Heebo',sans-serif;transition:all .2s;}
 .back-btn:hover{border-color:rgba(0,0,0,0.22);color:#333;}
+
+/* ── FIX 3 — Existing user divider ── */
+.existing-divider{
+  display:flex;align-items:center;gap:8px;margin:2px 0;
+}
+.existing-divider::before,.existing-divider::after{
+  content:'';flex:1;height:1px;background:rgba(0,0,0,0.08);
+}
+.existing-divider span{font-size:10px;color:#bbb;white-space:nowrap;}
 
 @keyframes popIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -452,7 +497,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         </div>
         <button class="tc-btn tc-cus" onclick="pickTier('custom')">בנה תוכנית מותאמת ←</button>
       </div>
-      <!-- GROUP CARD — now INSIDE tier-grid = same row as other 2 -->
+      <!-- GROUP CARD -->
       <div class="tc group">
         <img src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/images/group.jpg" class="tc-group-img" alt="Group Plan">
         <div class="tc-nm" style="color:#5c2ca8;">MERIDIAN קליניקה</div>
@@ -469,7 +514,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
       </div>
     </div>
 
-    <!-- ENCYCLOPEDIA CARD — Dr. Roni Sapir partnership tier -->
+    <!-- ENCYCLOPEDIA CARD -->
     <div style="margin-top:12px;">
       <div style="text-align:center;margin-bottom:8px;">
         <span style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;
@@ -480,13 +525,11 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         border:2px solid rgba(139,105,20,0.25);border-radius:14px;padding:18px 22px;
         box-shadow:0 6px 24px rgba(139,105,20,0.12);display:grid;
         grid-template-columns:auto 1fr auto;gap:16px;align-items:center;max-width:800px;margin:0 auto;">
-        <!-- Left: icon + name -->
         <div style="text-align:center;min-width:80px;">
           <div style="font-size:36px;margin-bottom:4px;">📚</div>
           <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:#8b6914;font-weight:700;">SAPIR CM</div>
           <div style="font-family:'Cinzel',serif;font-size:8px;color:#b7960a;">ENCYCLOPEDIA</div>
         </div>
-        <!-- Middle: features -->
         <div>
           <div style="font-family:'Cinzel',serif;font-size:13px;color:#5c3d00;margin-bottom:6px;">
             אנציקלופדיה ד"ר רוני ספיר — רפואה משלימה
@@ -500,7 +543,6 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
             <div style="display:flex;align-items:center;gap:5px;"><span style="color:#8b6914;font-weight:700;">✓</span> מצבים: מטפל · תלמיד · מטופל</div>
           </div>
         </div>
-        <!-- Right: CTA -->
         <div style="text-align:center;min-width:130px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#aaa;
             text-decoration:line-through;margin-bottom:2px;">$29.99/חודש</div>
@@ -584,6 +626,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
               <span class="at-ic">📝</span>
               <div>
                 <div class="at-nm">תמלול עברית AI
+                  <!-- FIX 1 APPLIED: tooltip now has proper CSS — click ℹ️ to reveal -->
                   <span class="info-tip" onclick="event.stopPropagation();document.getElementById('tipTrans').classList.toggle('show')">ℹ️
                     <div class="tip-box" id="tipTrans">
                       <strong>למה Scribe שווה את זה?</strong><br>
@@ -598,11 +641,11 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
-              <span class="at-pr" id="trans_price_badge">+$21</span>
+              <!-- FIX 2 APPLIED: id="trans_price_badge" — updated dynamically in upTable() -->
+              <span class="at-pr" id="trans_price_badge">+$21.45</span>
               <div class="sw" id="sw_trans"></div>
             </div>
           </div>
-          <!-- trans-warn removed -->
         </div>
       </div>
 
@@ -627,7 +670,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
             </tr>
           </thead>
           <tbody>
-            <!-- Row 1: Core — always active -->
+            <!-- Row 1: Core -->
             <tr class="val-row active" id="vr_core">
               <td>
                 <div class="val-feat">
@@ -714,7 +757,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
                 <div class="val-unit" id="vtr_mins">דקות/חודש</div>
               </td>
               <td class="val-price-cell">
-                <div class="val-price inactive" id="vtr_price">+$28</div>
+                <div class="val-price inactive" id="vtr_price">+$21.45</div>
                 <div class="val-unit"><span class="val-add-badge off" id="vtr_badge">לא פעיל</span></div>
               </td>
             </tr>
@@ -781,7 +824,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         </div>
       </div>
 
-      <!-- Login -->
+      <!-- Login / Create Account -->
       <div class="login-card">
         <div class="login-ttl">☯ צור חשבון — כנס ל-MERIDIAN CRM</div>
         <div class="login-wel">
@@ -813,8 +856,21 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
         <div class="pw-strength" id="pwMatch"></div>
         <div class="login-note">לאחר תשלום — פרטים אלו ישמשו לכניסה ל-CRM</div>
         <button class="login-btn" onclick="demoLogin()">☯ צור חשבון וכנס ←</button>
-        <!-- change tier button -->
-        <div style="text-align:center;margin-top:8px;">
+
+        <!-- ══ FIX 3 — EXISTING USER LOGIN PATH ══ -->
+        <div class="existing-divider"><span>כבר רשום?</span></div>
+        <button onclick="existingLogin()"
+          style="width:100%;padding:9px;border-radius:9px;
+            border:1.5px solid rgba(13,92,69,0.25);background:transparent;
+            color:var(--jade);font-family:'Cinzel',serif;font-size:10px;
+            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.background='rgba(13,92,69,0.06)'"
+          onmouseout="this.style.background='transparent'">
+          ← כנס לחשבון קיים
+        </button>
+        <!-- ══════════════════════════════════════════ -->
+
+        <div style="text-align:center;margin-top:4px;">
           <button onclick="go('s2')"
             style="background:none;border:1px solid rgba(13,92,69,0.25);color:var(--jade);
               border-radius:8px;padding:6px 18px;font-family:'Cinzel',serif;font-size:10px;
@@ -846,12 +902,9 @@ try{
 // ─── STATE ───
 let reg={};
 let pizza={tok:'s',audio:false,trans:false};
-const WA='972505231042'; // ← החלף במספר שלך
+const WA='972505231042';
 
-// ─── TIER DATA — all volumes pre-calculated ───
-// 22 working days/month · 8 queries/session · 2000 tokens/query = 16K tokens/session
-// audio: 50min × 23MB = ~23MB/session (64kbps mono MP3)
-// transcription: 50 min/session
+// ─── TIER DATA ───
 const TIERS = {
   s:{ name:'Starter', price:9,  daily:5,  monthly:110,
       tokPerSess:'16,000', tokMonthly:'1.76M',
@@ -953,7 +1006,6 @@ function togAdd(type){
   pizza[type]=!pizza[type];
   document.getElementById('at_'+type).classList.toggle('on',pizza[type]);
   document.getElementById('sw_'+type).classList.toggle('on',pizza[type]);
-  // trans-warn display removed — element no longer in DOM
   upTable();
 }
 
@@ -976,7 +1028,6 @@ function upTable(){
 
   // Row 2: Tokens
   set('vt_tier',   T.name+' Tokens');
-  set('vt_perSess',T.tokPerSess);
   set('vt_monthly',T.tokMonthly);
   set('vt_sessmo', T.monthly+' שאילתות/חודש');
   set('vt_price',  '+$'+T.price);
@@ -985,7 +1036,6 @@ function upTable(){
   // Row 3: Audio
   const aOn=pizza.audio;
   document.getElementById('vr_audio').className='val-row '+(aOn?'active':'inactive');
-  set('va_perSess', T.audioMB);
   set('va_monthly', T.audioGB);
   set('va_files',   T.audioFiles+' קבצים/חודש');
   set('va_price',   '+$8');
@@ -995,17 +1045,14 @@ function upTable(){
   // Row 4: Transcription
   const tOn=pizza.trans;
   document.getElementById('vr_trans').className='val-row '+(tOn?'active':'inactive');
-  set('vtr_perSess', T.transMin+' דקות');
   set('vtr_monthly', T.transMonthly);
-  set('vtr_files',   T.monthly+' תמלולים/חודש');
   set('vtr_price',   '+$'+T.transPrice);
   document.getElementById('vtr_price').className='val-price'+(tOn?'':' inactive');
   setHTML('vtr_badge',`<span class="val-add-badge ${tOn?'':'off'}">${tOn?'פעיל ✓':'לא פעיל'}</span>`);
 
-  // Patients estimate row
-  set('vp_calc',  `${T.daily} × 22`);
-  set('vp_total', T.monthly);
-  set('vp_note',  `≈ ${T.daily} מטופלים/יום\n× 22 ימי עבודה`);
+  // ══ FIX 2 — Update left-panel transcription badge price to match current tier ══
+  set('trans_price_badge', '+$'+T.transPrice);
+  // ══════════════════════════════════════════════════════════════════════════════
 
   // Total
   set('valTotal', '$'+total);
@@ -1042,15 +1089,108 @@ function checkPass(){
   const m=document.getElementById('pwMatch');
   if(!p1||!p2) return;
   const v1=p1.value, v2=p2.value;
-  // Strength
   if(v1.length===0){ p1.className='linp'; s.className='pw-strength'; }
   else if(v1.length<8){ p1.className='linp error'; s.className='pw-strength show'; s.innerHTML='<span class="pw-err">✗ נדרש לפחות 8 תווים ('+v1.length+'/8)</span>'; }
   else { p1.className='linp valid'; s.className='pw-strength show'; s.innerHTML='<span class="pw-ok">✓ סיסמה תקינה</span>'; }
-  // Match
   if(v2.length===0){ p2.className='linp'; m.className='pw-strength'; }
   else if(v1!==v2){ p2.className='linp error'; m.className='pw-strength show'; m.innerHTML='<span class="pw-err">✗ הסיסמאות אינן תואמות</span>'; }
   else { p2.className='linp valid'; m.className='pw-strength show'; m.innerHTML='<span class="pw-ok">✓ הסיסמאות תואמות</span>'; }
 }
+
+// ══ FIX 3 — EXISTING USER LOGIN MODAL ════════════════════════════
+function existingLogin(){
+  const existing = document.getElementById('existingLoginModal');
+  if(existing){ existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = 'existingLoginModal';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.55);backdrop-filter:blur(5px);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Heebo',sans-serif;animation:fadeUp .25s ease both;`;
+  modal.innerHTML = `
+    <div dir="rtl" style="background:white;border-radius:18px;padding:28px 30px;
+      max-width:340px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.25);
+      border:2px solid rgba(13,92,69,0.12);">
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="font-size:32px;margin-bottom:6px;">☯</div>
+        <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--jade);
+          font-weight:700;">כניסה לחשבון קיים</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">MERIDIAN CRM</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <input id="exEmail" type="email" placeholder="your@email.com" dir="ltr"
+          style="padding:10px 12px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.12);
+            font-size:13px;font-family:'Heebo',sans-serif;outline:none;
+            text-align:left;width:100%;transition:border-color .2s;"
+          onfocus="this.style.borderColor='#1a8a65'"
+          onblur="this.style.borderColor='rgba(0,0,0,0.12)'">
+        <div style="position:relative;">
+          <input id="exPass" type="password" placeholder="סיסמה" dir="ltr"
+            style="padding:10px 12px;padding-left:38px;border-radius:8px;
+              border:1.5px solid rgba(0,0,0,0.12);font-size:13px;
+              font-family:'Heebo',sans-serif;outline:none;
+              text-align:left;width:100%;transition:border-color .2s;"
+            onfocus="this.style.borderColor='#1a8a65'"
+            onblur="this.style.borderColor='rgba(0,0,0,0.12)'"
+            onkeydown="if(event.key==='Enter') doExistingLogin()">
+          <button type="button" onclick="toggleEye('exPass','exEye')"
+            style="position:absolute;left:10px;top:50%;transform:translateY(-50%);
+              background:none;border:none;cursor:pointer;font-size:15px;" id="exEye">👁</button>
+        </div>
+        <div id="exErr" style="font-size:10px;color:#e74c3c;display:none;text-align:center;"></div>
+        <button onclick="doExistingLogin()"
+          style="width:100%;padding:11px;border-radius:9px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,var(--jade),var(--jade2));color:var(--gold2);
+            font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+            letter-spacing:1.5px;box-shadow:0 4px 12px rgba(13,92,69,0.3);transition:all .2s;"
+          onmouseover="this.style.transform='translateY(-1px)'"
+          onmouseout="this.style.transform='none'">
+          ☯ כנס ל-MERIDIAN ←
+        </button>
+        <button onclick="document.getElementById('existingLoginModal').remove()"
+          style="width:100%;padding:8px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.1);
+            background:transparent;color:#888;font-family:'Heebo',sans-serif;
+            font-size:11px;cursor:pointer;">
+          ביטול
+        </button>
+      </div>
+    </div>`;
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+  document.body.appendChild(modal);
+  setTimeout(()=>{ const el=document.getElementById('exEmail'); if(el) el.focus(); },100);
+}
+
+function doExistingLogin(){
+  const email = document.getElementById('exEmail')?.value?.trim();
+  const pass  = document.getElementById('exPass')?.value;
+  const errEl = document.getElementById('exErr');
+  if(!email || !pass){
+    errEl.textContent='נא מלא אימייל וסיסמה'; errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  // In P3 this will use Supabase Auth signInWithPassword
+  // For now: DEMO — navigate directly to CRM
+  if(supa){
+    supa.auth.signInWithPassword({ email, password: pass })
+      .then(({data, error}) => {
+        if(error){
+          errEl.textContent = 'אימייל או סיסמה שגויים'; errEl.style.display='block';
+        } else {
+          document.getElementById('existingLoginModal')?.remove();
+          window.location.href='https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html';
+        }
+      });
+  } else {
+    // DEMO fallback — no Supabase
+    document.getElementById('existingLoginModal')?.remove();
+    showDemoMsg('☯','כניסה — DEMO',
+      `📧 ${email}\n\nב-P3: Supabase Auth אמיתי.\nבינתיים מועבר ל-CRM.`,
+      ()=>{ window.location.href='https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html'; }
+    );
+  }
+}
+// ══════════════════════════════════════════════════════════════════
 
 // ─── ENCYCLOPEDIA TIER ───
 function callEncyclopedia(){
@@ -1062,8 +1202,7 @@ function callEncyclopedia(){
     position:fixed;inset:0;z-index:9999;
     background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
     display:flex;align-items:center;justify-content:center;
-    font-family:'Heebo',sans-serif;animation:fadeUp .25s ease both;
-  `;
+    font-family:'Heebo',sans-serif;animation:fadeUp .25s ease both;`;
   modal.innerHTML = `
     <div dir="rtl" style="background:linear-gradient(135deg,#fffbf0,#fff8e1);
       border-radius:18px;padding:28px 32px;max-width:360px;width:90%;text-align:center;
@@ -1090,15 +1229,13 @@ function callEncyclopedia(){
           letter-spacing:1px;cursor:pointer;width:100%;">
         סגור
       </button>
-    </div>
-  `;
+    </div>`;
   modal.onclick = (e) => { if(e.target===modal) modal.remove(); };
   document.body.appendChild(modal);
 }
 
 // ─── GROUP TIER ───
 function callGroup(){
-  // No alert() — replaced with non-blocking modal to prevent freeze
   const existing = document.getElementById('callGroupModal');
   if(existing){ existing.remove(); return; }
   const modal = document.createElement('div');
@@ -1108,8 +1245,7 @@ function callGroup(){
     background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
     display:flex;align-items:center;justify-content:center;
     font-family:'Heebo',sans-serif;
-    animation:fadeUp .25s ease both;
-  `;
+    animation:fadeUp .25s ease both;`;
   modal.innerHTML = `
     <div dir="rtl" style="background:white;border-radius:18px;padding:28px 32px;
       max-width:340px;width:90%;text-align:center;
@@ -1130,8 +1266,7 @@ function callGroup(){
           letter-spacing:1px;cursor:pointer;width:100%;">
         סגור
       </button>
-    </div>
-  `;
+    </div>`;
   modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
   document.body.appendChild(modal);
 }
@@ -1170,22 +1305,11 @@ function demoLogin(){
   const e = document.getElementById('loginEmail').value;
   const p = document.getElementById('loginPass').value;
   const p2 = document.getElementById('loginPass2').value;
-
-  // Validation — non-blocking
-  if(!e || !p){
-    showDemoMsg('⚠️','נא מלא אימייל וסיסמה','',null); return;
-  }
-  if(p.length < 8){
-    showDemoMsg('⚠️','סיסמה — לפחות 8 תווים','',null); return;
-  }
-  if(p !== p2){
-    showDemoMsg('⚠️','הסיסמאות אינן תואמות','',null); return;
-  }
-
+  if(!e || !p){ showDemoMsg('⚠️','נא מלא אימייל וסיסמה','',null); return; }
+  if(p.length < 8){ showDemoMsg('⚠️','סיסמה — לפחות 8 תווים','',null); return; }
+  if(p !== p2){ showDemoMsg('⚠️','הסיסמאות אינן תואמות','',null); return; }
   const pl = document.getElementById('loginPl').textContent;
   const nm = reg.first || 'מטפל';
-
-  // Save to Supabase leads if available
   if(supa){
     supa.from('meridian_leads').upsert([{
       first_name: reg.first||nm, last_name: reg.last||'',
@@ -1195,13 +1319,9 @@ function demoLogin(){
       created_at: new Date().toISOString()
     }]).then(()=>{}).catch(()=>{});
   }
-
   showDemoMsg('✅', `${nm} — החשבון נוצר!`,
     `📧 ${e}\n☯ ${pl}\n\nב-P3: Supabase Auth → כניסה ל-CRM.`,
-    () => {
-      // Navigate to CRM
-      window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html';
-    }
+    () => { window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html'; }
   );
 }
 
@@ -1231,23 +1351,16 @@ function showDemoMsg(icon, title, body, onOk){
     </div>`;
   modal.onclick = e => { if(e.target===modal) modal.remove(); };
   document.body.appendChild(modal);
-  document.getElementById('demoMsgOk').onclick = () => {
-    modal.remove();
-    if(onOk) onOk();
-  };
+  document.getElementById('demoMsgOk').onclick = () => { modal.remove(); if(onOk) onOk(); };
 }
 
 // ─── EYE TOGGLE ───
 function toggleEye(inputId, btnId){
   const inp = document.getElementById(inputId);
   const btn = document.getElementById(btnId);
-  if(inp.type === 'password'){
-    inp.type = 'text';
-    btn.textContent = '🙈';
-  } else {
-    inp.type = 'password';
-    btn.textContent = '👁';
-  }
+  if(!inp||!btn) return;
+  if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
 }
 
 // ─── INIT ───
