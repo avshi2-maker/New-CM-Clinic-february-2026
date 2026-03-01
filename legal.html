@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — Legal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Heebo:wght@300;400;500;700&family=Frank+Ruhl+Libre:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --jade:   #0d5c45;
+  --jade2:  #1a7a5e;
+  --gold:   #c9a84c;
+  --gold2:  #e8c96a;
+  --bg:     #f7f8f5;
+  --card:   #ffffff;
+  --text:   #1a2e1a;
+  --muted:  #6b7c6b;
+  --border: rgba(13,92,69,0.12);
+  --red:    #c0392b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── PROGRESS BAR ── */
+#readProgress {
+  position: fixed; top: 0; right: 0; left: 0; z-index: 1000;
+  height: 3px;
+  background: linear-gradient(90deg, var(--jade), var(--gold));
+  transform-origin: right;
+  transform: scaleX(0);
+  transition: transform 0.1s linear;
+}
+
+/* ── NAVBAR ── */
+nav {
+  position: sticky; top: 0; z-index: 900;
+  background: rgba(13,92,69,0.97);
+  backdrop-filter: blur(12px);
+  padding: 0 32px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+}
+.nav-brand {
+  font-family: 'Cinzel', serif;
+  font-size: 18px; font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 3px;
+  text-decoration: none;
+}
+.nav-actions { display: flex; gap: 12px; align-items: center; }
+.lang-toggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white; font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: 1px;
+  padding: 5px 14px; border-radius: 20px;
+  cursor: pointer; transition: all 0.2s;
+}
+.lang-toggle:hover { background: rgba(255,255,255,0.2); }
+.print-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold); font-size: 12px;
+  padding: 5px 14px; border-radius: 20px;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Heebo', sans-serif;
+}
+.print-btn:hover { background: var(--gold); color: var(--jade); }
+
+/* ── LAYOUT ── */
+.page-wrap {
+  max-width: 1100px; margin: 0 auto;
+  padding: 40px 24px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+}
+@media(max-width: 768px) {
+  .page-wrap { grid-template-columns: 1fr; }
+  .toc-sidebar { display: none; }
+}
+
+/* ── SIDEBAR TOC ── */
+.toc-sidebar {
+  position: sticky; top: 80px;
+  align-self: start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.toc-title {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.toc-item {
+  display: block;
+  padding: 7px 12px 7px 0;
+  font-size: 12px; color: var(--muted);
+  text-decoration: none;
+  border-right: 2px solid transparent;
+  transition: all 0.2s;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.toc-item:hover { color: var(--jade); border-right-color: var(--jade2); }
+.toc-item.active { color: var(--jade); border-right-color: var(--gold); font-weight: 700; }
+
+/* ── TYPE SWITCHER ── */
+.type-nav {
+  display: flex; gap: 8px; margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.type-btn {
+  padding: 8px 20px; border-radius: 24px;
+  border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted);
+  font-family: 'Heebo', sans-serif; font-size: 13px;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none;
+}
+.type-btn:hover { border-color: var(--jade); color: var(--jade); }
+.type-btn.active {
+  background: var(--jade); color: white;
+  border-color: var(--jade);
+}
+
+/* ── HEADER CARD ── */
+.doc-header {
+  background: linear-gradient(135deg, var(--jade) 0%, #0a4535 100%);
+  border-radius: 16px; padding: 40px;
+  margin-bottom: 32px; color: white;
+  position: relative; overflow: hidden;
+}
+.doc-header::before {
+  content: '☯';
+  position: absolute; left: -20px; top: -20px;
+  font-size: 120px; opacity: 0.06;
+  font-family: serif;
+}
+.doc-icon { font-size: 36px; margin-bottom: 12px; }
+.doc-title-he {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 32px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.doc-title-en {
+  font-family: 'Cinzel', serif;
+  font-size: 14px; letter-spacing: 2px;
+  color: rgba(255,255,255,0.6); margin-bottom: 16px;
+}
+.doc-subtitle {
+  font-size: 14px; color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+}
+.doc-meta {
+  display: flex; gap: 16px; margin-top: 20px;
+  flex-wrap: wrap;
+}
+.meta-badge {
+  background: rgba(255,255,255,0.15);
+  padding: 4px 12px; border-radius: 12px;
+  font-size: 11px; letter-spacing: 0.5px;
+}
+
+/* ── SECTIONS ── */
+.section-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  transition: box-shadow 0.2s;
+  scroll-margin-top: 80px;
+}
+.section-card:hover { box-shadow: 0 4px 20px rgba(13,92,69,0.08); }
+.section-card.highlight {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+.section-heading {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--jade); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-heading-en {
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: 1.5px;
+  color: var(--muted); font-weight: 400;
+  display: none;
+}
+.section-content {
+  font-size: 14px; line-height: 2;
+  color: #3a4a3a;
+  white-space: pre-line;
+}
+.en-mode .section-heading { font-family: 'Cinzel', serif; font-size: 15px; }
+.en-mode .section-heading-en { display: inline; }
+.en-mode .section-heading-he { display: none; }
+.en-mode .section-content { font-family: 'Heebo', sans-serif; }
+
+/* ── ACCEPT SECTION ── */
+.accept-zone {
+  background: linear-gradient(135deg, #f0f9f5, #e8f5ef);
+  border: 2px solid var(--jade);
+  border-radius: 16px; padding: 32px;
+  margin-top: 32px; text-align: center;
+}
+.accept-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px; color: var(--jade);
+  margin-bottom: 8px;
+}
+.accept-sub {
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 20px; line-height: 1.7;
+}
+.accept-email {
+  padding: 10px 16px; border-radius: 8px;
+  border: 1.5px solid var(--border);
+  font-size: 14px; font-family: 'Heebo', sans-serif;
+  width: 100%; max-width: 300px;
+  margin-bottom: 12px; direction: ltr;
+  outline: none;
+}
+.accept-email:focus { border-color: var(--jade); }
+.accept-btn {
+  background: linear-gradient(135deg, var(--jade), var(--jade2));
+  color: white; border: none; border-radius: 10px;
+  padding: 12px 36px; font-size: 14px;
+  font-family: 'Cinzel', serif; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.2s;
+  display: block; margin: 0 auto;
+}
+.accept-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,92,69,0.3); }
+.accept-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.accepted-badge {
+  display: none;
+  background: #d5f5e3; border: 1px solid #1e8449;
+  color: #1e8449; border-radius: 10px;
+  padding: 12px 24px; font-size: 14px;
+  margin-top: 8px; font-weight: 700;
+}
+
+/* ── LOADING / ERROR ── */
+.loading-state {
+  text-align: center; padding: 80px 40px;
+  color: var(--muted);
+}
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--jade);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-state {
+  text-align: center; padding: 60px;
+  color: var(--red);
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 32px;
+  font-size: 11px; color: var(--muted);
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+
+@media print {
+  nav, .toc-sidebar, .type-nav, .accept-zone, #readProgress { display: none; }
+  .page-wrap { grid-template-columns: 1fr; }
+  .section-card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div id="readProgress"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-brand" href="index.html">☯ MERIDIAN</a>
+  <div class="nav-actions">
+    <button class="lang-toggle" onclick="toggleLang()">EN / עב</button>
+    <button class="print-btn" onclick="window.print()">🖨️ הדפסה</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- TOC SIDEBAR -->
+  <aside class="toc-sidebar" id="tocSidebar">
+    <div class="toc-title">תוכן עניינים</div>
+    <div id="tocList"></div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- TYPE SWITCHER -->
+    <div class="type-nav" id="typeNav">
+      <a class="type-btn" href="?type=privacy">🔒 פרטיות</a>
+      <a class="type-btn" href="?type=terms">📋 תנאי שימוש</a>
+      <a class="type-btn" href="?type=medical">⚕️ כתב ויתור רפואי</a>
+    </div>
+
+    <!-- DOCUMENT AREA -->
+    <div id="docArea">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <div>טוען מסמך...</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  ☯ MERIDIAN TCM Clinical System · כל הזכויות שמורות לאבשי ספיר © 2026 ·
+  <a href="mailto:avshi2@gmail.com" style="color:var(--jade);">avshi2@gmail.com</a>
+</footer>
+
+<script>
+// ── SUPABASE ────────────────────────────────────────────────
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDgyNjQzODksImV4cCI6MjAyMzg0MDM4OX0.YjsvisQxe19Tr8LMOL5naqPHqCPEqSWGkqSGhfcmMlU';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── STATE ────────────────────────────────────────────────────
+let currentDoc  = null;
+let currentLang = 'he'; // 'he' | 'en'
+const DOC_ICONS = { privacy:'🔒', terms:'📋', medical:'⚕️' };
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const type = new URLSearchParams(location.search).get('type') || 'privacy';
+  highlightTypeNav(type);
+  loadDoc(type);
+  initReadProgress();
+});
+
+// ── LOAD DOCUMENT FROM SUPABASE ─────────────────────────────
+async function loadDoc(type) {
+  document.getElementById('docArea').innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div>טוען מסמך...</div>
+    </div>`;
+  document.getElementById('tocList').innerHTML = '';
+
+  const { data, error } = await supa
+    .from('legal_pages')
+    .select('*')
+    .eq('type', type)
+    .single();
+
+  if (error || !data) {
+    document.getElementById('docArea').innerHTML = `
+      <div class="error-state">
+        <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+        <div>לא ניתן לטעון את המסמך. נסה שוב מאוחר יותר.</div>
+        <div style="font-size:11px;margin-top:8px;color:#aaa;">${error?.message||''}</div>
+      </div>`;
+    return;
+  }
+
+  currentDoc = data;
+  renderDoc(data);
+}
+
+// ── RENDER DOCUMENT ──────────────────────────────────────────
+function renderDoc(doc) {
+  const isEn = currentLang === 'en';
+  const sections = doc.sections;
+
+  // Build TOC
+  const tocHTML = sections.map(s => `
+    <div class="toc-item" onclick="scrollToSection('${s.id}')" id="toc-${s.id}">
+      ${isEn ? s.heading_en : s.heading_he}
+    </div>`).join('');
+  document.getElementById('tocList').innerHTML = tocHTML;
+
+  // Build main content
+  const sectionsHTML = sections.map(s => `
+    <div class="section-card" id="sec-${s.id}">
+      <div class="section-heading">
+        <span class="section-heading-he">${s.heading_he}</span>
+        <span class="section-heading-en">${s.heading_en}</span>
+      </div>
+      <div class="section-content">
+        ${isEn ? escHtml(s.content_en) : escHtml(s.content_he)}
+      </div>
+    </div>`).join('');
+
+  const effectiveDate = new Date(doc.effective_date).toLocaleDateString('he-IL');
+
+  document.getElementById('docArea').innerHTML = `
+    <!-- HEADER -->
+    <div class="doc-header">
+      <div class="doc-icon">${DOC_ICONS[doc.type]||'📄'}</div>
+      <div class="doc-title-he">${doc.title_he}</div>
+      <div class="doc-title-en">${doc.title_en}</div>
+      <div class="doc-subtitle">${isEn ? doc.subtitle_en : doc.subtitle_he}</div>
+      <div class="doc-meta">
+        <span class="meta-badge">📅 תאריך תחולה: ${effectiveDate}</span>
+        <span class="meta-badge">📌 גרסה ${doc.version}</span>
+        <span class="meta-badge">⚖️ ישראל + GDPR</span>
+      </div>
+    </div>
+
+    <!-- SECTIONS -->
+    ${sectionsHTML}
+
+    <!-- ACCEPT ZONE -->
+    <div class="accept-zone" id="acceptZone">
+      <div class="accept-title">☯ קראתי ואני מסכים/ה למסמך זה</div>
+      <div class="accept-sub">
+        קריאה ואישור מסמך זה נרשמים במערכת<br>
+        כהוכחה חוקית לידיעה והסכמה
+      </div>
+      <input type="email" class="accept-email" id="acceptEmail"
+        placeholder="your@email.com" dir="ltr">
+      <button class="accept-btn" id="acceptBtn" onclick="recordAcceptance()">
+        ✅ אני מסכים/ה ←
+      </button>
+      <div class="accepted-badge" id="acceptedBadge">
+        ✅ ההסכמה נרשמה בהצלחה — ${effectiveDate}
+      </div>
+    </div>`;
+
+  // Apply lang class
+  document.getElementById('docArea').className = isEn ? 'en-mode' : '';
+
+  // Start TOC observer
+  initTocObserver(sections);
+}
+
+// ── RECORD ACCEPTANCE ────────────────────────────────────────
+async function recordAcceptance() {
+  const email = document.getElementById('acceptEmail').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('acceptEmail').style.borderColor = '#c0392b';
+    document.getElementById('acceptEmail').focus();
+    return;
+  }
+  document.getElementById('acceptBtn').disabled = true;
+  document.getElementById('acceptBtn').textContent = '...שומר';
+
+  const { error } = await supa.from('legal_acceptances').insert({
+    user_email:  email,
+    legal_type:  currentDoc.type,
+    version:     currentDoc.version,
+    user_agent:  navigator.userAgent,
+    page_url:    location.href
+  });
+
+  if (!error) {
+    document.getElementById('acceptBtn').style.display = 'none';
+    document.getElementById('acceptEmail').style.display = 'none';
+    document.getElementById('acceptedBadge').style.display = 'block';
+    // Also save to localStorage for UX continuity
+    localStorage.setItem(`meridian_legal_${currentDoc.type}`, JSON.stringify({
+      email, version: currentDoc.version, at: new Date().toISOString()
+    }));
+  } else {
+    document.getElementById('acceptBtn').disabled = false;
+    document.getElementById('acceptBtn').textContent = '✅ אני מסכים/ה ←';
+    alert('שגיאה בשמירה — נסה שוב');
+  }
+}
+
+// ── LANGUAGE TOGGLE ──────────────────────────────────────────
+function toggleLang() {
+  currentLang = currentLang === 'he' ? 'en' : 'he';
+  document.documentElement.dir  = currentLang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.lang = currentLang;
+  if (currentDoc) renderDoc(currentDoc);
+}
+
+// ── TOC ACTIVE OBSERVER ──────────────────────────────────────
+function initTocObserver(sections) {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      const id = e.target.id.replace('sec-','');
+      const tocEl = document.getElementById('toc-'+id);
+      if (tocEl) tocEl.classList.toggle('active', e.isIntersecting);
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => {
+    const el = document.getElementById('sec-'+s.id);
+    if (el) obs.observe(el);
+  });
+}
+
+function scrollToSection(id) {
+  document.getElementById('sec-'+id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── READ PROGRESS ────────────────────────────────────────────
+function initReadProgress() {
+  const bar = document.getElementById('readProgress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    bar.style.transform = `scaleX(${pct})`;
+  });
+}
+
+// ── TYPE NAV HIGHLIGHT ────────────────────────────────────────
+function highlightTypeNav(type) {
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.href.includes('type='+type));
+  });
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
