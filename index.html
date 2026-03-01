@@ -478,8 +478,8 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
           <div>AI קליני בעברית</div>
           <div>5 מפגשים ביום</div>
           <div>1,000+ שאלות TCM</div>
-          <div>14 יום ניסיון חינם</div>
-          <div>ביטול בכל עת</div>
+          <div>14 יום ניסיון חינם עם פתיחת המערכת</div>
+          <div>ביטול בכל עת לאחר הפעלה</div>
         </div>
         <button class="tc-btn tc-std" onclick="pickTier('standard')">הצטרף ל-Standard ←</button>
       </div>
@@ -493,7 +493,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
           <div>הקלטת אודיו אופציונלית</div>
           <div>תמלול עברית AI</div>
           <div>מחיר מותאם לצרכים</div>
-          <div>14 יום ניסיון חינם</div>
+          <div>14 יום ניסיון חינם עם פתיחת המערכת</div>
         </div>
         <button class="tc-btn tc-cus" onclick="pickTier('custom')">בנה תוכנית מותאמת ←</button>
       </div>
@@ -770,7 +770,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
               </td>
               <td colspan="2" style="text-align:left;">
                 <div class="val-total-val" id="valTotal">$27.90</div>
-                <div style="font-size:10px;color:#888;">14 יום ניסיון חינם</div>
+                <div style="font-size:10px;color:#888;">14 יום ניסיון חינם עם פתיחת המערכת</div>
               </td>
             </tr>
           </tbody>
@@ -797,22 +797,32 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
 
       <!-- Payment -->
       <div class="pay-card">
-        <div class="pay-ttl">💳 תשלום <span class="demo-badge">⚡ DEMO</span></div>
+        <div class="pay-ttl">🎁 הצטרף לרשימת ההמתנה</div>
         <div class="plan-box">
           <div class="plan-nm" id="payNm">MERIDIAN Starter</div>
           <div class="plan-pr" id="payPr">$27.90<span>/חודש</span></div>
         </div>
-        <input class="pinp" placeholder="שם בעל הכרטיס">
-        <input class="pinp" placeholder="1234  5678  9012  3456" maxlength="19"
-          oninput="this.value=this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()">
-        <div class="p2">
-          <input class="pinp" placeholder="MM/YY" maxlength="5">
-          <input class="pinp" placeholder="CVV" maxlength="3">
+        <!-- Waitlist info box -->
+        <div style="background:rgba(13,92,69,0.06);border:1px solid rgba(13,92,69,0.18);
+          border-radius:10px;padding:14px;margin:10px 0;text-align:right;">
+          <div style="font-size:13px;font-weight:700;color:var(--jade);margin-bottom:8px;">
+            🚀 השקה מוקדמת — יתרונות לנרשמים ראשונים
+          </div>
+          <div style="font-size:11px;color:#444;line-height:2;">
+            ✅ &nbsp;14 יום ניסיון חינם עם הפעלה<br>
+            ✅ &nbsp;נעילת מחיר השקה — ללא עליית מחיר<br>
+            ✅ &nbsp;גישה מוקדמת לפני פתיחה לציבור<br>
+            ✅ &nbsp;תמיכה אישית בהתחלה
+          </div>
         </div>
-        <div class="demo-note">⚡ DEMO — חיבור Stripe אמיתי בשלב P3</div>
-        <button class="pay-btn" onclick="demoPayment()">🔒 שלם וקבל גישה ←</button>
-        <div class="secure">🔒 SSL · Stripe · PCI DSS</div>
-        <div style="text-align:center;margin-top:8px;">
+        <button class="pay-btn" onclick="joinWaitlist()"
+          style="background:linear-gradient(135deg,var(--jade),var(--jade2));">
+          ✉️ הצטרף לרשימת ההמתנה ←
+        </button>
+        <div style="text-align:center;font-size:10px;color:#888;margin-top:6px;">
+          נודיע לך ברגע שהמערכת פתוחה לנרשמים חדשים
+        </div>
+        <div style="text-align:center;margin-top:10px;">
           <button onclick="go('s2')"
             style="background:none;border:1px solid rgba(13,92,69,0.25);color:var(--jade);
               border-radius:8px;padding:6px 18px;font-family:'Cinzel',serif;font-size:10px;
@@ -832,7 +842,7 @@ html,body{height:100%;overflow:hidden;font-family:'Heebo',sans-serif;background:
           <div class="login-nm" id="loginNm">ברוך הבא!</div>
           <div class="login-pl" id="loginPl">MERIDIAN · $27.90/חודש</div>
         </div>
-        <div class="trial-box">🎁 <strong>14 יום ניסיון חינם</strong> — ללא חיוב עד לאחר הניסיון</div>
+        <div class="trial-box">🎁 <strong>14 יום ניסיון חינם</strong> — בעת פתיחת המערכת לנרשמים</div>
         <input class="linp" id="loginEmail" placeholder="your@email.com" type="email">
         <!-- password with eye toggle -->
         <div style="position:relative;">
@@ -1066,7 +1076,7 @@ function confirmPlan(){
   const nm=pizza._name||'MERIDIAN Starter';
   const tot=pizza._total||'27.90';
   set('s4ttl', `🎉 ${reg.first||'ברוך הבא'}, כמעט סיימנו!`);
-  set('s4sub', `${nm} · $${tot}/חודש · 14 יום ניסיון חינם`);
+  set('s4sub', `${nm} · $${tot}/חודש · 14 יום ניסיון חינם עם הפעלה`);
   set('payNm', nm);
   setHTML('payPr',`$${tot}<span>/חודש</span>`);
   set('loginNm',`${reg.first||''} ${reg.last||''}`);
@@ -1184,8 +1194,8 @@ function doExistingLogin(){
   } else {
     // DEMO fallback — no Supabase
     document.getElementById('existingLoginModal')?.remove();
-    showDemoMsg('☯','כניסה — DEMO',
-      `📧 ${email}\n\nב-P3: Supabase Auth אמיתי.\nבינתיים מועבר ל-CRM.`,
+    showDemoMsg('☯','כניסה — MERIDIAN CRM',
+      `📧 ${email}\n\nממשיך ל-CRM...`,
       ()=>{ window.location.href='https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html'; }
     );
   }
@@ -1212,7 +1222,7 @@ function callEncyclopedia(){
         font-weight:700;margin-bottom:4px;">אנציקלופדיה ד"ר רוני ספיר</div>
       <div style="font-size:12px;color:#8b6914;margin-bottom:14px;">מודול שותפות — מחיר לפי הצעה</div>
       <div style="font-size:22px;font-weight:900;color:#1a2e1a;
-        letter-spacing:2px;margin:10px 0;direction:ltr;">050-XXXXXXX</div>
+        letter-spacing:2px;margin:10px 0;direction:ltr;">050-5231042</div>
       <div style="font-size:11px;color:#555;line-height:1.7;margin-bottom:18px;">
         שלב את אנציקלופדיית ד"ר רוני ספיר<br>עם אלגוריתם החיפוש החכם של MERIDIAN<br>
         <span style="color:#8b6914;font-weight:700;">— 35 שנות ידע · חיפוש מהיר · תוצאות מדויקות</span>
@@ -1255,7 +1265,7 @@ function callGroup(){
       <div style="font-family:'Cinzel',serif;font-size:16px;color:#5c2ca8;
         font-weight:700;margin-bottom:6px;">התקשר לאבשי ספיר</div>
       <div style="font-size:22px;font-weight:900;color:#1a2e1a;
-        letter-spacing:2px;margin:10px 0;direction:ltr;">050-XXXXXXX</div>
+        letter-spacing:2px;margin:10px 0;direction:ltr;">050-5231042</div>
       <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:18px;">
         אנחנו בונים יחד תוכנית קליניקה<br>מותאמת אישית לקבוצה שלך.
       </div>
@@ -1276,6 +1286,25 @@ function waGroup(){
 }
 
 // ─── DEMOS ───
+function joinWaitlist(){
+  // Collect data already entered
+  const nm  = document.getElementById('regName')?.value  || '';
+  const em  = document.getElementById('regEmail')?.value || '';
+  const tier = document.getElementById('s4sub')?.innerText || '';
+  // Save to Supabase meridian_leads with waitlist flag
+  if(supabase){
+    supabase.from('meridian_leads').upsert({
+      name: nm, email: em, tier_selected: tier,
+      waitlist: true, joined_at: new Date().toISOString()
+    }, { onConflict: 'email' }).then(({error}) => {
+      if(error) console.warn('Waitlist save error:', error.message);
+    });
+  }
+  showDemoMsg('🎉','נרשמת בהצלחה לרשימת ההמתנה!',
+    'נודיע לך ישירות לאימייל ברגע שהמערכת פתוחה לנרשמים חדשים.\nמחיר ההשקה ייחסך לך.',
+    null);
+}
+
 function demoPayment(){
   const modal = document.createElement('div');
   modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);
@@ -1285,7 +1314,7 @@ function demoPayment(){
     <div dir="rtl" style="background:white;border-radius:16px;padding:24px 28px;
       max-width:320px;width:90%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.25);">
       <div style="font-size:36px;margin-bottom:8px;">⚡</div>
-      <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--jade);margin-bottom:10px;">DEMO — תשלום</div>
+      <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--jade);margin-bottom:10px;">תשלום — בקרוב</div>
       <div style="font-size:12px;color:#444;line-height:1.7;margin-bottom:16px;">
         בשלב P3 כאן יהיה חיבור אמיתי ל-Stripe.<br>
         בינתיים — צור חשבון + שלח WhatsApp לאישור ידני.
