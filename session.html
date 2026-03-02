@@ -414,7 +414,7 @@ function getMeridianSB() {
         setTimeout(() => { body.classList.remove('open'); toggle.style.borderRadius = '10px'; }, 3000);
       }
     }
-    const issueCount = (params.get('issues')||'').split('|').filter(Boolean).length + 1;
+    const issueCount = (params.get('issues')||''). split('|').filter(Boolean).length + 1;
     const toast = document.createElement('div');
     toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#0d5c63;color:white;padding:12px 20px;border-radius:12px;font-family:Heebo,sans-serif;font-size:13px;font-weight:700;direction:rtl;border:1px solid #c9a84c;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:toastIn 0.4s ease;';
     toast.textContent = '✅ ' + decodeURIComponent(patient||'מטופל') + ' — ' + issueCount + ' בעיות טעונות';
@@ -511,8 +511,6 @@ function exitToClose() {
 
 loadCategories();
 
-// ── SAFETY: supabaseClient for clinical-modules.js ─────────────────
-// app.js sets this on GitHub Pages; this fallback covers local testing
 (function() {
   if (!window.supabaseClient) {
     try {
@@ -526,8 +524,6 @@ loadCategories();
   }
 })();
 
-// ── SAFETY STUBS: yinyang.js functions ────────────────────────────
-// yinyang.js overwrites these on GitHub Pages; stubs prevent errors locally
 if (typeof showYinYang === 'undefined') {
   window.showYinYang = function() {
     const m = document.getElementById('yinyang-module');
@@ -555,8 +551,9 @@ if (typeof showYinYangResults === 'undefined') {
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/training-syllabus.js"></script>
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/body-images.js"></script>
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/body-image-integration.js"></script>
-<script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/crypto.js"></script>
-<script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/session_vault.js"></script>
-<script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/vault_integration.js"></script>
+    <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/crypto.js"></script>
+    <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/session_vault.js"></script>
+    <!-- ✅ FIXED: vault_integration loaded from GitHub Pages (not Supabase CDN cache) -->
+    <script src="vault_integration.js"></script>
 </body>
 </html>
