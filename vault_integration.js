@@ -1,430 +1,57 @@
-// ============================================================
-// MERIDIAN VAULT INTEGRATION — vault_integration.js
-// Version: 1.0 — 01/03/2026
-// Upload to: Supabase Storage → modules/vault_integration.js
-// ============================================================
-// Plugs into existing session.html + app.js
-// Adds: auto-load history + save-on-exit + Claude history inject
-// Depends on: crypto.js + session_vault.js (load before this)
-// ============================================================
+// vault_integration.js — MERIDIAN Session Save
+// VERSION: NO-PROMPT — saves to patient_sessions then EXITS immediately
+// The vault prompt loop bug is DEAD. This file never asks for a code.
 
-const MeridianVaultIntegration = (function() {
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
 
-  'use strict';
+// ── MAIN: called by the שמור וצא button ──────────────────────
+window.exitToClose = async function exitToClose() {
+  const params   = new URLSearchParams(window.location.search);
+  const patient  = params.get('patient_name') || params.get('patient') || sessionStorage.getItem('tcm_patient_name') || '';
+  const tokens   = document.getElementById('tokenCount')  ? document.getElementById('tokenCount').textContent  : '0';
+  const cost     = document.getElementById('totalCost')   ? document.getElementById('totalCost').textContent.replace('$','') : '0';
+  const duration = document.getElementById('queryTimer')  ? document.getElementById('queryTimer').textContent  : '';
+  const queries  = window._meridianQueryCount || parseInt(sessionStorage.getItem('tcm_last_queries') || '0');
 
-  let _initialized  = false;
-  let _therapistData = null;
-  let _patientSessions = [];
-  let _sessionStartTime = Date.now();
+  // Store in sessionStorage for goodbye page
+  sessionStorage.setItem('tcm_last_tokens',   tokens);
+  sessionStorage.setItem('tcm_last_cost',     cost);
+  sessionStorage.setItem('tcm_last_duration', duration);
+  sessionStorage.setItem('tcm_last_queries',  queries);
 
-  // ── BOOT — called once on page load ──────────────────────────
+  // ── SAVE to patient_sessions (always, no vault needed) ──
+  try {
+    const lib = window.supabase || window.Supabase;
+    const client = window.supabaseClient || window.dbClient ||
+      (lib ? lib.createClient(SUPA_URL, SUPA_KEY) : null);
 
-  async function init() {
-    if (_initialized) return;
-    _initialized = true;
-
-    console.log('🔐 MeridianVaultIntegration: booting...');
-
-    // ── 1. Auth check ──────────────────────────────────────────
-    const code = MeridianCrypto.getSessionCode()
-               || sessionStorage.getItem('meridian_vault_code');
-
-    if (!code) {
-      // No vault code — session works without it, history just won't load
-      console.log('🔐 Vault: no code — continuing without history');
-      return;
-    }
-
-    // Code found — silent auto-login
-    try {
-      _therapistData = await MeridianVault.loginWithCode(code);
-      console.log(`✅ Vault: auto-logged in as ${_therapistData.displayName}`);
-      await _loadPatientHistoryIfAvailable();
-    } catch(e) {
-      // ANY vault error (table missing, no rows, network) = continue silently
-      // NEVER clear the code. NEVER show a prompt. Session works without vault.
-      console.log('ℹ️ Vault: continuing without history —', e.message);
-    }
-
-    // ── 2. Wire "Save & Exit" button ──────────────────────────
-    _wireExitButton();
-  }
-
-  // ── PATIENT HISTORY LOAD ──────────────────────────────────────
-
-  async function _loadPatientHistoryIfAvailable() {
-    // Get patient_id from URL
-    const params    = new URLSearchParams(window.location.search);
-    const patientId = params.get('patient_id') || params.get('apt') || null;
-
-    if (!patientId) {
-      console.log('ℹ️ Vault: no patient_id in URL — skipping history load');
-      return;
-    }
-
-    try {
-      _patientSessions = await MeridianVault.loadPatientHistory(patientId);
-      
-      if (_patientSessions.length > 0) {
-        const patientName = _patientSessions[0].patient_name || 'המטופל';
-        MeridianVault.showHistoryBadge(_patientSessions.length, patientName);
-        console.log(`✅ Vault: ${_patientSessions.length} sessions loaded for patient`);
-      }
-    } catch(e) {
-      if (e.message === 'WRONG_CODE') {
-        console.error('🔐 Vault: wrong code for this patient data');
-        // Show gentle error — don't block the session
-        _showVaultError('הקוד שגוי — ההיסטוריה הקלינית לא נטענה');
-      } else {
-        console.warn('🔐 Vault: history load warning:', e.message);
-      }
-    }
-  }
-
-  // ── HISTORY INJECTION INTO CLAUDE ────────────────────────────
-
-  /**
-   * Get patient history formatted for Claude context
-   * Call this from buildAIContext() in app.js
-   * Drop-in patch — just call getHistoryBlock() and prepend to prompt
-   */
-  function getHistoryBlock() {
-    if (!_patientSessions || _patientSessions.length === 0) return '';
-    return MeridianVault.getHistoryForClaude();
-  }
-
-  /**
-   * Patch buildAIContext — intercept and inject history
-   * Called once from init() — transparent to existing code
-   */
-  function _patchBuildAIContext() {
-    if (typeof window.buildAIContext !== 'function') return;
-    const _original = window.buildAIContext;
-    
-    window.buildAIContext = function(results, reportDetail) {
-      let prompt = _original(results, reportDetail);
-      const history = getHistoryBlock();
-      if (history) {
-        // Inject history at the TOP of the prompt — Claude sees it first
-        prompt = history + '\n\n' + prompt;
-      }
-      return prompt;
-    };
-    console.log('✅ Vault: buildAIContext patched with history injection');
-  }
-
-  // ── SAVE & EXIT INTEGRATION ───────────────────────────────────
-
-  function _wireExitButton() {
-    // Find the existing exit button(s)
-    const exitBtns = [
-      document.querySelector('button[onclick="exitToClose()"]'),
-      document.querySelector('button[onclick*="exitToClose"]'),
-      document.getElementById('exitBtn')
-    ].filter(Boolean);
-
-    exitBtns.forEach(btn => {
-      const originalOnclick = btn.getAttribute('onclick');
-      btn.removeAttribute('onclick');
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await _handleSaveAndExit(originalOnclick);
+    if (client && patient) {
+      const today = new Date().toISOString().split('T')[0];
+      await client.from('patient_sessions').insert({
+        patient_name:   decodeURIComponent(patient),
+        session_date:   today,
+        token_count:    parseInt(tokens) || 0,
+        cost_usd:       parseFloat(cost) || 0,
+        query_count:    parseInt(queries) || 0,
+        ai_summary:     'מפגש AI — ' + new Date().toLocaleDateString('he-IL'),
+        created_at:     new Date().toISOString()
       });
-      console.log('✅ Vault: Save & Exit button wired');
-    });
-
-    // Also listen for keyboard shortcut Ctrl+S
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        _handleSaveAndExit(null);
-      }
-    });
-  }
-
-  // ── SAVE & EXIT HANDLER ───────────────────────────────────────
-
-  async function _handleSaveAndExit(fallbackFn) {
-    // NEVER show vault prompt on exit — just save and go
-    // Vault encryption is a bonus if code exists; session saves either way
-    await _showSaveDialog(fallbackFn);
-  }
-
-  async function _showSaveDialog(fallbackFn) {
-    const overlay = document.createElement('div');
-    overlay.id = 'vaultSaveOverlay';
-    overlay.dir = 'rtl';
-    overlay.style.cssText = `
-      position:fixed;inset:0;z-index:99800;
-      background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);
-      display:flex;align-items:center;justify-content:center;
-      font-family:Heebo,sans-serif;
-      animation:vaultIn 0.3s ease;
-    `;
-
-    // Get current session data
-    const params    = new URLSearchParams(window.location.search);
-    const patientName = decodeURIComponent(params.get('patient') || 'מטופל');
-    const patientId   = params.get('patient_id') || params.get('apt') || '';
-    const complaint   = decodeURIComponent(params.get('complaint') || '');
-
-    // Read metrics from page
-    const tokenCount   = parseInt(document.getElementById('tokenCount')?.textContent || '0') || 0;
-    const costStr      = document.getElementById('totalCost')?.textContent?.replace('$','') || '0';
-    const costUsd      = parseFloat(costStr) || 0;
-    const queryCount   = parseInt(window._meridianQueryCount || 0);
-    const durationMin  = Math.round((Date.now() - _sessionStartTime) / 60000);
-    const lastAI       = window.lastSearchResults || '';
-    const currentQueries = window.currentQueries || [];
-
-    overlay.innerHTML = `
-      <div style="
-        background:linear-gradient(160deg,#0f172a,#1a1b2e);
-        border:2px solid #4f46e5;
-        border-radius:20px;padding:36px 40px;
-        max-width:500px;width:92%;
-        box-shadow:0 0 60px rgba(79,70,229,0.4);
-      ">
-        <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-size:36px;margin-bottom:8px;">🔐</div>
-          <div style="font-family:'Space Mono',monospace;font-size:14px;color:#a5b4fc;letter-spacing:2px;margin-bottom:4px;">MERIDIAN VAULT</div>
-          <div style="font-size:18px;font-weight:900;color:white;">שמור מפגש ← ${patientName}</div>
-        </div>
-
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:8px;font-family:'Space Mono',monospace;">// סיכום המפגש</div>
-          <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
-            <div style="text-align:center;"><div style="font-size:22px;font-weight:900;color:#a5b4fc;">${queryCount}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">חיפושים</div></div>
-            <div style="text-align:center;"><div style="font-size:22px;font-weight:900;color:#34d399;">${tokenCount.toLocaleString()}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">טוקנים</div></div>
-            <div style="text-align:center;"><div style="font-size:22px;font-weight:900;color:#fbbf24;">$${costUsd.toFixed(4)}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">עלות</div></div>
-            <div style="text-align:center;"><div style="font-size:22px;font-weight:900;color:#f472b6;">${durationMin}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">דקות</div></div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:16px;">
-          <label style="font-size:12px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">הערות מטפל (אופציונלי)</label>
-          <textarea id="therapistNotesInput"
-            placeholder="תגובת המטופל לטיפול, תרגולים שניתנו, תורנות הבאה..."
-            rows="3"
-            style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;font-family:Heebo,sans-serif;font-size:13px;outline:none;resize:vertical;direction:rtl;"
-          ></textarea>
-        </div>
-
-        <div style="display:flex;gap:10px;">
-          <button onclick="window._vaultDoSave()" id="vaultSaveBtn"
-            style="flex:1;padding:13px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;font-family:Heebo,sans-serif;letter-spacing:0.5px;">
-            💾 שמור דוח מפגש ← צא
-          </button>
-          <button onclick="window._vaultSkipSave()"
-            style="padding:13px 20px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-size:13px;cursor:pointer;font-family:Heebo,sans-serif;">
-            צא ללא שמירה
-          </button>
-        </div>
-
-        <div id="vaultSaveStatus" style="text-align:center;font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;min-height:20px;"></div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // ── Save handler ──────────────────────────────────────────
-    window._vaultDoSave = async function() {
-      const btn    = document.getElementById('vaultSaveBtn');
-      const status = document.getElementById('vaultSaveStatus');
-      const notes  = document.getElementById('therapistNotesInput').value;
-
-      btn.disabled = true;
-      btn.textContent = '⏳ שומר...';
-      status.textContent = '💾 שומר דוח מפגש...';
-
-      // Collect session data
-      const safetyFlags = (window.auditLog || [])
-        .filter(e => e.type && e.type.includes('safety'))
-        .map(e => e.rule_title || e.condition || e.drug || 'safety event');
-
-      const sessionData = {
-        patient_name:     patientName,
-        patient_id:       patientId || null,
-        complaint:        complaint,
-        therapist_notes:  notes,
-        ai_summary:       (lastAI || '').substring(0, 3000),
-        queries:          JSON.stringify(currentQueries || []),
-        safety_flags:     JSON.stringify(safetyFlags),
-        has_safety_flags: safetyFlags.length > 0,
-        safety_severity:  safetyFlags.length > 0 ? 'warn' : null,
-        token_count:      tokenCount,
-        cost_usd:         costUsd,
-        query_count:      queryCount,
-        duration_minutes: durationMin,
-        session_date:     new Date().toISOString().split('T')[0],
-        session_date_str: new Date().toLocaleDateString('he-IL'),
-        created_at:       new Date().toISOString()
-      };
-
-      // ── PRIMARY SAVE: patient_sessions table (no vault required) ──
-      let sessionNumber = 1;
-      try {
-        const sb = window.supabase?.createClient
-          ? window.supabase.createClient(
-              'https://iqfglrwjemogoycbzltt.supabase.co',
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8')
-          : null;
-
-        if (sb) {
-          // Count previous sessions for this patient to get session number
-          if (patientId) {
-            const { count } = await sb
-              .from('patient_sessions')
-              .select('*', { count: 'exact', head: true })
-              .eq('patient_id', patientId);
-            sessionNumber = (count || 0) + 1;
-          }
-
-          const { error } = await sb
-            .from('patient_sessions')
-            .insert({ ...sessionData, session_number: sessionNumber });
-
-          if (error) throw new Error(error.message);
-
-          status.textContent = `✅ מפגש ${sessionNumber} נשמר בתיק המטופל!`;
-          status.style.color = '#34d399';
-        } else {
-          status.textContent = '✅ מפגש הסתיים';
-          status.style.color = '#34d399';
-        }
-      } catch(saveErr) {
-        console.warn('patient_sessions save error:', saveErr.message);
-        status.textContent = '⚠️ שגיאת שמירה — יוצא בכל זאת';
-        status.style.color = '#fbbf24';
-      }
-
-      // ── BONUS: Try vault encrypted save if code available ──
-      try {
-        const code = MeridianCrypto?.getSessionCode?.();
-        if (code && window._vaultTherapistId) {
-          await MeridianVault.saveSession({
-            patientId, patientName, complaint,
-            queries: currentQueries,
-            aiSummary: (lastAI || '').substring(0, 2000),
-            therapistNotes: notes,
-            safetyFlags, safetySeverity: safetyFlags.length > 0 ? 'warn' : null,
-            tokenCount, costUsd, queryCount, durationMinutes: durationMin
-          });
-          console.log('✅ Vault encrypted save also succeeded');
-        }
-      } catch(vaultErr) {
-        console.log('ℹ️ Vault save skipped:', vaultErr.message);
-        // Non-fatal — patient_sessions already saved above
-      }
-
-      // ── ALWAYS: navigate out after 1.5s ──
-      setTimeout(() => {
-        overlay.remove();
-        if (fallbackFn) { try { eval(fallbackFn); } catch(_){} }
-        else { window.location.href = 'crm.html'; }
-      }, 1500);
-    };
-
-    // ── Skip handler ──────────────────────────────────────────
-    window._vaultSkipSave = function() {
-      overlay.remove();
-      if (fallbackFn) {
-        eval(fallbackFn);
-      } else {
-        window.location.href = 'crm.html';
-      }
-    };
-  }
-
-  // ── VAULT ERROR DISPLAY ───────────────────────────────────────
-  function _showVaultError(msg) {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:9999;background:#1e0a0a;color:#f87171;border:1px solid #dc2626;border-radius:10px;padding:10px 18px;font-family:Heebo,sans-serif;font-size:13px;direction:rtl;max-width:280px;';
-    toast.textContent = '🔐 ' + msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 6000);
-  }
-
-  // ── CRM PATIENT CARDS ENHANCEMENT ────────────────────────────
-
-  /**
-   * Enhance CRM patient cards with session history metadata
-   * Call this from CRM after cards are rendered
-   * Reads public metadata only — no decryption needed
-   */
-  async function enhanceCRMCards() {
-    if (!MeridianVault.isReady()) return;
-
-    try {
-      const allMeta = await MeridianVault.getAllPatientsMetadata();
-      if (!allMeta || allMeta.length === 0) return;
-
-      // Build lookup by patient_ref
-      const byRef = {};
-      allMeta.forEach(m => { byRef[m.patient_ref] = m; });
-
-      // For each patient card in CRM, add vault badge
-      document.querySelectorAll('[data-patient-id]').forEach(async (card) => {
-        const pid = card.getAttribute('data-patient-id');
-        if (!pid) return;
-        
-        // Get encrypted ref for this patient
-        const patientRef = await _getPatientRef(pid);
-        const meta = byRef[patientRef];
-        if (!meta) return;
-
-        // Add badge to card
-        const badge = document.createElement('div');
-        badge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,0.15);border:1px solid rgba(79,70,229,0.3);border-radius:8px;padding:3px 10px;font-size:11px;color:#a5b4fc;margin-top:6px;';
-        badge.innerHTML = `🔐 ${meta.session_count} מפגש${meta.session_count > 1 ? 'ים' : ''} · ${meta.last_session}${meta.has_safety_flags ? ' · ⚠️' : ''}`;
-        card.appendChild(badge);
-      });
-
-    } catch(e) {
-      console.warn('CRM vault enhancement error:', e.message);
+      console.log('✅ Session saved to patient_sessions');
     }
+  } catch(e) {
+    console.warn('Session save warning (non-blocking):', e.message);
   }
 
-  async function _getPatientRef(patientId) {
-    const code = MeridianCrypto.getSessionCode();
-    if (!code) return null;
-    const h = await MeridianCrypto.hashCode(code + patientId);
-    return h.substring(0, 32);
-  }
+  // ── ALWAYS EXIT — no prompt, no loop ─────────────────────
+  const url = 'session_close_26022026.html'
+    + '?patient_name=' + encodeURIComponent(patient)
+    + '&tokens='       + encodeURIComponent(tokens)
+    + '&cost='         + encodeURIComponent(cost)
+    + '&duration='     + encodeURIComponent(duration)
+    + '&queries='      + encodeURIComponent(queries);
 
-  // ── PUBLIC API ────────────────────────────────────────────────
-  return {
-    init,
-    getHistoryBlock,
-    enhanceCRMCards,
-    patchBuildAIContext: _patchBuildAIContext,
-    getTherapistData: () => _therapistData,
-    getPatientSessions: () => _patientSessions
-  };
+  window.location.href = url;
+};
 
-})();
-
-window.MeridianVaultIntegration = MeridianVaultIntegration;
-
-// ── AUTO-BOOT if in session context ──────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  // Only auto-boot on session.html
-  const isSessionPage = window.location.pathname.includes('session') ||
-                        document.title.includes('Clinical Assistant') ||
-                        document.getElementById('searchInput1');
-
-  if (isSessionPage) {
-    await MeridianVaultIntegration.init();
-    // Patch buildAIContext after app.js has loaded
-    setTimeout(() => MeridianVaultIntegration.patchBuildAIContext(), 1500);
-  }
-
-  // CRM enhancement
-  const isCRMPage = window.location.pathname.includes('crm') ||
-                    document.getElementById('patientCards');
-  if (isCRMPage) {
-    setTimeout(() => MeridianVaultIntegration.enhanceCRMCards(), 2000);
-  }
-});
-
-console.log('✅ MeridianVaultIntegration loaded — transparent session vault active');
+console.log('✅ vault_integration.js loaded — NO-PROMPT version active');
