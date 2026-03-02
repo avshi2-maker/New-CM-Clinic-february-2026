@@ -627,7 +627,12 @@ ${d.safetyFlags && d.safetyFlags.length > 0 ? `
       const btn   = document.getElementById('vaultCodeBtn');
 
       if (!MeridianCrypto.validateCode(code)) {
-        errEl.textContent = '⚠️ פורמט שגוי — הקוד חייב להיות MRD-XXXX-XXXX-XXXX';
+        const chars = code.replace(/[^A-Z0-9]/gi,'').replace(/^MRD/i,'').length;
+        if (chars > 0 && chars < 12) {
+          errEl.textContent = `⚠️ קוד חסר — יש ${chars} תווים, נדרשים 12. קוד מלא: MRD-XXXX-XXXX-XXXX`;
+        } else {
+          errEl.textContent = '⚠️ פורמט שגוי — הקוד חייב להיות MRD-XXXX-XXXX-XXXX';
+        }
         return;
       }
 
