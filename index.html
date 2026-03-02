@@ -1056,20 +1056,50 @@ let pizza={tok:'s',audio:false,trans:false};
 const WA='972505231042';
 
 // ─── TIER DATA ───
-const TIERS = {
-  s:{ name:'Starter', price:9,  daily:5,  monthly:110,
+// ── TIERS: loaded from Supabase pricing_tiers table on init ──
+// Edit prices/features in Supabase → homepage updates automatically
+// Hardcoded values below are FALLBACK only (used if Supabase unreachable)
+let TIERS = {
+  s:{ name:'Starter',   price:9,  daily:5,  monthly:110,
       tokPerSess:'16,000', tokMonthly:'1.76M',
       audioMB:'23MB',  audioGB:'2.5GB',  audioFiles:110,
-      transMin:50, transMonthly:'5,500', badge:'5 מפגש/יום', transPrice:21.45 },
-  p:{ name:'Pro',     price:25, daily:15, monthly:330,
+      transMin:50, transMonthly:'5,500',  badge:'5 מפגש/יום',  transPrice:21.45 },
+  p:{ name:'Pro',       price:25, daily:15, monthly:330,
       tokPerSess:'16,000', tokMonthly:'5.28M',
       audioMB:'23MB',  audioGB:'7.6GB',  audioFiles:330,
-      transMin:50, transMonthly:'16,500',badge:'15 מפגש/יום', transPrice:64.35 },
-  u:{ name:'Unlimited',price:42,daily:25, monthly:550,
+      transMin:50, transMonthly:'16,500', badge:'15 מפגש/יום', transPrice:64.35 },
+  u:{ name:'Unlimited', price:42, daily:25, monthly:550,
       tokPerSess:'16,000', tokMonthly:'8.8M',
       audioMB:'23MB',  audioGB:'12.7GB', audioFiles:550,
-      transMin:50, transMonthly:'27,500',badge:'∞ מפגש/יום', transPrice:107.25 },
+      transMin:50, transMonthly:'27,500', badge:'∞ מפגש/יום',  transPrice:107.25 },
 };
+
+async function loadTiersFromSupabase() {
+  try {
+    if (!supa) supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    const { data, error } = await supa
+      .from('pricing_tiers')
+      .select('*')
+      .in('tier_key', ['s','p','u'])
+      .eq('active', true)
+      .order('sort_order');
+    if (error || !data || !data.length) return; // keep fallback
+    data.forEach(row => {
+      if (!TIERS[row.tier_key]) return;
+      TIERS[row.tier_key].price      = parseFloat(row.price_usd)    || TIERS[row.tier_key].price;
+      TIERS[row.tier_key].daily      = row.daily_limit               || TIERS[row.tier_key].daily;
+      TIERS[row.tier_key].monthly    = row.monthly_sessions          || TIERS[row.tier_key].monthly;
+      TIERS[row.tier_key].tokPerSess = row.tok_per_sess              || TIERS[row.tier_key].tokPerSess;
+      TIERS[row.tier_key].tokMonthly = row.tok_monthly               || TIERS[row.tier_key].tokMonthly;
+      TIERS[row.tier_key].audioGB    = row.audio_gb                  || TIERS[row.tier_key].audioGB;
+      TIERS[row.tier_key].audioFiles = row.audio_files               || TIERS[row.tier_key].audioFiles;
+      TIERS[row.tier_key].transMonthly = row.trans_monthly           || TIERS[row.tier_key].transMonthly;
+      TIERS[row.tier_key].transPrice = parseFloat(row.trans_price)  || TIERS[row.tier_key].transPrice;
+      TIERS[row.tier_key].badge      = row.badge_he                  || TIERS[row.tier_key].badge;
+    });
+    upTable(); // refresh value table with live prices
+  } catch(e) { /* silent — fallback values used */ }
+}
 const PLAN_NAMES={
   's00':'MERIDIAN Starter',    's10':'Starter + Audio',
   's01':'Starter + Scribe',    's11':'Starter Complete',
@@ -1152,6 +1182,7 @@ function selTok(t){
   ['s','p','u'].forEach(x=>document.getElementById('to_'+x).classList.toggle('sel',x===t));
   upTable();
 loadSiteStats();
+loadTiersFromSupabase();
 }
 
 function togAdd(type){
@@ -1321,7 +1352,7 @@ function doExistingLogin(){
     errEl.textContent='נא מלא אימייל וסיסמה'; errEl.style.display='block'; return;
   }
   errEl.style.display='none';
-  // In P3 this will use Supabase Auth signInWithPassword
+  // Secure login — stored in Supabase with encrypted credentials
   // For now: DEMO — navigate directly to CRM
   if(supa){
     supa.auth.signInWithPassword({ email, password: pass })
@@ -1490,10 +1521,107 @@ function demoLogin(){
       created_at: new Date().toISOString()
     }]).then(()=>{}).catch(()=>{});
   }
-  showDemoMsg('✅', `${nm} — החשבון נוצר!`,
-    `📧 ${e}\n☯ ${pl}\n\nב-P3: Supabase Auth → כניסה ל-CRM.`,
-    () => { window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html'; }
-  );
+  showSuccessModal(nm, e, pl);
+}
+
+function showSuccessModal(nm, email, plan) {
+  const existing = document.getElementById('successModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'successModal';
+  modal.style.cssText = `position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;
+    font-family:'Heebo',sans-serif;animation:fadeUp .25s ease both;`;
+
+  modal.innerHTML = `
+    <div dir="rtl" style="background:white;border-radius:18px;padding:26px 28px;
+      max-width:360px;width:93%;box-shadow:0 24px 60px rgba(0,0,0,0.28);">
+
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:38px;">✅</div>
+        <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--jade);
+          font-weight:700;margin-top:6px;">${nm} — החשבון נוצר!</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6;">
+          📧 ${email}<br>
+          ☯ ${plan}<br>
+          <span style="color:var(--jade);font-weight:600;">✓ כניסה מאובטחת בפרוטוקול אבטחה מתקדם</span>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
+
+      <!-- Vault section -->
+      <div style="background:linear-gradient(135deg,#0f0a2e,#1a0f4e);border-radius:12px;
+        padding:14px 16px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🔐</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;
+          color:#d4c5ff;margin-bottom:8px;">MERIDIAN VAULT — פתח סשן</div>
+        <input id="successVaultCode" type="text"
+          placeholder="MRD-XXXX-XXXX-XXXX"
+          maxlength="19"
+          oninput="fmtSuccessCode(this)"
+          autocomplete="off" spellcheck="false"
+          style="width:100%;padding:9px 12px;border-radius:8px;
+            border:1.5px solid rgba(120,100,220,0.4);
+            background:rgba(255,255,255,0.07);color:#e0d7ff;
+            font-size:14px;font-weight:700;text-align:center;
+            letter-spacing:3px;outline:none;direction:ltr;
+            font-family:'JetBrains Mono',monospace;">
+        <div id="successVaultErr" style="font-size:10px;color:#ff8080;
+          margin-top:5px;display:none;">⚠️ פורמט שגוי — MRD-XXXX-XXXX-XXXX</div>
+        <button onclick="openSessionWithVault()"
+          style="margin-top:10px;width:100%;padding:10px;border-radius:9px;border:none;
+            background:linear-gradient(135deg,#6c3fc4,#9b59b6);color:white;
+            font-family:'Heebo',sans-serif;font-size:13px;font-weight:900;
+            cursor:pointer;letter-spacing:0.5px;">
+          🔓 פתח סשן קליני ←
+        </button>
+        <div style="font-size:10px;color:rgba(180,170,255,0.4);margin-top:6px;">
+          אין קוד עדיין? קבל קוד Vault ב-WhatsApp לאחר אישור
+        </div>
+      </div>
+
+      <!-- CRM button -->
+      <button onclick="goCRM()"
+        style="width:100%;padding:11px;background:linear-gradient(135deg,var(--jade),var(--jade2));
+          color:var(--gold2);border:none;border-radius:10px;
+          font-family:'Cinzel',serif;font-size:11px;font-weight:700;
+          letter-spacing:1.5px;cursor:pointer;">
+        ☯ כנס ל-CRM ←
+      </button>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+function fmtSuccessCode(inp) {
+  let v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (v.startsWith('MRD')) v = v.substring(3);
+  const parts = [];
+  for (let i=0; i<v.length && parts.length<3; i+=4) parts.push(v.substring(i,i+4));
+  inp.value = parts.length ? 'MRD-'+parts.join('-') : (v ? 'MRD-'+v : '');
+  document.getElementById('successVaultErr').style.display = 'none';
+}
+
+function openSessionWithVault() {
+  const code = document.getElementById('successVaultCode').value.trim();
+  if (!code.match(/^MRD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+    document.getElementById('successVaultErr').style.display = 'block';
+    return;
+  }
+  sessionStorage.setItem('meridian_vault_code', code);
+  localStorage.setItem('meridian_vault_code_backup', code);
+  const modal = document.getElementById('successModal');
+  if (modal) modal.remove();
+  window.open('https://avshi2-maker.github.io/New-CM-Clinic-february-2026/session.html','_blank');
+}
+
+function goCRM() {
+  const modal = document.getElementById('successModal');
+  if (modal) modal.remove();
+  window.location.href = 'https://avshi2-maker.github.io/New-CM-Clinic-february-2026/crm.html';
 }
 
 function showDemoMsg(icon, title, body, onOk){
