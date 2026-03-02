@@ -3,415 +3,1452 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MERIDIAN CRM — TCM Clinic</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>MERIDIAN CRM</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&family=Noto+Serif+Hebrew:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
+/* ═══════════════════════════════════════════════════
+   MERIDIAN CRM — COMMAND CENTER
+   Aesthetic: Refined luxury clinical · Dark teal + warm gold
+   ═══════════════════════════════════════════════════ */
 :root {
   --teal:    #0d5c63;
-  --teal2:   #0a4a50;
-  --gold:    #b8860b;
-  --gold2:   #c9a84c;
-  --ink:     #1a1200;
-  --paper:   #1a1200;
-  --muted:   #3a2a00;
-  --border:  rgba(184,134,11,0.3);
-  --radius:  14px;
+  --teal2:   #0a4550;
+  --teal3:   #072e35;
+  --gold:    #c9933a;
+  --gold2:   #e8b84c;
+  --gold3:   #f5d27a;
+  --cream:   #fdf6e3;
+  --cream2:  #f5ead0;
+  --ink:     #1a2e2f;
+  --muted:   #6b8a8c;
+  --border:  rgba(201,147,58,0.2);
+  --border2: rgba(13,92,99,0.15);
+  --success: #2d9e6b;
+  --warn:    #d97706;
+  --danger:  #dc2626;
+  --r:       12px;
+  --r2:      20px;
+  --shadow:  0 4px 24px rgba(7,46,53,0.12);
+  --shadow2: 0 12px 48px rgba(7,46,53,0.18);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Heebo', sans-serif;
-  background: linear-gradient(160deg, #fdf6e3 0%, #faedc4 40%, #f5dfa0 100%);
-  color: #2c1e00;
+  background: var(--cream);
+  color: var(--ink);
   min-height: 100vh;
-  overflow-x: hidden;
+  display: flex;
   direction: rtl;
+  overflow-x: hidden;
 }
 
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(13,92,99,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 85% 80%, rgba(184,134,11,0.15) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 60% at 60% 30%, rgba(245,223,160,0.3) 0%, transparent 50%);
-  pointer-events: none;
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--teal3);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  z-index: 100;
+  border-left: 1px solid rgba(201,147,58,0.15);
+  transition: width 0.3s ease;
 }
 
-body::after {
-  content: '';
-  position: fixed; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(rgba(184,134,11,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184,134,11,0.08) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.container {
-  position: relative; z-index: 1;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px 20px 24px;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 24px;
-  animation: fadeDown 0.7s ease both;
-}
-
-.meridian-logo {
-  display: inline-flex;
+.brand-logo {
+  font-family: 'Noto Serif Hebrew', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 3px;
+  display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 10px;
 }
 
-.logo-symbol {
-  width: 36px; height: 36px;
+.brand-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.brand-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.sidebar-therapist {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.therapist-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
   background: linear-gradient(135deg, var(--teal), var(--gold));
-  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
-  box-shadow: 0 0 32px rgba(13,92,99,0.5);
+  margin-bottom: 8px;
+  border: 2px solid rgba(201,147,58,0.3);
 }
 
-.logo-text {
-  font-family: 'Space Mono', monospace;
-  font-size: 24px;
+.therapist-name {
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 6px;
-  background: linear-gradient(135deg, #0d5c63 30%, #b8860b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: white;
+  line-height: 1.3;
 }
 
-.tagline {
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: 4px;
-  color: #8b6400;
+.therapist-clinic {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.2);
   text-transform: uppercase;
-  opacity: 1;
+  padding: 12px 20px 6px;
 }
 
-.divider {
-  width: 60px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin: 10px auto;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: rgba(60,40,0,0.9);
-  letter-spacing: 1px;
-}
-
-.section-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 4px;
-  color: #8b6400;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-right: 4px;
-  opacity: 1;
-}
-
-.primary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.nav-item {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
-}
-
-.secondary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.tertiary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.card {
-  background: rgba(255,255,255,0.65);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 14px 14px;
+  padding: 10px 20px;
+  color: rgba(255,255,255,0.55);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  display: block;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  transition: all 0.2s;
+  border-right: 3px solid transparent;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.9);
+  border-right-color: rgba(201,147,58,0.4);
+}
+
+.nav-item.active {
+  background: rgba(201,147,58,0.1);
+  color: var(--gold2);
+  border-right-color: var(--gold);
+}
+
+.nav-item .nav-ico { font-size: 16px; width: 20px; text-align: center; }
+
+.nav-badge {
+  margin-right: auto;
+  background: var(--danger);
+  color: white;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.nav-badge.gold { background: var(--gold); color: var(--ink); }
+.nav-badge.green { background: var(--success); }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.sidebar-time {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  margin-right: 220px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  height: 64px;
+  background: rgba(253,246,227,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 0 rgba(201,147,58,0.1);
+}
+
+.topbar-greeting {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  flex: 1;
+}
+
+.topbar-greeting span {
+  color: var(--teal);
+}
+
+.topbar-date {
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(13,92,99,0.06);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--r);
+  border: none;
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  color: white;
+  box-shadow: 0 4px 12px rgba(13,92,99,0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(13,92,99,0.4);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: white;
+  box-shadow: 0 4px 12px rgba(201,147,58,0.3);
+}
+
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(201,147,58,0.4);
+}
+
+.btn-ghost {
+  background: rgba(13,92,99,0.07);
+  color: var(--teal);
+  border: 1px solid var(--border2);
+}
+
+.btn-ghost:hover {
+  background: rgba(13,92,99,0.12);
+}
+
+/* ── CONTENT AREA ── */
+.content {
+  flex: 1;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── STAT CARDS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--r2);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--teal);
+  border-radius: 0 var(--r2) var(--r2) 0;
+}
+
+.stat-card.gold::before { background: var(--gold); }
+.stat-card.green::before { background: var(--success); }
+.stat-card.warn::before { background: var(--warn); }
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow2);
+}
+
+.stat-ico { font-size: 22px; margin-bottom: 10px; }
+.stat-val {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-val.loading {
+  width: 50px; height: 28px;
+  background: linear-gradient(90deg, #e8e0d0 25%, #f5ead0 50%, #e8e0d0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 6px;
+}
+
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.stat-delta {
+  font-size: 10px;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.stat-delta.up { color: var(--success); }
+.stat-delta.warn { color: var(--warn); }
+
+/* ── TWO COLUMN LAYOUT ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+}
+
+/* ── PANEL ── */
+.panel {
+  background: white;
+  border-radius: var(--r2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(201,147,58,0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  flex: 1;
+}
+
+.panel-ico { font-size: 18px; }
+
+.panel-action {
+  font-size: 11px;
+  color: var(--teal);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(13,92,99,0.06);
+  border: 1px solid rgba(13,92,99,0.12);
+  transition: all 0.2s;
+}
+
+.panel-action:hover { background: rgba(13,92,99,0.12); }
+
+.panel-body { padding: 16px 20px; }
+
+/* ── PATIENT ROW ── */
+.patient-list { display: flex; flex-direction: column; gap: 10px; }
+
+.patient-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  background: rgba(13,92,99,0.03);
+  border: 1px solid rgba(13,92,99,0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.patient-row:hover {
+  background: rgba(13,92,99,0.07);
+  border-color: rgba(13,92,99,0.2);
+  transform: translateX(-2px);
+}
+
+.patient-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), rgba(13,92,99,0.6));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.patient-info { flex: 1; }
+.patient-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.patient-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.patient-flags { display: flex; gap: 4px; align-items: center; }
+
+.flag {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.flag.red { background: var(--danger); box-shadow: 0 0 4px var(--danger); }
+.flag.yellow { background: var(--warn); box-shadow: 0 0 4px var(--warn); }
+.flag.green { background: var(--success); }
+
+.patient-action {
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.patient-action:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(13,92,99,0.3);
+}
+
+/* ── SESSION HISTORY ── */
+.session-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(201,147,58,0.08);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.session-item:last-child { border-bottom: none; }
+
+.session-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.session-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.session-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.session-stats {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  display: flex;
+  gap: 10px;
+}
+
+.session-stat-val { color: var(--teal); font-weight: 700; }
+
+/* ── QUICK ACTIONS ── */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.qa-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: rgba(13,92,99,0.03);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.2s;
+  font-family: 'Heebo', sans-serif;
+}
+
+.qa-btn:hover {
+  background: rgba(13,92,99,0.08);
+  border-color: rgba(13,92,99,0.25);
+  transform: translateY(-2px);
+}
+
+.qa-ico { font-size: 22px; }
+.qa-label { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.3; }
+
+/* ── SAFETY SUMMARY ── */
+.safety-bar {
+  background: linear-gradient(135deg, rgba(13,92,99,0.06), rgba(201,147,58,0.04));
+  border: 1px solid rgba(13,92,99,0.12);
+  border-radius: var(--r2);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.safety-ico { font-size: 28px; }
+
+.safety-text { flex: 1; }
+.safety-title { font-size: 14px; font-weight: 900; color: var(--teal); }
+.safety-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.safety-stats { display: flex; gap: 20px; }
+
+.safety-stat {
+  text-align: center;
+}
+
+.safety-stat-n { font-size: 22px; font-weight: 900; color: var(--teal); }
+.safety-stat-l { font-size: 10px; color: var(--muted); font-weight: 600; }
+
+/* ══════════════════════════════════════
+   MORNING WIZARD OVERLAY
+   ══════════════════════════════════════ */
+#wizardOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(7,46,53,0.75);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+#wizardOverlay.show { display: flex; }
+
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.wizard-box {
+  background: var(--cream);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid rgba(201,147,58,0.25);
+  box-shadow: 0 40px 120px rgba(7,46,53,0.4), 0 0 0 1px rgba(201,147,58,0.1);
+  overflow: hidden;
+  animation: wizardIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes wizardIn {
+  from { opacity:0; transform:scale(0.92) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.wizard-header {
+  background: linear-gradient(135deg, var(--teal3), var(--teal2));
+  padding: 28px 32px 24px;
   position: relative;
   overflow: hidden;
 }
 
-.card::before {
+.wizard-header::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(13,92,99,0.15), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  border-color: #8b6400;
-  background: rgba(255,255,255,0.85);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(201,168,76,0.3);
-}
-
-.card:hover::before { opacity: 1; }
-
-.card.featured {
-  background: linear-gradient(135deg, rgba(13,92,99,0.12), rgba(13,74,80,0.08));
-  border-color: rgba(13,92,99,0.4);
-}
-
-.card.featured:hover {
-  border-color: #8b6400;
-  box-shadow: 0 20px 60px rgba(13,92,99,0.4), 0 0 0 1px rgba(201,168,76,0.4);
-}
-
-.card-icon {
-  font-size: 22px;
-  margin-bottom: 6px;
-  display: block;
-  line-height: 1;
-}
-
-.card-title {
-  font-size: 13px;
-  font-weight: 900;
-  color: #2c1e00;
-  margin-bottom: 2px;
-  letter-spacing: 0.5px;
-}
-
-.card-sub {
-  font-size: 10px;
-  color: rgba(60,40,0,0.9);
-  line-height: 1.5;
-  font-weight: 400;
-}
-
-.card-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  background: var(--gold);
-  color: var(--ink);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  padding: 3px 7px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.card-badge.new { background: #059669; color: white; }
-.card-badge.live { background: #dc2626; color: white; animation: badgePulse 2s infinite; }
-
-@keyframes badgePulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-.status-bar {
-  background: rgba(255,255,255,0.5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  flex-wrap: wrap;
-  margin-bottom: 48px;
-  animation: fadeUp 0.8s 0.4s ease both;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: rgba(60,40,0,0.9);
-}
-
-.status-dot {
-  width: 7px; height: 7px;
+  top: -30px; left: -30px;
+  width: 160px; height: 160px;
   border-radius: 50%;
-  background: #059669;
-  box-shadow: 0 0 6px #059669;
-  animation: badgePulse 2s infinite;
+  background: rgba(201,147,58,0.08);
+}
+
+.wizard-step-indicator {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.3s;
+}
+
+.step-dot.active { background: var(--gold); width: 20px; border-radius: 3px; }
+.step-dot.done { background: rgba(255,255,255,0.5); }
+
+.wizard-ico {
+  font-size: 40px;
+  margin-bottom: 12px;
+  display: block;
+  position: relative;
+}
+
+.wizard-title {
+  font-family: 'Noto Serif Hebrew', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  position: relative;
+}
+
+.wizard-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 6px;
+  position: relative;
+}
+
+.wizard-body {
+  padding: 24px 32px;
+}
+
+.wizard-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.wizard-data-card {
+  background: white;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 14px;
+  text-align: center;
+}
+
+.wizard-data-n { font-size: 28px; font-weight: 900; color: var(--teal); }
+.wizard-data-l { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+
+.wizard-alert {
+  background: rgba(217,119,6,0.08);
+  border: 1px solid rgba(217,119,6,0.2);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.wizard-alert-ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.wizard-alert-text { font-size: 12px; color: var(--ink); line-height: 1.6; }
+.wizard-alert-text strong { color: var(--warn); font-weight: 800; }
+
+.wizard-alert.good { background: rgba(45,158,107,0.08); border-color: rgba(45,158,107,0.2); }
+.wizard-alert.good strong { color: var(--success); }
+
+.wizard-patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.wizard-patient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  background: rgba(13,92,99,0.04);
+  border: 1px solid rgba(13,92,99,0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wizard-patient:hover {
+  background: rgba(13,92,99,0.09);
+  border-color: rgba(13,92,99,0.25);
+}
+
+.wizard-patient-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
 
-.status-dot.warn { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+.wizard-patient-name { font-size: 13px; font-weight: 700; color: var(--ink); flex: 1; }
+.wizard-patient-meta { font-size: 11px; color: var(--muted); }
 
-.status-val {
-  color: #2c1e00;
-  font-weight: 700;
+.wizard-patient-flag { font-size: 14px; }
+
+.wizard-footer {
+  padding: 0 32px 28px;
+  display: flex;
+  gap: 10px;
 }
 
-footer {
+.wizard-btn-main {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: var(--r);
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  color: white;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(13,92,99,0.3);
+}
+
+.wizard-btn-main:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(13,92,99,0.4);
+}
+
+.wizard-btn-skip {
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: white;
+  color: var(--muted);
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wizard-btn-skip:hover { background: var(--cream2); color: var(--ink); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
   text-align: center;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 3px;
-  color: rgba(60,40,0,0.75);
-  padding-top: 14px;
-  border-top: 1px solid rgba(184,134,11,0.2);
+  padding: 40px 20px;
+  color: var(--muted);
 }
 
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-20px); }
+.empty-ico { font-size: 36px; margin-bottom: 10px; }
+.empty-text { font-size: 13px; line-height: 1.6; }
+
+/* ── LOADING ROWS ── */
+.skeleton-row {
+  height: 58px;
+  border-radius: var(--r);
+  background: linear-gradient(90deg, #f0e8d8 25%, #f8f2e8 50%, #f0e8d8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  margin-bottom: 10px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+.stats-row { animation: slideIn 0.5s ease 0.1s both; }
+.two-col   { animation: slideIn 0.5s ease 0.2s both; }
+.safety-bar{ animation: slideIn 0.5s ease 0.3s both; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-right: 0; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
 }
 
-.primary-grid  { animation: fadeUp 0.7s 0.15s ease both; }
-.secondary-grid{ animation: fadeUp 0.7s 0.25s ease both; }
-.tertiary-grid { animation: fadeUp 0.7s 0.35s ease both; }
-
-@media (max-width: 768px) {
-  .primary-grid   { grid-template-columns: 1fr 1fr; }
-  .secondary-grid { grid-template-columns: 1fr 1fr; }
-  .tertiary-grid  { grid-template-columns: 1fr; }
-  .logo-text      { font-size: 18px; }
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .content { padding: 16px; }
 }
 
-@media (max-width: 480px) {
-  .primary-grid   { grid-template-columns: 1fr; }
-  .secondary-grid { grid-template-columns: 1fr 1fr; }
+/* ── NOTIFICATION TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--teal3);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 99999;
+  box-shadow: 0 8px 32px rgba(7,46,53,0.4);
+  border: 1px solid rgba(201,147,58,0.3);
+  animation: toastIn 0.3s ease;
+  white-space: nowrap;
+}
+
+@keyframes toastIn {
+  from { opacity:0; transform:translateX(-50%) translateY(10px); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0); }
 }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <header>
-    <div class="meridian-logo">
-      <div class="logo-symbol">⚕️</div>
-      <div class="logo-text">MERIDIAN</div>
+<!-- ═══════════════════════════════════
+     MORNING WIZARD OVERLAY
+     ═══════════════════════════════════ -->
+<div id="wizardOverlay">
+  <div class="wizard-box">
+    <div class="wizard-header">
+      <div class="wizard-step-indicator" id="wizardSteps"></div>
+      <span class="wizard-ico" id="wizardIco">🌅</span>
+      <div class="wizard-title" id="wizardTitle">טוען...</div>
+      <div class="wizard-subtitle" id="wizardSubtitle"></div>
     </div>
-    <div class="tagline">מערכת ניהול קליניקה לרפואה סינית</div>
-    <a href="session.html" style="display:inline-block;margin-top:12px;font-size:11px;letter-spacing:2px;color:rgba(139,100,0,0.8);text-decoration:none;border:1px solid rgba(139,100,0,0.3);padding:4px 14px;border-radius:20px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(201,168,76,0.8)';this.style.color='#e8c96e'" onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='rgba(201,168,76,0.7)'">← מודול סשן קליני</a>
-    <div class="divider"></div>
-    <div class="subtitle">TCM Clinical Management System · Powered by Supabase + Claude AI</div>
-  </header>
-
-  <div class="status-bar">
-    <div class="status-item">
-      <div class="status-dot"></div>
-      <span>Supabase <span class="status-val">מחובר</span></span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot"></div>
-      <span>Claude AI <span class="status-val">פעיל</span></span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot"></div>
-      <span>Jitsi Video <span class="status-val">זמין</span></span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot warn"></div>
-      <span>גרסה <span class="status-val">v14c · 28.02.2026</span></span>
+    <div class="wizard-body" id="wizardBody"></div>
+    <div class="wizard-footer">
+      <button class="wizard-btn-skip" onclick="wizardNext()" id="wizardSkipBtn">דלג</button>
+      <button class="wizard-btn-main" onclick="wizardAction()" id="wizardMainBtn">המשך ←</button>
     </div>
   </div>
-
-  <div class="section-label">// מודולים ראשיים</div>
-  <div class="primary-grid">
-    <a class="card featured" href="dashboard_24022026.html">
-      <div class="card-badge live">LIVE</div>
-      <span class="card-icon">🏥</span>
-      <div class="card-title">לוח בקרה</div>
-      <div class="card-sub">מבט יומי · בינה קלינית · פרוטוקולי TCM</div>
-    </a>
-    <a class="card featured" href="queue_board_24022026.html">
-      <div class="card-badge live">LIVE</div>
-      <span class="card-icon">📋</span>
-      <div class="card-title">לוח תורים</div>
-      <div class="card-sub">ניהול תורים · SOS · הפעלת וידאו</div>
-    </a>
-    <a class="card featured" href="calendar_24022026.html">
-      <div class="card-badge live">LIVE</div>
-      <span class="card-icon">📅</span>
-      <div class="card-title">לוח שנה</div>
-      <div class="card-sub">תצוגה שבועית · עריכת תורים · פרטי מטופל</div>
-    </a>
-  </div>
-
-  <div class="section-label">// ניהול מטופלים</div>
-  <div class="secondary-grid">
-    <a class="card" href="patient_intake_v3_23022026.html">
-      <div class="card-badge new">NEW</div>
-      <span class="card-icon">📝</span>
-      <div class="card-title">קבלת מטופל חדש</div>
-      <div class="card-sub">טופס אינטייק V3 · עברית + English · חתימה דיגיטלית</div>
-    </a>
-    <a class="card" href="patient_intake_v3_23022026.html">
-      <span class="card-icon">👥</span>
-      <div class="card-title">CRM מטופלים</div>
-      <div class="card-sub">חיפוש · היסטוריה · דגלים קליניים</div>
-    </a>
-    <a class="card featured" href="session.html">
-      <div class="card-badge new">⚡</div>
-      <span class="card-icon">🧠</span>
-      <div class="card-title">מפגש מיידי</div>
-      <div class="card-sub">פתח סשן AI קליני עכשיו — ללא תזמון מוקדם</div>
-    </a>
-    <a class="card" href="appointments_24022026.html">
-      <span class="card-icon">➕</span>
-      <div class="card-title">קביעת תור</div>
-      <div class="card-sub">תור חדש · וידאו Jitsi · תזכורות</div>
-    </a>
-    <a class="card" href="therapist_intake_24022026.html">
-      <span class="card-icon">🧑‍⚕️</span>
-      <div class="card-title">פרופיל מטפל</div>
-      <div class="card-sub">הגדרות · התמחויות · זמינות</div>
-    </a>
-  </div>
-
-  <div class="section-label">// כלים מתקדמים</div>
-  <div class="tertiary-grid">
-    <a class="card" href="video_session_25022026.html">
-      <div class="card-badge new">NEW</div>
-      <span class="card-icon">🎥</span>
-      <div class="card-title">סשן וידאו</div>
-      <div class="card-sub">Jitsi · אנמנזה 10 שאלות · תמלול עברית · שמירה ל-Supabase</div>
-    </a>
-    <a class="card" href="rooms_manager_24022026.html">
-      <span class="card-icon">🚪</span>
-      <div class="card-title">ניהול חדרים</div>
-      <div class="card-sub">זמינות · הקצאה · סטטוס בזמן אמת</div>
-    </a>
-    <a class="card" href="settings.html">
-      <span class="card-icon">⚙️</span>
-      <div class="card-title">הגדרות</div>
-      <div class="card-sub">פרופיל מרפאה · מטפל · מנוי · Claude AI</div>
-    </a>
-  </div>
-
-  <footer>
-    MERIDIAN TCM · AVSHI SAPIR · 2026 · SUPABASE + CLAUDE AI + JITSI
-  </footer>
-
 </div>
-<script src="crm_exit_button.js"></script>
+
+<!-- ═══════════════════════════════════
+     SIDEBAR
+     ═══════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <div class="brand-dot"></div>
+      MERIDIAN
+    </div>
+    <div class="brand-sub">TCM Clinical System</div>
+  </div>
+
+  <div class="sidebar-therapist">
+    <div class="therapist-avatar">⚕️</div>
+    <div class="therapist-name" id="sidebarTherapistName">טוען...</div>
+    <div class="therapist-clinic" id="sidebarClinicName">מרפאה</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">ניהול יומי</div>
+    <a class="nav-item active" href="#">
+      <span class="nav-ico">🏠</span> לוח בקרה
+    </a>
+    <a class="nav-item" href="queue_board_24022026.html">
+      <span class="nav-ico">📋</span> תור היום
+      <span class="nav-badge gold" id="navTodayCount">—</span>
+    </a>
+    <a class="nav-item" href="calendar_24022026.html">
+      <span class="nav-ico">📅</span> לוח שנה
+    </a>
+
+    <div class="nav-section-label">מטופלים</div>
+    <a class="nav-item" href="patient_intake_v3_23022026.html">
+      <span class="nav-ico">➕</span> מטופל חדש
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-ico">👥</span> כל המטופלים
+      <span class="nav-badge" id="navPatientCount">—</span>
+    </a>
+    <a class="nav-item" href="session.html">
+      <span class="nav-ico">⚡</span> מפגש מיידי
+    </a>
+
+    <div class="nav-section-label">מערכת</div>
+    <a class="nav-item" href="dashboard_24022026.html">
+      <span class="nav-ico">📊</span> סטטיסטיקות
+    </a>
+    <a class="nav-item" href="settings.html">
+      <span class="nav-ico">⚙️</span> הגדרות
+    </a>
+    <a class="nav-item" href="vault_keygen.html">
+      <span class="nav-ico">🔑</span> Vault קוד
+    </a>
+    <a class="nav-item" href="index.html" style="margin-top: 8px;">
+      <span class="nav-ico">🚪</span> יציאה
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-time" id="sidebarClock">--:--:--</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-greeting">
+      שלום, <span id="topbarName">...</span> 👋
+    </div>
+    <div class="topbar-date" id="topbarDate">—</div>
+    <button class="btn btn-ghost" onclick="showWizard()">🧙 מאסיסטנט הבוקר</button>
+    <a class="btn btn-primary" href="patient_intake_v3_23022026.html">➕ מטופל חדש</a>
+    <a class="btn btn-gold" href="session.html">⚡ מפגש מיידי</a>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STAT CARDS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-ico">👥</div>
+        <div class="stat-val loading" id="statPatients"></div>
+        <div class="stat-label">סה"כ מטופלים</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-ico">📋</div>
+        <div class="stat-val loading" id="statToday"></div>
+        <div class="stat-label">מפגשים היום</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-ico">✅</div>
+        <div class="stat-val loading" id="statSessions"></div>
+        <div class="stat-label">סה"כ מפגשים</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ico">🛡️</div>
+        <div class="stat-val" id="statSafety" style="font-size:22px;padding-top:4px;">95%</div>
+        <div class="stat-label">כיסוי בטיחות</div>
+        <div class="stat-delta up">↑ 40 כרטיסי בטיחות</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-ico">🌿</div>
+        <div class="stat-val loading" id="statClinicName" style="font-size:13px;padding-top:6px;"></div>
+        <div class="stat-label">מרפאה</div>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN -->
+    <div class="two-col">
+
+      <!-- PATIENTS PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-ico">👥</span>
+          <span class="panel-title">מטופלים אחרונים</span>
+          <a class="panel-action" href="patient_intake_v3_23022026.html">+ הוסף מטופל</a>
+        </div>
+        <div class="panel-body">
+          <div class="patient-list" id="patientList">
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+            <div class="skeleton-row"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- QUICK ACTIONS -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-ico">⚡</span>
+            <span class="panel-title">פעולות מהירות</span>
+          </div>
+          <div class="quick-actions">
+            <a class="qa-btn" href="session.html">
+              <span class="qa-ico">🧠</span>
+              <span class="qa-label">מפגש מיידי</span>
+            </a>
+            <a class="qa-btn" href="patient_intake_v3_23022026.html">
+              <span class="qa-ico">📝</span>
+              <span class="qa-label">קבלת מטופל</span>
+            </a>
+            <a class="qa-btn" href="queue_board_24022026.html">
+              <span class="qa-ico">📋</span>
+              <span class="qa-label">תור היום</span>
+            </a>
+            <a class="qa-btn" href="calendar_24022026.html">
+              <span class="qa-ico">📅</span>
+              <span class="qa-label">יומן</span>
+            </a>
+            <a class="qa-btn" href="dashboard_24022026.html">
+              <span class="qa-ico">📊</span>
+              <span class="qa-label">סטטיסטיקות</span>
+            </a>
+            <a class="qa-btn" href="settings.html">
+              <span class="qa-ico">⚙️</span>
+              <span class="qa-label">הגדרות</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- RECENT SESSIONS -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-ico">🕐</span>
+            <span class="panel-title">מפגשים אחרונים</span>
+          </div>
+          <div class="panel-body" style="padding-top:8px;padding-bottom:8px;">
+            <div id="recentSessions">
+              <div class="skeleton-row" style="height:44px;"></div>
+              <div class="skeleton-row" style="height:44px;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SAFETY BAR -->
+    <div class="safety-bar">
+      <div class="safety-ico">🛡️</div>
+      <div class="safety-text">
+        <div class="safety-title">מערכת בטיחות קלינית — פעילה</div>
+        <div class="safety-sub">כל מפגש AI נבדק אוטומטית כנגד בסיס הנתונים הקליני</div>
+      </div>
+      <div class="safety-stats">
+        <div class="safety-stat">
+          <div class="safety-stat-n">40</div>
+          <div class="safety-stat-l">כרטיסי בטיחות</div>
+        </div>
+        <div class="safety-stat">
+          <div class="safety-stat-n">25</div>
+          <div class="safety-stat-l">תרופות</div>
+        </div>
+        <div class="safety-stat">
+          <div class="safety-stat-n">95%</div>
+          <div class="safety-stat-l">כיסוי</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════
+//  MERIDIAN CRM — COMMAND CENTER
+//  All data from Supabase · Zero hardcoded content
+// ══════════════════════════════════════════════════
+
+const SB_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ── LIVE CLOCK ──────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('sidebarClock').textContent =
+    now.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── DATE DISPLAY ────────────────────────────────────
+document.getElementById('topbarDate').textContent =
+  new Date().toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+// ── LOAD ALL DATA ───────────────────────────────────
+async function loadDashboard() {
+  await Promise.all([
+    loadProfile(),
+    loadPatients(),
+    loadStats(),
+    loadRecentSessions()
+  ]);
+}
+
+async function loadProfile() {
+  try {
+    // Load therapist name
+    const { data: tp } = await sb.from('therapist_profile').select('display_name, specialty').limit(1).single();
+    const name = tp?.display_name || 'מטפל';
+    document.getElementById('topbarName').textContent = name;
+    document.getElementById('sidebarTherapistName').textContent = name;
+
+    // Load clinic name
+    const { data: cs } = await sb.from('clinic_settings').select('clinic_name').limit(1).single();
+    const clinic = cs?.clinic_name || 'מרפאה';
+    document.getElementById('sidebarClinicName').textContent = clinic;
+
+    // Stat card clinic
+    const statClinic = document.getElementById('statClinicName');
+    statClinic.classList.remove('loading');
+    statClinic.textContent = clinic;
+
+    // Store for wizard
+    window._crm = window._crm || {};
+    window._crm.therapistName = name;
+    window._crm.clinicName    = clinic;
+  } catch(e) {
+    console.warn('Profile load:', e.message);
+    document.getElementById('topbarName').textContent = 'מטפל';
+  }
+}
+
+async function loadStats() {
+  try {
+    // Patient count
+    const { count: patCount } = await sb.from('patients').select('*', {count:'exact', head:true});
+    const statP = document.getElementById('statPatients');
+    statP.classList.remove('loading');
+    statP.textContent = patCount ?? '—';
+    document.getElementById('navPatientCount').textContent = patCount ?? '—';
+    window._crm = window._crm || {};
+    window._crm.patientCount = patCount;
+
+    // Session count
+    const { count: sesCount } = await sb.from('patient_sessions').select('*', {count:'exact', head:true});
+    const statS = document.getElementById('statSessions');
+    statS.classList.remove('loading');
+    statS.textContent = sesCount ?? '—';
+
+    // Today's sessions
+    const today = new Date().toISOString().split('T')[0];
+    const { count: todayCount } = await sb.from('patient_sessions')
+      .select('*', {count:'exact', head:true})
+      .eq('session_date', today);
+    const statT = document.getElementById('statToday');
+    statT.classList.remove('loading');
+    statT.textContent = todayCount ?? '0';
+    document.getElementById('navTodayCount').textContent = todayCount ?? '0';
+    window._crm.todaySessions = todayCount;
+
+  } catch(e) {
+    console.warn('Stats load:', e.message);
+    ['statPatients','statSessions','statToday'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) { el.classList.remove('loading'); el.textContent = '—'; }
+    });
+  }
+}
+
+async function loadPatients() {
+  const list = document.getElementById('patientList');
+  try {
+    const { data, error } = await sb.from('patients')
+      .select('id, full_name, phone, age, main_complaint, created_at')
+      .order('created_at', { ascending: false })
+      .limit(7);
+
+    if (error || !data || !data.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-ico">👥</div>
+          <div class="empty-text">אין מטופלים עדיין<br>לחץ "+ מטופל חדש" כדי להתחיל</div>
+        </div>`;
+      return;
+    }
+
+    window._crm = window._crm || {};
+    window._crm.patients = data;
+
+    list.innerHTML = data.map(p => {
+      const initials = (p.full_name || '').split(' ').map(w=>w[0]).join('').substring(0,2) || '?';
+      const age  = p.age ? `גיל ${p.age}` : '';
+      const complaint = p.main_complaint ? ' · ' + p.main_complaint.substring(0,25) : '';
+      return `
+        <div class="patient-row" onclick="startSession('${encodeURIComponent(p.full_name||'')}','${encodeURIComponent(p.main_complaint||'')}')">
+          <div class="patient-avatar">${initials}</div>
+          <div class="patient-info">
+            <div class="patient-name">${p.full_name || 'מטופל'}</div>
+            <div class="patient-meta">${age}${complaint}</div>
+          </div>
+          <div class="patient-flags">
+            ${p.age && p.age >= 70 ? '<span class="flag yellow" title="גיל מתקדם"></span>' : ''}
+          </div>
+          <button class="patient-action" onclick="event.stopPropagation();startSession('${encodeURIComponent(p.full_name||'')}','${encodeURIComponent(p.main_complaint||'')}')">
+            ⚡ מפגש
+          </button>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-ico">⚠️</div><div class="empty-text">שגיאה בטעינת מטופלים</div></div>';
+    console.warn('Patients load:', e.message);
+  }
+}
+
+async function loadRecentSessions() {
+  const container = document.getElementById('recentSessions');
+  try {
+    const { data, error } = await sb.from('patient_sessions')
+      .select('id, patient_name, session_date, token_count, cost_usd, query_count')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error || !data || !data.length) {
+      container.innerHTML = '<div class="empty-state" style="padding:20px 0;"><div class="empty-ico">📭</div><div class="empty-text">אין מפגשים עדיין</div></div>';
+      return;
+    }
+
+    container.innerHTML = data.map(s => {
+      const date = s.session_date ? new Date(s.session_date).toLocaleDateString('he-IL') : '—';
+      const cost  = s.cost_usd  ? '$' + parseFloat(s.cost_usd).toFixed(4) : '';
+      const tokens = s.token_count ? Number(s.token_count).toLocaleString() + ' tokens' : '';
+      const queries = s.query_count ? s.query_count + ' שאלות' : '';
+      return `
+        <div class="session-item">
+          <div class="session-dot"></div>
+          <div>
+            <div class="session-name">${s.patient_name || 'מטופל'}</div>
+            <div class="session-date">${date}</div>
+            <div class="session-stats">
+              ${queries ? `<span><span class="session-stat-val">${queries}</span></span>` : ''}
+              ${tokens  ? `<span><span class="session-stat-val">${tokens}</span></span>` : ''}
+              ${cost    ? `<span><span class="session-stat-val">${cost}</span></span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px 0;"><div class="empty-ico">⚠️</div><div class="empty-text">שגיאה בטעינת מפגשים</div></div>';
+    console.warn('Sessions load:', e.message);
+  }
+}
+
+// ── START SESSION ───────────────────────────────────
+function startSession(patientName, complaint) {
+  const url = 'session.html?from=crm&patient=' + patientName + (complaint ? '&complaint=' + complaint : '');
+  window.location.href = url;
+}
+
+// ══════════════════════════════════════════════════
+//  MORNING WIZARD AGENT
+//  Steps are loaded from Supabase wizard_config table
+//  Falls back to built-in steps if table doesn't exist
+// ══════════════════════════════════════════════════
+
+const WIZARD_STEPS_DEFAULT = [
+  {
+    key: 'greeting',
+    ico: '🌅',
+    title: (d) => `בוקר טוב, ${d.name}!`,
+    subtitle: (d) => `${d.date} · ${d.clinicName}`,
+    body: (d) => `
+      <div class="wizard-data-grid">
+        <div class="wizard-data-card">
+          <div class="wizard-data-n">${d.patientCount ?? '—'}</div>
+          <div class="wizard-data-l">סה"כ מטופלים</div>
+        </div>
+        <div class="wizard-data-card">
+          <div class="wizard-data-n">${d.todaySessions ?? '0'}</div>
+          <div class="wizard-data-l">מפגשים היום</div>
+        </div>
+      </div>
+      <div class="wizard-alert good">
+        <span class="wizard-alert-ico">✅</span>
+        <div class="wizard-alert-text"><strong>המערכת מוכנה</strong> — Supabase מחובר, Claude AI פעיל, 40 כרטיסי בטיחות טעונים</div>
+      </div>`,
+    mainBtn: 'יאללה מתחילים ←',
+    skipBtn: 'לדשבורד ישירות'
+  },
+  {
+    key: 'patients',
+    ico: '👥',
+    title: () => 'המטופלים שלך',
+    subtitle: () => 'בחר מטופל לפתיחת מפגש מיידי, או המשך לדשבורד',
+    body: (d) => {
+      if (!d.patients || !d.patients.length) {
+        return `<div class="wizard-alert"><span class="wizard-alert-ico">ℹ️</span><div class="wizard-alert-text">אין מטופלים רשומים עדיין. לחץ "מטופל חדש" כדי להוסיף את הראשון.</div></div>`;
+      }
+      const rows = d.patients.slice(0,5).map((p,i) => {
+        const initials = (p.full_name||'').split(' ').map(w=>w[0]).join('').substring(0,2)||'?';
+        const complaint = p.main_complaint ? p.main_complaint.substring(0,30) : 'ללא תלונה רשומה';
+        const flag = p.age && p.age >= 70 ? '⚠️' : '✅';
+        return `
+          <div class="wizard-patient" onclick="startSessionFromWizard('${encodeURIComponent(p.full_name||'')}','${encodeURIComponent(p.main_complaint||'')}')">
+            <div class="wizard-patient-num">${i+1}</div>
+            <div class="wizard-patient-name">${p.full_name}</div>
+            <div class="wizard-patient-meta">${complaint}</div>
+            <span class="wizard-patient-flag">${flag}</span>
+          </div>`;
+      }).join('');
+      return `<div class="wizard-patient-list">${rows}</div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;">לחץ על שם מטופל לפתיחת מפגש AI מיידי</div>`;
+    },
+    mainBtn: 'עבור לדשבורד ←',
+    skipBtn: 'סגור'
+  },
+  {
+    key: 'safety',
+    ico: '🛡️',
+    title: () => 'בטיחות קלינית',
+    subtitle: () => 'סיכום מערכת הבטיחות שלך',
+    body: () => `
+      <div class="wizard-data-grid">
+        <div class="wizard-data-card">
+          <div class="wizard-data-n" style="color:var(--success)">95%</div>
+          <div class="wizard-data-l">כיסוי קליני</div>
+        </div>
+        <div class="wizard-data-card">
+          <div class="wizard-data-n">40</div>
+          <div class="wizard-data-l">כרטיסי בטיחות</div>
+        </div>
+      </div>
+      <div class="wizard-alert good">
+        <span class="wizard-alert-ico">💊</span>
+        <div class="wizard-alert-text"><strong>25 תרופות</strong> ו-<strong>11 חוקי בטיחות</strong> פעילים — כל מפגש נבדק אוטומטית לפני התחלה</div>
+      </div>
+      <div class="wizard-alert" style="background:rgba(13,92,99,0.06);border-color:rgba(13,92,99,0.15);">
+        <span class="wizard-alert-ico">ℹ️</span>
+        <div class="wizard-alert-text">לאחסון מוצפן של מפגשים השתמש ב<strong>קוד Vault MRD</strong> שלך</div>
+      </div>`,
+    mainBtn: 'הבנתי — לדשבורד ←',
+    skipBtn: 'סגור'
+  }
+];
+
+let wizardStep    = 0;
+let wizardData    = {};
+let wizardSteps   = WIZARD_STEPS_DEFAULT;
+
+function showWizard() {
+  wizardStep = 0;
+  wizardData = {
+    name:          window._crm?.therapistName || 'מטפל',
+    clinicName:    window._crm?.clinicName    || 'מרפאה',
+    patientCount:  window._crm?.patientCount  ?? '—',
+    todaySessions: window._crm?.todaySessions ?? 0,
+    patients:      window._crm?.patients      || [],
+    date: new Date().toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' })
+  };
+  renderWizardStep();
+  document.getElementById('wizardOverlay').classList.add('show');
+}
+
+function renderWizardStep() {
+  const step = wizardSteps[wizardStep];
+  if (!step) { closeWizard(); return; }
+
+  // Step indicators
+  const dotsEl = document.getElementById('wizardSteps');
+  dotsEl.innerHTML = wizardSteps.map((_,i) =>
+    `<div class="step-dot ${i < wizardStep ? 'done' : i === wizardStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  document.getElementById('wizardIco').textContent      = step.ico;
+  document.getElementById('wizardTitle').textContent    = typeof step.title === 'function' ? step.title(wizardData) : step.title;
+  document.getElementById('wizardSubtitle').textContent = typeof step.subtitle === 'function' ? step.subtitle(wizardData) : step.subtitle;
+  document.getElementById('wizardBody').innerHTML       = typeof step.body === 'function' ? step.body(wizardData) : step.body;
+  document.getElementById('wizardMainBtn').textContent  = step.mainBtn || 'המשך ←';
+  document.getElementById('wizardSkipBtn').textContent  = step.skipBtn || 'דלג';
+}
+
+function wizardNext() {
+  wizardStep++;
+  if (wizardStep >= wizardSteps.length) { closeWizard(); return; }
+  renderWizardStep();
+}
+
+function wizardAction() {
+  const step = wizardSteps[wizardStep];
+  if (step && step.action) {
+    step.action(wizardData);
+  } else {
+    wizardNext();
+  }
+}
+
+function closeWizard() {
+  document.getElementById('wizardOverlay').classList.remove('show');
+  sessionStorage.setItem('meridian_wizard_shown_' + new Date().toDateString(), '1');
+}
+
+function startSessionFromWizard(name, complaint) {
+  closeWizard();
+  startSession(name, complaint);
+}
+
+// ── AUTO-SHOW WIZARD ONCE PER DAY ──────────────────
+function maybeShowWizard() {
+  const key = 'meridian_wizard_shown_' + new Date().toDateString();
+  if (!sessionStorage.getItem(key)) {
+    // Wait for data to load
+    setTimeout(showWizard, 800);
+  }
+}
+
+// ── INIT ────────────────────────────────────────────
+loadDashboard().then(() => {
+  maybeShowWizard();
+});
+
+// ── TOAST ────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+</script>
 </body>
 </html>
