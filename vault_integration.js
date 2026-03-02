@@ -1,9 +1,10 @@
 // vault_integration.js — MERIDIAN Session Save
 // VERSION: NO-PROMPT — saves to patient_sessions then EXITS immediately
 // The vault prompt loop bug is DEAD. This file never asks for a code.
+// NOTE: SUPA_URL and SUPA_KEY are declared in session.html — not repeated here.
 
-const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const _VI_SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const _VI_SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
 
 // ── MAIN: called by the שמור וצא button ──────────────────────
 window.exitToClose = async function exitToClose() {
@@ -24,7 +25,7 @@ window.exitToClose = async function exitToClose() {
   try {
     const lib = window.supabase || window.Supabase;
     const client = window.supabaseClient || window.dbClient ||
-      (lib ? lib.createClient(SUPA_URL, SUPA_KEY) : null);
+      (lib ? lib.createClient(_VI_SUPA_URL, _VI_SUPA_KEY) : null);
 
     if (client && patient) {
       const today = new Date().toISOString().split('T')[0];
