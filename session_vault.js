@@ -92,7 +92,15 @@ const MeridianVault = (function() {
       .eq('therapist_code_hash', codeHash)
       .single();
 
-    if (error || !data) throw new Error('CODE_NOT_FOUND');
+    if (error) {
+      // PGRST116 = .single() found zero rows — code genuinely not registered
+      if (error.code === 'PGRST116' || error.message?.includes('JSON object requested')) {
+        throw new Error('CODE_NOT_FOUND');
+      }
+      // Any other error = DB/table/network problem — do NOT clear the code
+      throw new Error('DB_ERROR: ' + (error.message || error.code || 'unknown'));
+    }
+    if (!data) throw new Error('CODE_NOT_FOUND');
 
     // Store code for session
     MeridianCrypto.storeCodeForSession(privateCode);

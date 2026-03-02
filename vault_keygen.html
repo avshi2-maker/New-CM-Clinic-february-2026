@@ -703,15 +703,16 @@ async function saveAndOpen() {
   try {
     // 2. Hash and save to Supabase (best-effort — failure does NOT block flow)
     const hash = await sha256(generatedCode);
-    await sb.from('vault_keys').upsert({
-      user_id:      USER_ID,
-      code_hash:    hash,
-      code_prefix:  prefix,
-      device_hint:  navigator.userAgent.substring(0, 80),
-      last_used_at: new Date().toISOString(),
-      is_active:    true,
-      created_at:   new Date().toISOString()
-    }, { onConflict: 'user_id', ignoreDuplicates: false });
+    // Save to therapist_vault — the table session_vault.js uses for login
+    await sb.from('therapist_vault').upsert({
+      therapist_code_hash: hash,
+      email:               localStorage.getItem('meridian_user_email') || USER_ID,
+      display_name:        localStorage.getItem('meridian_user_name')  || '',
+      clinic_name:         localStorage.getItem('meridian_clinic_name')|| '',
+      tier:                localStorage.getItem('meridian_tier')        || 'trial',
+      last_active_at:      new Date().toISOString(),
+      created_at:          new Date().toISOString()
+    }, { onConflict: 'therapist_code_hash', ignoreDuplicates: false });
     // Note: if this fails, session still works — code is in sessionStorage
   } catch(err) {
     console.warn('Vault Supabase save failed (non-fatal):', err.message);
