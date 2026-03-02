@@ -338,8 +338,17 @@ function showSuccessModal(nm, email, plan) {
             font-family:'Heebo',sans-serif;font-size:13px;font-weight:900;cursor:pointer;">
           🔓 פתח סשן קליני ←
         </button>
-        <div style="font-size:10px;color:rgba(180,170,255,0.4);margin-top:6px;">
-          אין קוד עדיין? קבל קוד Vault ב-WhatsApp לאחר אישור
+        <div style="margin-top:8px;display:flex;gap:6px;">
+          <button onclick="openVaultKeygen()"
+            style="flex:1;padding:8px 6px;background:transparent;
+              border:1px solid rgba(180,170,255,0.3);border-radius:8px;
+              color:rgba(200,190,255,0.7);font-family:'Heebo',sans-serif;
+              font-size:11px;cursor:pointer;letter-spacing:0.5px;">
+            🔑 צור קוד Vault חדש
+          </button>
+        </div>
+        <div style="font-size:10px;color:rgba(180,170,255,0.35);margin-top:5px;">
+          קוד חד-פעמי · שמור אותו במקום בטוח
         </div>
       </div>
       <button onclick="goCRM()"
@@ -386,6 +395,14 @@ function goCRM() {
   const modal = document.getElementById('successModal');
   if (modal) modal.remove();
   window.location.href = window.APP_CONFIG?.crm_url || 'crm.html';
+}
+
+function openVaultKeygen() {
+  const modal = document.getElementById('successModal');
+  if (modal) modal.remove();
+  // Open keygen in new tab — user generates code, then returns and enters it
+  const url = window.APP_CONFIG?.keygen_url || 'vault_keygen.html';
+  window.open(url, '_blank');
 }
 
 // ═══════════════════════════════════════════════════════════════

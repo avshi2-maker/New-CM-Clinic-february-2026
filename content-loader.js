@@ -243,22 +243,27 @@ function upWA() {
         city = v('f_city'), size = document.getElementById('f_size')?.value || '1';
   const ok = first && last && title && email && wa;
 
-  const tmpl = window.APP_CONFIG?.wa_template ||
-    'שלום אבשי! 👋\nאני {first} {last}\n{title}{clinic}\n📍 {city} | {size} מטפלים\n📧 {email}\n📱 {wa}';
+  let msg = 'מלא את הטופס משמאל...';
 
-  const msg = ok ? tmpl
-    .replace('{first}',  first)
-    .replace('{last}',   last)
-    .replace('{title}',  title)
-    .replace('{clinic}', clinic ? ' | ' + clinic : '')
-    .replace('{city}',   city || '—')
-    .replace('{size}',   size)
-    .replace('{email}',  email)
-    .replace('{wa}',     wa)
-    : 'מלא את הטופס משמאל...';
+  if (ok) {
+    // Build a clean line-by-line report — no template escapes
+    const lines = [
+      'שלום אבשי! 👋',
+      `אני ${first} ${last}`,
+      `${title}${clinic ? ' | ' + clinic : ''}`,
+      '',
+      `📍 ${city || '—'} | ${size} מטפלים`,
+      `📧 ${email}`,
+      `📱 ${wa}`,
+      '',
+      '✨ מעוניין/ת להצטרף ל-MERIDIAN'
+    ];
+    msg = lines.join('
+');
+  }
 
   const prev = document.getElementById('waPreview');
-  if (prev) prev.textContent = msg;
+  if (prev) prev.textContent = msg;          // pre-wrap CSS renders newlines correctly
   const btn = document.getElementById('waSendBtn');
   if (btn) btn.disabled = !ok;
 
