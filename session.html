@@ -279,15 +279,11 @@ function toggleClinicalSymptoms() {
     if (panel) { panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; }
 }
 </script>
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- YIN-YANG MODULE OVERLAY — populated by yinyang.js              -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="yinyang-module" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:99999;overflow-y:auto;">
-    <!-- yinyang.js renders full questionnaire + results here -->
-</div>
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- MERIDIAN BRIDGE — CRM → Session Module                         -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<!-- YIN-YANG MODULE OVERLAY -->
+<div id="yinyang-module" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:99999;overflow-y:auto;"></div>
+
+<!-- MERIDIAN BRIDGE -->
 <style>
 #meridianPatientBar {
   display: none;
@@ -414,7 +410,7 @@ function getMeridianSB() {
         setTimeout(() => { body.classList.remove('open'); toggle.style.borderRadius = '10px'; }, 3000);
       }
     }
-    const issueCount = (params.get('issues')||''). split('|').filter(Boolean).length + 1;
+    const issueCount = (params.get('issues')||'').split('|').filter(Boolean).length + 1;
     const toast = document.createElement('div');
     toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#0d5c63;color:white;padding:12px 20px;border-radius:12px;font-family:Heebo,sans-serif;font-size:13px;font-weight:700;direction:rtl;border:1px solid #c9a84c;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:toastIn 0.4s ease;';
     toast.textContent = '✅ ' + decodeURIComponent(patient||'מטופל') + ' — ' + issueCount + ' בעיות טעונות';
@@ -497,18 +493,6 @@ async function loadCategories() {
 window._meridianQueryCount = window._meridianQueryCount || 0;
 function countQuery() { window._meridianQueryCount++; sessionStorage.setItem('tcm_last_queries', window._meridianQueryCount); }
 
-function exitToClose() {
-  const params  = new URLSearchParams(window.location.search);
-  const patient = params.get('patient_name') || params.get('patient') || sessionStorage.getItem('tcm_patient_name') || '';
-  const tokens  = document.getElementById('tokenCount')  ? document.getElementById('tokenCount').textContent  : '';
-  const cost    = document.getElementById('totalCost')   ? document.getElementById('totalCost').textContent.replace('$','') : '';
-  const timer   = document.getElementById('queryTimer')  ? document.getElementById('queryTimer').textContent  : '';
-  const queries = window._meridianQueryCount || sessionStorage.getItem('tcm_last_queries') || '0';
-  sessionStorage.setItem('tcm_last_tokens', tokens); sessionStorage.setItem('tcm_last_cost', cost); sessionStorage.setItem('tcm_last_duration', timer); sessionStorage.setItem('tcm_last_queries', queries);
-  const url = CLOSE_URL + '?patient_name=' + encodeURIComponent(patient) + '&tokens=' + encodeURIComponent(tokens) + '&cost=' + encodeURIComponent(cost) + '&duration=' + encodeURIComponent(timer) + '&queries=' + encodeURIComponent(queries);
-  window.location.href = url;
-}
-
 loadCategories();
 
 (function() {
@@ -553,7 +537,7 @@ if (typeof showYinYangResults === 'undefined') {
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/body-image-integration.js"></script>
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/crypto.js"></script>
     <script src="https://iqfglrwjemogoycbzltt.supabase.co/storage/v1/object/public/modules/session_vault.js"></script>
-    <!-- ✅ FIXED: vault_integration loaded from GitHub Pages (not Supabase CDN cache) -->
+    <!-- ✅ FIXED: vault_integration loaded from GitHub Pages (not Supabase CDN) -->
     <script src="vault_integration.js"></script>
 </body>
 </html>
