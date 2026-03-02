@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERIDIAN — יצירת קוד Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Heebo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --jade:#0d5c45; --jade2:#1a8a65;
+  --gold:#c9a84c; --gold2:#e8c96e;
+  --purple:#6c3fc4; --purple2:#9b59b6;
+  --danger:#ef4444; --success:#10b981;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{ min-height:100vh; font-family:'Heebo',sans-serif;
+  background:#060a14; color:white; overflow-x:hidden; }
+
+/* ── BACKGROUND ── */
+.bg-layer{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.bg-layer::before{
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 10%, rgba(108,63,196,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 10% 80%, rgba(13,92,69,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(201,168,76,0.05) 0%, transparent 70%);
+  animation:bgShift 18s ease-in-out infinite alternate;
+}
+@keyframes bgShift{
+  from{ filter:hue-rotate(0deg); }
+  to{ filter:hue-rotate(15deg); }
+}
+/* Grid lines — meridian channels */
+.bg-layer::after{
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(0deg, transparent 49.5%, rgba(108,63,196,0.04) 50%, transparent 50.5%),
+    linear-gradient(90deg, transparent 49.5%, rgba(13,92,69,0.04) 50%, transparent 50.5%);
+  background-size:80px 80px;
+  animation:gridDrift 30s linear infinite;
+}
+@keyframes gridDrift{ to{ background-position:80px 80px; } }
+
+/* ── LAYOUT ── */
+.wrap{
+  position:relative; z-index:1;
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:20px 16px;
+}
+
+/* ── STAGES ── */
+.stage{ display:none; width:100%; max-width:460px; flex-direction:column; align-items:center; }
+.stage.active{ display:flex; animation:fadeUp .45s ease both; }
+@keyframes fadeUp{ from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── LOGO ── */
+.logo{ text-align:center; margin-bottom:24px; }
+.logo-icon{
+  font-size:52px; display:block; margin-bottom:6px;
+  filter:drop-shadow(0 0 24px rgba(201,168,76,0.5));
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-7px);} }
+.logo-name{
+  font-family:'Cinzel',serif; font-size:clamp(13px,3.5vw,18px);
+  font-weight:900; letter-spacing:5px; color:var(--gold2);
+  text-shadow:0 0 30px rgba(201,168,76,0.4);
+}
+.logo-sub{ font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.25); margin-top:3px; }
+
+/* ── GLASS CARD ── */
+.card{
+  width:100%;
+  background:linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border:1px solid rgba(108,63,196,0.28);
+  border-radius:20px; padding:26px 22px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 10px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  margin-bottom:16px;
+}
+.card-title{
+  font-family:'Cinzel',serif; font-size:13px; font-weight:700;
+  letter-spacing:2px; color:white; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.card-sub{ font-size:12px; color:rgba(255,255,255,0.45); line-height:1.8; }
+.card-sub strong{ color:rgba(201,168,76,0.85); }
+
+/* ── INFO STEPS ── */
+.steps{ display:flex; flex-direction:column; gap:9px; margin:16px 0; }
+.step{
+  display:flex; align-items:flex-start; gap:10px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:11px; padding:11px 13px;
+}
+.step-num{
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  font-size:10px; font-weight:900; display:flex; align-items:center; justify-content:center;
+  color:white; margin-top:1px;
+}
+.step-text{ font-size:12px; color:rgba(255,255,255,0.6); line-height:1.7; }
+.step-text strong{ color:rgba(232,201,110,0.9); display:block; font-size:11px;
+  letter-spacing:0.5px; margin-bottom:2px; }
+
+/* ── WARNING BOX ── */
+.warning{
+  background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.25);
+  border-radius:12px; padding:13px 15px; margin:14px 0;
+  font-size:12px; color:rgba(255,200,200,0.8); line-height:1.8;
+  display:flex; gap:9px; align-items:flex-start;
+}
+.warning-icon{ font-size:18px; flex-shrink:0; }
+
+/* ── CODE DISPLAY ── */
+.code-wrap{ width:100%; text-align:center; margin:6px 0; }
+.code-label{
+  font-size:9px; letter-spacing:3px; text-transform:uppercase;
+  color:rgba(255,255,255,0.25); margin-bottom:10px;
+}
+.code-box{
+  position:relative;
+  background:rgba(0,0,0,0.4);
+  border:1.5px solid rgba(108,63,196,0.5);
+  border-radius:14px; padding:18px 16px;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s;
+}
+.code-box:hover{ border-color:rgba(201,168,76,0.5); box-shadow:0 0 24px rgba(201,168,76,0.12); }
+.code-box.copied{ border-color:rgba(16,185,129,0.6); box-shadow:0 0 24px rgba(16,185,129,0.15); }
+.code-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(18px,5vw,26px); font-weight:700;
+  letter-spacing:4px; color:var(--gold2);
+  text-shadow:0 0 20px rgba(201,168,76,0.4);
+  display:block;
+}
+.code-hint{
+  font-size:10px; color:rgba(255,255,255,0.3);
+  margin-top:6px; letter-spacing:1px;
+}
+.copy-flash{
+  position:absolute; inset:0; border-radius:13px;
+  background:rgba(16,185,129,0.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; color:rgba(16,185,129,0.9);
+  letter-spacing:2px; opacity:0; transition:opacity .2s;
+  pointer-events:none;
+}
+.code-box.copied .copy-flash{ opacity:1; }
+
+/* ── PASTE FIELD ── */
+.paste-wrap{ width:100%; margin:12px 0; }
+.paste-label{
+  font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.35);
+  text-transform:uppercase; margin-bottom:7px; display:block;
+}
+.paste-row{ display:flex; gap:8px; }
+.paste-input{
+  flex:1; padding:12px 14px;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(108,63,196,0.35);
+  border-radius:10px; color:white;
+  font-family:'JetBrains Mono',monospace;
+  font-size:15px; font-weight:700; letter-spacing:3px;
+  outline:none; text-align:center; direction:ltr;
+  transition:border-color .2s;
+}
+.paste-input::placeholder{ color:rgba(255,255,255,0.15); font-size:11px; letter-spacing:2px; }
+.paste-input:focus{ border-color:rgba(201,168,76,0.5); background:rgba(255,255,255,0.08); }
+.paste-input.match{ border-color:rgba(16,185,129,0.6); }
+.paste-input.mismatch{ border-color:rgba(239,68,68,0.6); }
+
+/* ── MATCH STATUS ── */
+.match-status{ font-size:11px; margin-top:6px; min-height:16px; }
+.match-status.ok{ color:rgba(16,185,129,0.85); }
+.match-status.fail{ color:rgba(239,68,68,0.75); }
+
+/* ── SAVE STATUS ── */
+.save-status{
+  text-align:center; font-size:12px; min-height:20px;
+  color:rgba(255,255,255,0.4); margin-top:8px;
+}
+.save-status.saving{ color:rgba(201,168,76,0.7); }
+.save-status.saved{ color:rgba(16,185,129,0.8); }
+.save-status.err{ color:rgba(239,68,68,0.75); }
+
+/* ── PROGRESS DOTS ── */
+.progress{
+  display:flex; gap:8px; justify-content:center; margin-bottom:22px;
+}
+.pdot{
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(255,255,255,0.12);
+  transition:all .35s;
+}
+.pdot.done{ background:var(--jade2); box-shadow:0 0 8px rgba(26,138,101,0.5); }
+.pdot.active{ background:var(--gold); box-shadow:0 0 10px rgba(201,168,76,0.5);
+  animation:pulseDot 1.2s ease-in-out infinite; }
+@keyframes pulseDot{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.4);} }
+
+/* ── BUTTONS ── */
+.btn{
+  width:100%; padding:14px; border:none; border-radius:12px;
+  font-family:'Heebo',sans-serif; font-size:14px; font-weight:900;
+  cursor:pointer; transition:all .25s; letter-spacing:0.5px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-purple{
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  color:white; box-shadow:0 6px 24px rgba(108,63,196,0.4);
+}
+.btn-purple:hover{ transform:translateY(-2px); box-shadow:0 10px 32px rgba(108,63,196,0.55); }
+.btn-jade{
+  background:linear-gradient(135deg,var(--jade),var(--jade2));
+  color:var(--gold2); box-shadow:0 6px 24px rgba(13,92,69,0.4);
+}
+.btn-jade:hover{ transform:translateY(-2px); box-shadow:0 10px 32px rgba(13,92,69,0.5); }
+.btn-ghost{
+  background:transparent; color:rgba(255,255,255,0.35);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.btn-ghost:hover{ border-color:rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); }
+.btn:disabled{ opacity:0.4; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+.btn-sm{ padding:9px 16px; font-size:12px; border-radius:9px; width:auto; }
+
+/* ── FINAL SUCCESS ── */
+.success-ring{
+  width:72px; height:72px; border-radius:50%;
+  background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05));
+  border:2px solid rgba(16,185,129,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; margin:0 auto 16px;
+  animation:ringPop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes ringPop{ from{transform:scale(.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+.success-title{
+  font-family:'Cinzel',serif; font-size:16px; font-weight:700;
+  color:white; text-align:center; margin-bottom:8px;
+}
+.success-sub{
+  font-size:12px; color:rgba(255,255,255,0.45);
+  text-align:center; line-height:1.8; margin-bottom:20px;
+}
+
+/* ── SECURITY NOTE ── */
+.sec-note{
+  background:rgba(13,92,69,0.1); border:1px solid rgba(13,92,69,0.25);
+  border-radius:10px; padding:11px 13px; font-size:11px;
+  color:rgba(255,255,255,0.45); line-height:1.8; margin-top:10px;
+}
+.sec-note strong{ color:rgba(26,138,101,0.8); }
+
+/* ── SPINNER ── */
+.spinner-inline{
+  width:14px; height:14px; border:2px solid rgba(255,255,255,0.3);
+  border-top-color:white; border-radius:50%;
+  animation:spin .6s linear infinite; display:inline-block;
+}
+@keyframes spin{ to{transform:rotate(360deg);} }
+
+/* ── COPY BTN ── */
+.copy-btn{
+  background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.3);
+  border-radius:9px; padding:9px 16px; color:var(--gold2);
+  font-family:'Heebo',sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all .2s; white-space:nowrap;
+}
+.copy-btn:hover{ background:rgba(201,168,76,0.2); }
+
+@media(max-width:400px){
+  .card{ padding:20px 16px; }
+  .paste-row{ flex-direction:column; }
+  .copy-btn{ width:100%; }
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+
+<div class="wrap">
+
+  <!-- PROGRESS -->
+  <div class="progress">
+    <div class="pdot active" id="pd1"></div>
+    <div class="pdot" id="pd2"></div>
+    <div class="pdot" id="pd3"></div>
+    <div class="pdot" id="pd4"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STAGE 1 — INTRO
+  ═══════════════════════════════════════ -->
+  <div class="stage active" id="stage1">
+
+    <div class="logo">
+      <span class="logo-icon">🔐</span>
+      <div class="logo-name">MERIDIAN VAULT</div>
+      <div class="logo-sub">CEREMONY · KEY GENERATION</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☯ יצירת קוד הכספת האישי שלך</div>
+      <div class="card-sub">
+        אתה עומד ליצור <strong>קוד פרטי בלעדי</strong> שמגן על ההיסטוריה הקלינית שלך.
+        זוהי פעולה חד-פעמית — קרא בקפידה לפני שממשיכים.
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>יצירה</strong>
+            המערכת תיצור קוד ייחודי בפורמט MRD-XXXX-XXXX-XXXX באמצעות קריפטוגרפיה מאובטחת
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>העתקה ושמירה</strong>
+            העתק את הקוד ושמור אותו במקום בטוח — מחברת פיזית, מנהל סיסמאות, או שניהם
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>אימות</strong>
+            הדבק את הקוד שוב לאישור — כך נבטיח שהעתקת נכון
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>שמירה ב-Supabase וכניסה ל-CRM</strong>
+            הגיבוב (Hash) של הקוד נשמר — לעולם לא הקוד עצמו. רק אתה יכול לפתוח את הכספת
+          </div>
+        </div>
+      </div>
+
+      <div class="warning">
+        <span class="warning-icon">⚠️</span>
+        <span>
+          <strong style="color:rgba(255,180,180,0.9);display:block;margin-bottom:3px;">
+            אזהרה — אין אפשרות שחזור
+          </strong>
+          אם תאבד את הקוד, ההיסטוריה הקלינית המוצפנת לא ניתנת לשחזור.
+          גם אנחנו לא יכולים לפתוח אותה. שמור את הקוד כמו שאתה שומר על סיסמת הבנק שלך.
+        </span>
+      </div>
+    </div>
+
+    <button class="btn btn-purple" onclick="goStage2()">
+      🔑 מוכן — צור את הקוד שלי ←
+    </button>
+
+    <div style="margin-top:10px;">
+      <a href="crm.html" style="font-size:11px;color:rgba(255,255,255,0.2);text-decoration:none;
+        letter-spacing:1px;">← חזור ל-CRM ללא יצירת קוד</a>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STAGE 2 — GENERATE & COPY
+  ═══════════════════════════════════════ -->
+  <div class="stage" id="stage2">
+
+    <div class="logo">
+      <span class="logo-icon">✨</span>
+      <div class="logo-name">הקוד שלך נוצר</div>
+      <div class="logo-sub">COPY · SAVE · CONFIRM</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔑 הקוד הפרטי שלך</div>
+
+      <div class="code-wrap">
+        <div class="code-label">לחץ על הקוד להעתקה</div>
+        <div class="code-box" id="codeBox" onclick="copyCode()">
+          <span class="code-value" id="codeDisplay">מייצר...</span>
+          <div class="code-hint">לחץ להעתקה ← MRD-XXXX-XXXX-XXXX</div>
+          <div class="copy-flash" id="copyFlash">✓ הועתק!</div>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
+          <button class="copy-btn" onclick="copyCode()">📋 העתק קוד</button>
+          <button class="copy-btn" onclick="regenCode()"
+            style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);
+            color:rgba(255,255,255,0.45);">🔄 צור חדש</button>
+        </div>
+      </div>
+
+      <div class="warning" style="background:rgba(201,168,76,0.07);border-color:rgba(201,168,76,0.2);">
+        <span class="warning-icon">📝</span>
+        <span style="color:rgba(255,220,150,0.8);">
+          שמור עכשיו לפני שממשיכים — מחברת / מנהל סיסמאות / הדפסה.
+          בשלב הבא תצטרך להדביק אותו לאימות.
+        </span>
+      </div>
+    </div>
+
+    <button class="btn btn-purple" id="btnToVerify" onclick="goStage3()" disabled>
+      ✅ שמרתי את הקוד — המשך לאימות ←
+    </button>
+
+    <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.2);text-align:center;">
+      הכפתור יפתח לאחר העתקת הקוד
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STAGE 3 — VERIFY (PASTE)
+  ═══════════════════════════════════════ -->
+  <div class="stage" id="stage3">
+
+    <div class="logo">
+      <span class="logo-icon">🔍</span>
+      <div class="logo-name">אמת את הקוד</div>
+      <div class="logo-sub">VERIFY · CONFIRM</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 הדבק את הקוד לאימות</div>
+      <div class="card-sub" style="margin-bottom:14px;">
+        הדבק את הקוד שהעתקת — נוודא שהכל תקין לפני השמירה.
+      </div>
+
+      <div class="paste-wrap">
+        <span class="paste-label">הדבק קוד MRD כאן</span>
+        <div class="paste-row">
+          <input class="paste-input" id="pasteInput" type="text"
+            placeholder="MRD-XXXX-XXXX-XXXX"
+            maxlength="19"
+            oninput="checkPaste(this)"
+            autocomplete="off" autocorrect="off"
+            autocapitalize="characters" spellcheck="false"
+            dir="ltr">
+          <button class="copy-btn btn-sm" onclick="autoPaste()">📋 הדבק</button>
+        </div>
+        <div class="match-status" id="matchStatus"></div>
+      </div>
+
+      <!-- Partial reveal for reference -->
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;
+        padding:10px 14px;font-size:11px;color:rgba(255,255,255,0.3);
+        text-align:center;border:1px solid rgba(255,255,255,0.06);">
+        אם שכחת — <span id="codeHint" style="font-family:'JetBrains Mono',monospace;
+        color:rgba(201,168,76,0.5);letter-spacing:2px;"></span>
+        <span style="opacity:0.4;">···</span>
+      </div>
+    </div>
+
+    <button class="btn btn-purple" id="btnSave" onclick="saveAndOpen()" disabled>
+      💾 שמור ב-Supabase ← פתח CRM
+    </button>
+
+    <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:10px;"
+      onclick="goStage2()">← חזור להעתקה</button>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STAGE 4 — SUCCESS
+  ═══════════════════════════════════════ -->
+  <div class="stage" id="stage4">
+
+    <div class="logo">
+      <span class="logo-icon">🏆</span>
+      <div class="logo-name">הכספת מוכנה</div>
+      <div class="logo-sub">VAULT · ACTIVE</div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <div class="success-ring">✅</div>
+      <div class="success-title">הקוד נשמר ב-Supabase!</div>
+      <div class="success-sub">
+        הכספת הקלינית שלך פעילה.<br>
+        ההיסטוריה תיטען אוטומטית בכל פגישה.<br>
+        <span style="color:rgba(201,168,76,0.7);">שמור את הקוד — לא נוכל לשחזר אותו.</span>
+      </div>
+
+      <!-- Saved code prefix reminder -->
+      <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:14px;
+        border:1px solid rgba(108,63,196,0.3);margin-bottom:16px;">
+        <div style="font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.25);margin-bottom:6px;">
+          הקוד שנשמר (ראשית)
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;
+          letter-spacing:4px;color:var(--gold2);" id="savedPrefix"></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;">
+          הגיבוב (SHA-256) נשמר — הקוד עצמו לא נשמר בשרת
+        </div>
+      </div>
+
+      <button class="btn btn-jade" onclick="goCRM()">
+        ☯ כנס ל-CRM MERIDIAN ←
+      </button>
+
+      <div class="sec-note" style="margin-top:14px;text-align:right;">
+        <strong>🔐 Zero-Knowledge:</strong> גם אנחנו לא יכולים לקרוא את הנתונים שלך.
+        הקוד מוצפן AES-256-GCM. הגיבוב ב-Supabase הוא SHA-256 חד-כיווני בלבד.
+      </div>
+    </div>
+
+    <div class="save-status" id="saveStatusFinal"></div>
+
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────────
+const SUPA_URL = 'https://iqfglrwjemogoycbzltt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const USER_ID = localStorage.getItem('meridian_user_id') || 'default';
+
+// ── STATE ─────────────────────────────────────────────────────
+let generatedCode = '';
+let codeCopied    = false;
+
+// ── PROGRESS ──────────────────────────────────────────────────
+function setProgress(stage) {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.remove('done', 'active');
+    if (i < stage)  dot.classList.add('done');
+    if (i === stage) dot.classList.add('active');
+  }
+}
+
+// ── STAGE NAVIGATION ─────────────────────────────────────────
+function goStage(n) {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  document.getElementById('stage' + n).classList.add('active');
+  setProgress(n);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── STAGE 1 → 2 ──────────────────────────────────────────────
+function goStage2() {
+  goStage(2);
+  generateCode();
+}
+
+// ── STAGE 2 → 3 ──────────────────────────────────────────────
+function goStage3() {
+  goStage(3);
+  // Show first segment as hint
+  const parts = generatedCode.split('-');
+  document.getElementById('codeHint').textContent = parts[0] + '-' + parts[1];
+  document.getElementById('pasteInput').value = '';
+  document.getElementById('matchStatus').textContent = '';
+  document.getElementById('matchStatus').className = 'match-status';
+  document.getElementById('pasteInput').className = 'paste-input';
+  document.getElementById('btnSave').disabled = true;
+}
+
+// ── CODE GENERATION ───────────────────────────────────────────
+const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0,O,1,I
+
+function generateCode() {
+  const arr = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  let code = 'MRD-';
+  const groups = ['','',''];
+  let pos = 0;
+  for (let g = 0; g < 3; g++) {
+    for (let c = 0; c < 4; c++) {
+      groups[g] += CHARS[arr[pos] % CHARS.length];
+      pos++;
+    }
+  }
+  code += groups.join('-');
+  generatedCode = code;
+  codeCopied = false;
+
+  // Display with character-by-character reveal
+  const el = document.getElementById('codeDisplay');
+  el.textContent = '···-····-····-····';
+  setTimeout(() => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.textContent = code;
+      el.style.transition = 'opacity .4s';
+      el.style.opacity = '1';
+    }, 150);
+  }, 300);
+
+  document.getElementById('btnToVerify').disabled = true;
+  document.getElementById('codeBox').classList.remove('copied');
+  document.getElementById('copyFlash').style.opacity = '0';
+}
+
+function regenCode() {
+  if (codeCopied) {
+    if (!confirm('יצירת קוד חדש תבטל את הקוד הנוכחי. אתה בטוח?')) return;
+  }
+  generateCode();
+}
+
+// ── COPY ──────────────────────────────────────────────────────
+async function copyCode() {
+  if (!generatedCode) return;
+  try {
+    await navigator.clipboard.writeText(generatedCode);
+  } catch(e) {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = generatedCode;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    ta.remove();
+  }
+
+  // Visual feedback
+  const box = document.getElementById('codeBox');
+  box.classList.add('copied');
+  setTimeout(() => box.classList.remove('copied'), 1800);
+
+  // Enable continue button after copy
+  codeCopied = true;
+  const btn = document.getElementById('btnToVerify');
+  btn.disabled = false;
+  btn.innerHTML = '✅ שמרתי את הקוד — המשך לאימות ←';
+}
+
+// ── PASTE VERIFY ──────────────────────────────────────────────
+async function autoPaste() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const inp = document.getElementById('pasteInput');
+    inp.value = text.trim().toUpperCase();
+    checkPaste(inp);
+  } catch(e) {
+    document.getElementById('pasteInput').focus();
+  }
+}
+
+function checkPaste(inp) {
+  const val = inp.value.trim().toUpperCase();
+  const status = document.getElementById('matchStatus');
+  const btn    = document.getElementById('btnSave');
+
+  if (!val) {
+    inp.className = 'paste-input';
+    status.textContent = '';
+    status.className = 'match-status';
+    btn.disabled = true;
+    return;
+  }
+
+  if (val === generatedCode) {
+    inp.className = 'paste-input match';
+    status.textContent = '✓ הקוד תואם בדיוק — מוכן לשמירה';
+    status.className = 'match-status ok';
+    btn.disabled = false;
+    btn.innerHTML = '💾 שמור ב-Supabase ← פתח CRM';
+  } else {
+    inp.className = 'paste-input mismatch';
+    // Check if still typing (prefix match)
+    if (generatedCode.startsWith(val) && val.length < 19) {
+      status.textContent = '⌨️ ממשיך להקליד...';
+      status.className = 'match-status';
+    } else {
+      status.textContent = '✗ הקוד לא תואם — בדוק שהעתקת נכון';
+      status.className = 'match-status fail';
+    }
+    btn.disabled = true;
+  }
+}
+
+// ── SHA-256 HASH ──────────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(str)
+  );
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2,'0'))
+    .join('');
+}
+
+// ── SAVE TO SUPABASE + OPEN CRM ───────────────────────────────
+async function saveAndOpen() {
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-inline"></span> שומר ב-Supabase...';
+
+  try {
+    // 1. Hash the code — never store the raw code
+    const hash = await sha256(generatedCode);
+    const prefix = generatedCode.split('-').slice(0,2).join('-'); // MRD-XXXX
+
+    // 2. Upsert to vault_keys
+    const { error } = await sb.from('vault_keys').upsert({
+      user_id:      USER_ID,
+      code_hash:    hash,
+      code_prefix:  prefix,
+      device_hint:  navigator.userAgent.substring(0, 80),
+      last_used_at: new Date().toISOString(),
+      is_active:    true,
+      created_at:   new Date().toISOString()
+    }, { onConflict: 'user_id', ignoreDuplicates: false });
+
+    if (error) throw error;
+
+    // 3. Store code in sessionStorage (unlocks this session)
+    sessionStorage.setItem('meridian_vault_code', generatedCode);
+    localStorage.setItem('meridian_vault_prefix', prefix);
+    // DO NOT store the full code in localStorage — sessionStorage only
+
+    // 4. Show success stage
+    document.getElementById('savedPrefix').textContent = prefix + '-···-····';
+    goStage(4);
+
+  } catch(err) {
+    btn.disabled = false;
+    btn.innerHTML = '💾 שמור ב-Supabase ← פתח CRM';
+    const st = document.getElementById('matchStatus');
+    st.textContent = '❌ שגיאת שמירה: ' + (err.message || 'נסה שוב');
+    st.className = 'match-status fail';
+    console.error('Vault save error:', err);
+  }
+}
+
+function goCRM() {
+  window.location.href = 'crm.html';
+}
+
+// ── KEYBOARD SHORTCUT ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+    const stage2 = document.getElementById('stage2');
+    if (stage2.classList.contains('active')) {
+      e.preventDefault();
+      copyCode();
+    }
+  }
+});
+</script>
+</body>
+</html>
