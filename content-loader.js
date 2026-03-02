@@ -258,8 +258,7 @@ function upWA() {
       '',
       '✨ מעוניין/ת להצטרף ל-MERIDIAN'
     ];
-    msg = lines.join('
-');
+    msg = lines.join('\n');
   }
 
   const prev = document.getElementById('waPreview');
