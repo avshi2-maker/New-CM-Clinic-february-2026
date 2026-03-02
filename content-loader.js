@@ -355,6 +355,9 @@ async function initContentLoader() {
 
   // Now hand off to frozen core logic
   if (typeof coreInit === 'function') coreInit();
+
+  // CHEN promo banner — non-blocking, runs after core content loads
+  loadPromoBanner();
 }
 
 // Start when DOM is ready
@@ -363,3 +366,218 @@ if (document.readyState === 'loading') {
 } else {
   initContentLoader();
 }
+
+// ── CHEN PROMO BANNER ─────────────────────────────────────────
+async function loadPromoBanner() {
+  try {
+    const { data, error } = await window.supa
+      .from('promo_banners')
+      .select('*')
+      .eq('is_active', true)
+      .eq('banner_key', 'chen_avatar')
+      .single();
+
+    if (error || !data) return;
+
+    // Inject CSS once
+    if (!document.getElementById('chen-css')) {
+      const style = document.createElement('style');
+      style.id = 'chen-css';
+      style.textContent = `
+        #chenTooltip {
+          position: fixed;
+          bottom: 24px;
+          left: 20px;
+          z-index: 9990;
+          width: min(340px, calc(100vw - 40px));
+          background: linear-gradient(145deg, #0a0f1e 0%, #0d1a14 60%, #0a0f1e 100%);
+          border: 1px solid rgba(201,168,76,0.35);
+          border-radius: 18px;
+          padding: 20px;
+          box-shadow:
+            0 0 0 1px rgba(201,168,76,0.08),
+            0 24px 48px rgba(0,0,0,0.7),
+            0 0 60px rgba(13,92,69,0.15),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+          font-family: 'Heebo', sans-serif;
+          direction: rtl;
+          animation: chenSlideIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+          transform-origin: bottom left;
+        }
+        @keyframes chenSlideIn {
+          from { opacity:0; transform:scale(0.85) translateY(20px); }
+          to   { opacity:1; transform:scale(1)    translateY(0); }
+        }
+        @keyframes chenSlideOut {
+          from { opacity:1; transform:scale(1) translateY(0); }
+          to   { opacity:0; transform:scale(0.85) translateY(20px); }
+        }
+        #chenTooltip.hiding {
+          animation: chenSlideOut 0.35s ease forwards;
+        }
+        #chenAvatar {
+          width: 48px; height: 48px;
+          background: radial-gradient(circle at 35% 35%, #1a8a65, #0d5c45);
+          border-radius: 50%;
+          border: 2px solid rgba(201,168,76,0.5);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 22px;
+          position: relative;
+          flex-shrink: 0;
+          box-shadow: 0 0 16px rgba(13,92,69,0.5);
+        }
+        #chenAvatar::after {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(201,168,76,0.2);
+          animation: chenPulse 2.5s ease-in-out infinite;
+        }
+        @keyframes chenPulse {
+          0%,100% { transform:scale(1);   opacity:0.6; }
+          50%      { transform:scale(1.15); opacity:0.1; }
+        }
+        #chenBadge {
+          display: inline-block;
+          background: rgba(239,68,68,0.15);
+          border: 1px solid rgba(239,68,68,0.35);
+          color: #fca5a5;
+          font-size: 10px;
+          letter-spacing: 1px;
+          padding: 2px 8px;
+          border-radius: 20px;
+          margin-bottom: 6px;
+          font-weight: 700;
+        }
+        #chenTitle {
+          font-size: 15px;
+          font-weight: 900;
+          color: #e8c96e;
+          line-height: 1.3;
+          margin-bottom: 8px;
+          letter-spacing: -0.3px;
+        }
+        #chenBody {
+          font-size: 12px;
+          color: rgba(255,255,255,0.6);
+          line-height: 1.7;
+          white-space: pre-line;
+          margin-bottom: 14px;
+        }
+        #chenBody strong {
+          color: rgba(255,255,255,0.9);
+        }
+        #chenCTA {
+          width: 100%;
+          padding: 10px 16px;
+          background: linear-gradient(135deg, #1a8a65, #0d5c45);
+          border: 1px solid rgba(201,168,76,0.3);
+          border-radius: 10px;
+          color: #e8c96e;
+          font-family: 'Heebo', sans-serif;
+          font-size: 13px;
+          font-weight: 900;
+          cursor: pointer;
+          letter-spacing: 0.5px;
+          transition: all 0.2s;
+          text-align: center;
+        }
+        #chenCTA:hover {
+          background: linear-gradient(135deg, #1a9970, #0d6b50);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(13,92,69,0.4);
+        }
+        #chenClose {
+          position: absolute;
+          top: 12px;
+          left: 12px;
+          width: 24px; height: 24px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 50%;
+          color: rgba(255,255,255,0.4);
+          font-size: 13px;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.2s;
+          line-height: 1;
+        }
+        #chenClose:hover {
+          background: rgba(255,255,255,0.12);
+          color: white;
+        }
+        .chen-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent);
+          margin: 12px 0;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Build tooltip HTML
+    const tooltip = document.createElement('div');
+    tooltip.id = 'chenTooltip';
+    tooltip.style.display = 'none';
+    tooltip.innerHTML = `
+      <button id="chenClose" onclick="window.closeChenTooltip()" title="סגור">×</button>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div id="chenAvatar">${data.avatar_emoji || '☯'}</div>
+        <div>
+          <div style="font-size:9px;letter-spacing:3px;color:rgba(201,168,76,0.5);font-weight:700;margin-bottom:2px;">
+            MERIDIAN AI · ${data.avatar_name || 'CHEN'}
+          </div>
+          ${data.badge_text ? `<div id="chenBadge">${data.badge_text}</div>` : ''}
+        </div>
+      </div>
+
+      <div id="chenTitle">${data.title_he || ''}</div>
+      <div class="chen-divider"></div>
+      <div id="chenBody">${data.body_he || ''}</div>
+
+      <button id="chenCTA" onclick="window.chenCTAClick('${data.cta_action || 'go:s1'}')">
+        ${data.cta_text || '← הצטרף'}
+      </button>
+
+      <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.18);margin-top:10px;letter-spacing:1px;">
+        ☯ לדיקורסיני בלבד · TCM ONLY
+      </div>
+    `;
+    document.body.appendChild(tooltip);
+
+    // Wire handlers
+    window.closeChenTooltip = function() {
+      const el = document.getElementById('chenTooltip');
+      if (!el) return;
+      el.classList.add('hiding');
+      setTimeout(() => el.remove(), 350);
+      // Don't show again this session
+      sessionStorage.setItem('chen_dismissed', '1');
+    };
+
+    window.chenCTAClick = function(action) {
+      window.closeChenTooltip();
+      if (action === 'go:s1') {
+        setTimeout(() => { if (typeof go === 'function') go('s1'); }, 200);
+      } else if (action === 'scroll_register') {
+        document.getElementById('s1')?.scrollIntoView({ behavior: 'smooth' });
+      } else if (action.startsWith('url:')) {
+        window.open(action.slice(4), '_blank');
+      }
+    };
+
+    // Show after delay (only if not dismissed)
+    if (!sessionStorage.getItem('chen_dismissed')) {
+      setTimeout(() => {
+        const el = document.getElementById('chenTooltip');
+        if (el) el.style.display = 'block';
+      }, data.show_after_ms || 4500);
+    }
+
+  } catch(e) {
+    console.log('CHEN banner: skipped', e.message);
+  }
+}
+
