@@ -77,6 +77,11 @@ async function loadAppConfig() {
       .select('key,value');
     if (error || !data?.length) return;
     data.forEach(row => { window.APP_CONFIG[row.key] = row.value; });
+    // Update encyclopedia URL if present
+    const encLink = document.getElementById('encyclopedia-url');
+    if (encLink && window.APP_CONFIG.encyclopedia_url) {
+      encLink.href = window.APP_CONFIG.encyclopedia_url;
+    }
   } catch(e) { /* use fallback */ }
 }
 
@@ -105,6 +110,22 @@ async function loadTiers() {
       t.transPrice   = parseFloat(row.trans_price)  || t.transPrice;
       t.badge        = row.badge_he                  || t.badge;
     });
+
+    // Update pizza builder tok cards with live prices
+    const map = {s:'s', p:'p', u:'u'};
+    Object.keys(map).forEach(k => {
+      const t = window.TIERS[k];
+      if (!t) return;
+      const prEl = document.getElementById('tok-price-' + k);
+      const bgEl = document.getElementById('tok-badge-' + k);
+      if (prEl) prEl.textContent = '+$' + t.price;
+      if (bgEl) bgEl.textContent = t.badge;
+    });
+
+    // Update audio add-on price
+    const audioEl = document.getElementById('audio-price');
+    if (audioEl) audioEl.textContent = '+$' + (window.APP_CONFIG?.audio_addon_price || '8');
+
   } catch(e) { /* use fallback */ }
 }
 
