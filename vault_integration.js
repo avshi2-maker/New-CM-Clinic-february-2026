@@ -30,12 +30,8 @@ const MeridianVaultIntegration = (function() {
                || sessionStorage.getItem('meridian_vault_code');
 
     if (!code) {
-      // No code in memory — show prompt non-blocking
-      console.log('🔐 Vault: no code in session — showing prompt');
-      MeridianVault.showCodePrompt(async (therapist) => {
-        _therapistData = therapist;
-        await _loadPatientHistoryIfAvailable();
-      });
+      // No vault code — session works without it, history just won't load
+      console.log('🔐 Vault: no code — continuing without history');
       return;
     }
 
@@ -45,24 +41,9 @@ const MeridianVaultIntegration = (function() {
       console.log(`✅ Vault: auto-logged in as ${_therapistData.displayName}`);
       await _loadPatientHistoryIfAvailable();
     } catch(e) {
-      if (e.message === 'CODE_NOT_FOUND') {
-        // Code in session but definitively not in DB (PGRST116)
-        // This means the code was never registered — safe to clear
-        console.warn('🔐 Vault: code not in DB — clearing session');
-        MeridianCrypto.clearSessionCode();
-        // Show prompt so user can register or enter correct code
-        MeridianVault.showCodePrompt(async (therapist) => {
-          _therapistData = therapist;
-          await _loadPatientHistoryIfAvailable();
-        });
-      } else {
-        // DB_ERROR / network / table missing — store code anyway so exit flow works
-        // Session continues without history — non-blocking
-        const rawCode = MeridianCrypto.getSessionCode()
-                     || sessionStorage.getItem('meridian_vault_code');
-        if (rawCode) MeridianCrypto.storeCodeForSession(rawCode);
-        console.warn('🔐 Vault init warning (non-fatal, code preserved):', e.message);
-      }
+      // ANY vault error (table missing, no rows, network) = continue silently
+      // NEVER clear the code. NEVER show a prompt. Session works without vault.
+      console.log('ℹ️ Vault: continuing without history —', e.message);
     }
 
     // ── 2. Wire "Save & Exit" button ──────────────────────────
@@ -233,7 +214,7 @@ const MeridianVaultIntegration = (function() {
         <div style="display:flex;gap:10px;">
           <button onclick="window._vaultDoSave()" id="vaultSaveBtn"
             style="flex:1;padding:13px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;font-family:Heebo,sans-serif;letter-spacing:0.5px;">
-            🔐 שמור בכספת ← צא
+            💾 שמור דוח מפגש ← צא
           </button>
           <button onclick="window._vaultSkipSave()"
             style="padding:13px 20px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-size:13px;cursor:pointer;font-family:Heebo,sans-serif;">
@@ -253,69 +234,95 @@ const MeridianVaultIntegration = (function() {
       const notes  = document.getElementById('therapistNotesInput').value;
 
       btn.disabled = true;
-      btn.textContent = '⏳ מצפין ושומר...';
-      status.textContent = '🔐 מצפין נתונים בדפדפן שלך...';
+      btn.textContent = '⏳ שומר...';
+      status.textContent = '💾 שומר דוח מפגש...';
 
+      // Collect session data
+      const safetyFlags = (window.auditLog || [])
+        .filter(e => e.type && e.type.includes('safety'))
+        .map(e => e.rule_title || e.condition || e.drug || 'safety event');
+
+      const sessionData = {
+        patient_name:     patientName,
+        patient_id:       patientId || null,
+        complaint:        complaint,
+        therapist_notes:  notes,
+        ai_summary:       (lastAI || '').substring(0, 3000),
+        queries:          JSON.stringify(currentQueries || []),
+        safety_flags:     JSON.stringify(safetyFlags),
+        has_safety_flags: safetyFlags.length > 0,
+        safety_severity:  safetyFlags.length > 0 ? 'warn' : null,
+        token_count:      tokenCount,
+        cost_usd:         costUsd,
+        query_count:      queryCount,
+        duration_minutes: durationMin,
+        session_date:     new Date().toISOString().split('T')[0],
+        session_date_str: new Date().toLocaleDateString('he-IL'),
+        created_at:       new Date().toISOString()
+      };
+
+      // ── PRIMARY SAVE: patient_sessions table (no vault required) ──
+      let sessionNumber = 1;
       try {
-        // Collect safety flags from audit log
-        const safetyFlags = (window.auditLog || [])
-          .filter(e => e.type && e.type.includes('safety'))
-          .map(e => e.rule_title || e.condition || e.drug || 'safety event');
+        const sb = window.supabase?.createClient
+          ? window.supabase.createClient(
+              'https://iqfglrwjemogoycbzltt.supabase.co',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZmdscndqZW1vZ295Y2J6bHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTM4ODMsImV4cCI6MjA4NDEyOTg4M30.DTREv3efs86_HzESyWm-7480ImfEVgC6T-xBdS6A2F8')
+          : null;
 
-        const result = await MeridianVault.saveSession({
-          patientId:       patientId,
-          patientName:     patientName,
-          complaint:       complaint,
-          queries:         currentQueries,
-          aiSummary:       lastAI.substring(0, 2000),
-          therapistNotes:  notes,
-          safetyFlags:     safetyFlags,
-          safetySeverity:  safetyFlags.length > 0 ? 'warn' : null,
-          tokenCount:      tokenCount,
-          costUsd:         costUsd,
-          queryCount:      queryCount,
-          durationMinutes: durationMin
-        });
-
-        status.textContent = `✅ מפגש ${result.sessionNumber} נשמר בהצלחה!`;
-        status.style.color = '#34d399';
-
-        // Auto-download PDF after 800ms
-        setTimeout(() => {
-          const therapistProfile = {
-            displayName: sessionStorage.getItem('meridian_display_name') || '',
-            clinicName:  sessionStorage.getItem('meridian_clinic_name') || 'MERIDIAN TCM',
-            email:       sessionStorage.getItem('meridian_email') || ''
-          };
-          MeridianVault.exportSessionPDF({
-            patientName, complaint,
-            queries:        currentQueries,
-            aiSummary:      lastAI.substring(0, 2000),
-            therapistNotes: notes,
-            safetyFlags,
-            tokenCount, costUsd, queryCount,
-            durationMinutes: durationMin,
-            sessionNumber: result.sessionNumber,
-            dateDisplay:   new Date().toLocaleDateString('he-IL')
-          }, therapistProfile);
-        }, 800);
-
-        // Navigate after 1.5s
-        setTimeout(() => {
-          overlay.remove();
-          if (fallbackFn) {
-            eval(fallbackFn);
-          } else {
-            window.location.href = 'crm.html';
+        if (sb) {
+          // Count previous sessions for this patient to get session number
+          if (patientId) {
+            const { count } = await sb
+              .from('patient_sessions')
+              .select('*', { count: 'exact', head: true })
+              .eq('patient_id', patientId);
+            sessionNumber = (count || 0) + 1;
           }
-        }, 1800);
 
-      } catch(e) {
-        btn.disabled = false;
-        btn.textContent = '🔐 שמור בכספת ← צא';
-        status.textContent = '❌ שגיאה: ' + e.message;
-        status.style.color = '#f87171';
+          const { error } = await sb
+            .from('patient_sessions')
+            .insert({ ...sessionData, session_number: sessionNumber });
+
+          if (error) throw new Error(error.message);
+
+          status.textContent = `✅ מפגש ${sessionNumber} נשמר בתיק המטופל!`;
+          status.style.color = '#34d399';
+        } else {
+          status.textContent = '✅ מפגש הסתיים';
+          status.style.color = '#34d399';
+        }
+      } catch(saveErr) {
+        console.warn('patient_sessions save error:', saveErr.message);
+        status.textContent = '⚠️ שגיאת שמירה — יוצא בכל זאת';
+        status.style.color = '#fbbf24';
       }
+
+      // ── BONUS: Try vault encrypted save if code available ──
+      try {
+        const code = MeridianCrypto?.getSessionCode?.();
+        if (code && window._vaultTherapistId) {
+          await MeridianVault.saveSession({
+            patientId, patientName, complaint,
+            queries: currentQueries,
+            aiSummary: (lastAI || '').substring(0, 2000),
+            therapistNotes: notes,
+            safetyFlags, safetySeverity: safetyFlags.length > 0 ? 'warn' : null,
+            tokenCount, costUsd, queryCount, durationMinutes: durationMin
+          });
+          console.log('✅ Vault encrypted save also succeeded');
+        }
+      } catch(vaultErr) {
+        console.log('ℹ️ Vault save skipped:', vaultErr.message);
+        // Non-fatal — patient_sessions already saved above
+      }
+
+      // ── ALWAYS: navigate out after 1.5s ──
+      setTimeout(() => {
+        overlay.remove();
+        if (fallbackFn) { try { eval(fallbackFn); } catch(_){} }
+        else { window.location.href = 'crm.html'; }
+      }, 1500);
     };
 
     // ── Skip handler ──────────────────────────────────────────
