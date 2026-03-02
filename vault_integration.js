@@ -56,8 +56,11 @@ const MeridianVaultIntegration = (function() {
           await _loadPatientHistoryIfAvailable();
         });
       } else {
-        // DB_ERROR / network / table missing — code is still valid, do NOT clear
+        // DB_ERROR / network / table missing — store code anyway so exit flow works
         // Session continues without history — non-blocking
+        const rawCode = MeridianCrypto.getSessionCode()
+                     || sessionStorage.getItem('meridian_vault_code');
+        if (rawCode) MeridianCrypto.storeCodeForSession(rawCode);
         console.warn('🔐 Vault init warning (non-fatal, code preserved):', e.message);
       }
     }
@@ -162,15 +165,8 @@ const MeridianVaultIntegration = (function() {
   // ── SAVE & EXIT HANDLER ───────────────────────────────────────
 
   async function _handleSaveAndExit(fallbackFn) {
-    // Check if vault is ready
-    if (!MeridianCrypto.hasSessionCode()) {
-      // No code — ask for it then save
-      MeridianVault.showCodePrompt(async (therapist) => {
-        _therapistData = therapist;
-        await _showSaveDialog(fallbackFn);
-      });
-      return;
-    }
+    // NEVER show vault prompt on exit — just save and go
+    // Vault encryption is a bonus if code exists; session saves either way
     await _showSaveDialog(fallbackFn);
   }
 

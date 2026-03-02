@@ -558,12 +558,14 @@ ${d.safetyFlags && d.safetyFlags.length > 0 ? `
             border: 2px solid rgba(99,102,241,0.5);
             border-radius: 10px;
             color: white;
-            font-size: 18px;
+            font-size: 15px;
             font-family: 'Space Mono', monospace;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-align: center;
             outline: none;
             margin-bottom: 16px;
+            white-space: nowrap;
+            overflow: visible;
           "
         >
 
